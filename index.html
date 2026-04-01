@@ -2053,10 +2053,18 @@ async function boot(){
 
   // Wait a moment to ensure AvailabilitySystem is fully initialized
   setTimeout(() => {
+    // Show login button in header if not logged in (default state)
+    const loginHdrBtn = document.getElementById('login-hdr-btn');
+    const sys = window.AvailabilitySystemCore || window.AvailabilitySystem;
+    
+    if (loginHdrBtn) {
+      // Show login button by default (will be hidden by _updateAuthUI if user is logged in)
+      loginHdrBtn.style.display = 'flex';
+    }
+    
     // Sync TD.units with availability data AFTER UI is initialized
     // This ensures Srch.render() shows correct status from the start
     // Use AvailabilitySystemCore to access the full system object (not the UI wrapper)
-    const sys = window.AvailabilitySystemCore || window.AvailabilitySystem;
     console.log('[boot] === SYNC CHECK ===');
     console.log('[boot] sys type:', sys?.constructor?.name || typeof sys);
     console.log('[boot] sys.tourSync:', !!sys?.tourSync);
