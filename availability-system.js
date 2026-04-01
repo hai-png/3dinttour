@@ -1529,6 +1529,8 @@
         handleLogout: () => self.logout(),
 
         // Admin panel
+        showAdminPanel: () => self.ui.showAdminPanel(),
+        hideAdminPanel: () => self.ui.hideAdminPanel(),
         toggleAdminPanel: () => self.ui.toggleAdminPanel(),
         saveAllChanges: () => self.saveAllChanges(),
 
