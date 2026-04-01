@@ -1,0 +1,26 @@
+{
+  "rules": {
+    "properties": {
+      "$propertyId": {
+        ".read": true,
+        ".write": true,
+        "availability": {
+          "$unitId": {
+            ".read": true,
+            ".write": "auth != null"
+          }
+        }
+      }
+    },
+    "metadata": {
+      ".read": true,
+      ".write": true
+    },
+    "users": {
+      "$userId": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    }
+  }
+}

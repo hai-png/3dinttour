@@ -1,0 +1,144 @@
+{
+  "version": "1.0.0",
+  "company": {
+    "name": "Temer Properties",
+    "fullName": "Temer Real Estate Ethiopia",
+    "description": "Real estate in Ethiopia - Find your next home or investment with Temer Properties. Explore houses for sale in Addis Ababa",
+    "website": "https://temerproperties.com",
+    "logo": "from website/cropped-Properties-1.png"
+  },
+  "contact": {
+    "phones": [
+      {
+        "type": "hotline",
+        "label": "Hotline",
+        "value": "6033",
+        "tel": "tel:6033",
+        "display": "6033",
+        "primary": true
+      },
+      {
+        "type": "mobile",
+        "label": "Mobile 1",
+        "value": "+251975666699",
+        "tel": "tel:+251975666699",
+        "display": "+251 975 666 699",
+        "whatsapp": false
+      },
+      {
+        "type": "mobile",
+        "label": "Mobile 2",
+        "value": "+251939555558",
+        "tel": "tel:+251939555558",
+        "display": "+251 939 555 558",
+        "whatsapp": true
+      }
+    ],
+    "emails": [
+      {
+        "type": "general",
+        "label": "General Inquiry",
+        "value": "info@temerproperties.com",
+        "mailto": "mailto:info@temerproperties.com",
+        "primary": true
+      }
+    ],
+    "whatsapp": {
+      "enabled": true,
+      "number": "+251939555558",
+      "display": "+251 939 555 558",
+      "message": "Hello Temer Properties, I'm interested in learning more about your properties."
+    },
+    "social": {
+      "facebook": {
+        "enabled": true,
+        "url": "https://www.facebook.com/temerproperties?mibextid=JRoKGi",
+        "handle": "@temerproperties",
+        "icon": "facebook"
+      },
+      "twitter": {
+        "enabled": true,
+        "url": "https://x.com/TemerProperties",
+        "handle": "@TemerProperties",
+        "icon": "twitter"
+      },
+      "youtube": {
+        "enabled": true,
+        "url": "https://www.youtube.com/@TemerProperties",
+        "handle": "@TemerProperties",
+        "icon": "youtube"
+      },
+      "instagram": {
+        "enabled": true,
+        "url": "https://www.instagram.com/temerproperties?igsh=MXJ6ZGozY3QwaXBsMQ",
+        "handle": "@temerproperties",
+        "icon": "instagram"
+      },
+      "tiktok": {
+        "enabled": true,
+        "url": "https://www.tiktok.com/@temer_properties?_t=8opa5yBARtd&_r=1",
+        "handle": "@temer_properties",
+        "icon": "tiktok"
+      }
+    }
+  },
+  "location": {
+    "address": "Piyassa, Addis Ababa, Ethiopia",
+    "city": "Addis Ababa",
+    "country": "Ethiopia",
+    "coordinates": {
+      "lat": 9.036278,
+      "lng": 38.752639
+    }
+  },
+  "businessHours": {
+    "enabled": false
+  },
+  "contactForm": {
+    "enabled": true,
+    "endpoint": "https://temerproperties.com/wp-admin/admin-ajax.php",
+    "fields": [
+      {
+        "name": "contact_name",
+        "label": "Your Name",
+        "type": "text",
+        "required": true,
+        "placeholder": "Your Name"
+      },
+      {
+        "name": "contact_email",
+        "label": "Your Email",
+        "type": "email",
+        "required": true,
+        "placeholder": "Your Email"
+      },
+      {
+        "name": "contact_phone",
+        "label": "Your Phone",
+        "type": "tel",
+        "required": false,
+        "placeholder": "Your Phone"
+      },
+      {
+        "name": "contact_content",
+        "label": "Message",
+        "type": "textarea",
+        "required": true,
+        "placeholder": "Type your message..."
+      }
+    ],
+    "submitButton": {
+      "label": "Send Message",
+      "icon": "send"
+    }
+  },
+  "displaySettings": {
+    "showPhones": true,
+    "showEmails": true,
+    "showSocial": true,
+    "showWhatsApp": true,
+    "showContactForm": true,
+    "primaryColor": "#84a441",
+    "secondaryColor": "#b09048"
+  }
+}

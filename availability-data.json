@@ -1,0 +1,46 @@
+{
+  "availability": {
+    "unit-101": {
+      "name": "Unit 101 - 2BHK",
+      "status": "available",
+      "notes": "Corner unit with balcony and city view",
+      "updatedAt": 1743481200000,
+      "updatedBy": "system"
+    },
+    "unit-102": {
+      "name": "Unit 102 - 3BHK",
+      "status": "reserved",
+      "notes": "Reserved until May 2024",
+      "updatedAt": 1743481200000,
+      "updatedBy": "system"
+    },
+    "unit-201": {
+      "name": "Unit 201 - Penthouse",
+      "status": "available",
+      "notes": "Top floor with private terrace",
+      "updatedAt": 1743481200000,
+      "updatedBy": "system"
+    },
+    "unit-301": {
+      "name": "Unit 301 - Studio",
+      "status": "sold",
+      "notes": "",
+      "updatedAt": 1743481200000,
+      "updatedBy": "system"
+    },
+    "unit-401": {
+      "name": "Unit 401 - 2BHK",
+      "status": "available",
+      "notes": "Ready to move in",
+      "updatedAt": 1743481200000,
+      "updatedBy": "system"
+    },
+    "unit-501": {
+      "name": "Unit 501 - 3BHK",
+      "status": "unavailable",
+      "notes": "Under renovation",
+      "updatedAt": 1743481200000,
+      "updatedBy": "system"
+    }
+  }
+}

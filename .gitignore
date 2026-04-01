@@ -1,0 +1,92 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+www/
+build/
+
+# Electron
+electron/dist/
+electron/build/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Directory for instrumented libs
+lib-cov
+
+# Coverage directory
+coverage/
+*.lcov
+
+# .nyc output
+.nyc_output
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Testing
+junit.xml
+test-results/
+
+# Misc
+repomix-output.xml
+*.blend
+Untitled*
+gg.png
+over.png
+unnecessary*.png
+whatshouldbe.png
+*.glb
+
+# Screenshots and temporary images
+brave_screenshot_localhost*.png
+brave_screenshot_localhot.png
+current*.png
+defaultcamera.png
+reset*.png
+start-server.html
+serve.js
+
+# Website downloads folder
+from website/

@@ -1,0 +1,57 @@
+{
+  "name": "3D Interactive Tour",
+  "short_name": "3D Tour",
+  "description": "Interactive 3D property tour viewer with floor plans, galleries, and virtual tours",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "lifestyle"],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "View Tour",
+      "short_name": "Tour",
+      "description": "Open the 3D tour",
+      "url": "/index.html",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Manage Availability",
+      "short_name": "Availability",
+      "description": "Manage property availability",
+      "url": "/index.html?view=availability",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [],
+  "related_applications": [],
+  "lang": "en-US",
+  "dir": "ltr",
+  "permissions": [
+    "notifications",
+    "background-sync"
+  ]
+}

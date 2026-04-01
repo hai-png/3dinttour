@@ -1,0 +1,25 @@
+{
+  "name": "new-folder",
+  "version": "1.0.0",
+  "description": "3D Tour with Firebase Availability Management",
+  "main": "auth-manager.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "init-availability": "node init-availability.js",
+    "serve": "npx http-server -p 8080 -c-1",
+    "deploy": "firebase deploy --only hosting"
+  },
+  "keywords": [
+    "firebase",
+    "realtime-database",
+    "availability",
+    "pwa",
+    "3d-tour"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "firebase-admin": "^11.11.0"
+  }
+}

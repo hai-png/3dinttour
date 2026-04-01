@@ -1,0 +1,60 @@
+{
+  "rules": {
+    "availability": {
+      ".read": true,
+      ".write": "auth != null",
+      "$unitId": {
+        ".validate": "auth != null",
+        "name": { ".validate": "newData.isString()" },
+        "status": {
+          ".validate": "newData.isString() && ['available', 'reserved', 'sold', 'unavailable'].contains(newData.val())"
+        },
+        "notes": { ".validate": "newData.isString()" },
+        "updatedAt": { ".validate": "newData.isNumber()" },
+        "updatedBy": { ".validate": "newData.isString()" },
+        "type": { ".validate": "newData.isString()" },
+        "unitType": { ".validate": "newData.isString()" },
+        "unitName": { ".validate": "newData.isString()" },
+        "floor": { ".validate": "newData.isNumber() || newData.val() === null" },
+        "bedrooms": { ".validate": "newData.isString() || newData.isNumber()" },
+        "area": { ".validate": "newData.isString() || newData.isNumber()" },
+        "price": { ".validate": "newData.isString() || newData.isNumber()" },
+        "priceFormatted": { ".validate": "newData.isString()" }
+      }
+    },
+
+    "users": {
+      "$uid": {
+        ".read": "$uid === auth.uid || root.child('users').child(auth.uid).child('role').val() === 'admin'",
+        ".write": "$uid === auth.uid",
+        "email": { ".validate": "newData.isString()" },
+        "name": { ".validate": "newData.isString()" },
+        "role": {
+          ".validate": "newData.isString() && ['admin', 'agent', 'viewer'].contains(newData.val())"
+        },
+        "createdAt": { ".validate": "newData.isNumber()" }
+      }
+    },
+
+    "settings": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      "companyName": { ".validate": "newData.isString()" },
+      "contactEmail": { ".validate": "newData.isString()" },
+      "contactPhone": { ".validate": "newData.isString()" }
+    },
+
+    "logs": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('role').val() === 'admin'",
+      ".write": "auth != null",
+      "$logId": {
+        ".validate": "auth != null",
+        "action": { ".validate": "newData.isString()" },
+        "userId": { ".validate": "newData.isString()" },
+        "userEmail": { ".validate": "newData.isString()" },
+        "timestamp": { ".validate": "newData.isNumber()" },
+        "data": { ".validate": true }
+      }
+    }
+  }
+}
