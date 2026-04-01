@@ -1064,10 +1064,20 @@
      */
     _updateAuthUI(user) {
       const { loginBtn, logoutBtn, adminBtn, userInfo } = this.elements;
+      const loginHdrBtn = document.getElementById('login-hdr-btn');
 
+      // Show login button in header when not logged in
+      if (loginHdrBtn) {
+        loginHdrBtn.style.display = user ? 'none' : 'flex';
+      }
+
+      // Legacy buttons (if they exist)
       if (loginBtn) loginBtn.style.display = user ? 'none' : 'flex';
       if (logoutBtn) logoutBtn.style.display = user ? 'flex' : 'none';
       if (adminBtn) adminBtn.style.display = user ? 'flex' : 'none';
+
+      // Update auth section in availability panel
+      this._renderAuthSection(user);
 
       if (userInfo) {
         if (user) {
@@ -1080,6 +1090,43 @@
         } else {
           userInfo.style.display = 'none';
         }
+      }
+    }
+
+    /**
+     * Render auth section in availability panel
+     * @private
+     */
+    _renderAuthSection(user) {
+      const authSection = document.getElementById('am-auth-section');
+      if (!authSection) return;
+
+      if (user) {
+        // Logged in - show user info and logout
+        authSection.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
+              <span class="ui-avatar" style="width:24px;height:24px;font-size:12px;flex-shrink:0">${user.email?.[0]?.toUpperCase() || '👤'}</span>
+              <span class="am-auth-email" style="flex:1;min-width:0">${user.email || 'User'}</span>
+            </div>
+            <button class="am-btn am-btn-secondary" onclick="AvailabilitySystem.handleLogout()" style="padding:4px 8px;font-size:9px;flex-shrink:0">🚪 Logout</button>
+          </div>
+        `;
+      } else {
+        // Not logged in - show login form
+        authSection.innerHTML = `
+          <form id="am-login-form" onsubmit="AvailabilitySystem.handleLogin(event)" style="display:flex;flex-direction:column;gap:6px">
+            <input type="email" id="am-login-email" class="am-input" placeholder="Email" style="padding:6px 8px;font-size:10px" required>
+            <input type="password" id="am-login-password" class="am-input" placeholder="Password" style="padding:6px 8px;font-size:10px" required>
+            <div style="display:flex;gap:6px">
+              <button type="submit" class="am-btn am-btn-primary" style="flex:1;padding:6px 10px;font-size:9.5px">🔐 Login</button>
+              <button type="button" class="am-btn am-btn-secondary" onclick="AvailabilitySystem.hideAdminPanel()" style="padding:6px 10px;font-size:9.5px">✕</button>
+            </div>
+          </form>
+          <div style="font-size:8.5px;color:var(--t3);text-align:center;margin-top:4px">
+            admin@temerproperties.com
+          </div>
+        `;
       }
     }
 
