@@ -592,7 +592,7 @@ button{font-family:inherit;border:none;cursor:pointer}
     <button class="hbtn" id="open-contact">📞 Contact</button>
     <button class="hbtn" id="install-btn" style="display:none">📲 Install</button>
     <!-- Login button - opens availability panel for auth -->
-    <button class="hbtn" id="login-hdr-btn" style="display:none" onclick="AvailabilitySystem.showLoginModal(); AvailabilitySystem.showAdminPanel()" title="Admin Login">🔐</button>
+    <button class="hbtn" id="login-hdr-btn" style="display:none" title="Admin Login">🔐</button>
   </div>
 </header>
 <div id="connection-status" class="connection-status online"><span class="cs-dot"></span><span class="cs-txt">Online</span></div>
@@ -2064,10 +2064,19 @@ async function boot(){
     // Show login button in header if not logged in (default state)
     const loginHdrBtn = document.getElementById('login-hdr-btn');
     const sys = window.AvailabilitySystemCore || window.AvailabilitySystem;
-    
+
     if (loginHdrBtn) {
       // Show login button by default (will be hidden by _updateAuthUI if user is logged in)
       loginHdrBtn.style.display = 'flex';
+      // Add click handler
+      loginHdrBtn.onclick = () => {
+        if (window.AvailabilitySystem && typeof window.AvailabilitySystem.showLoginModal === 'function') {
+          window.AvailabilitySystem.showLoginModal();
+          window.AvailabilitySystem.showAdminPanel();
+        } else {
+          alert('Availability system not ready yet. Please wait a moment and try again.');
+        }
+      };
     }
     
     // Sync TD.units with availability data AFTER UI is initialized
@@ -2211,13 +2220,13 @@ async function boot(){
 const PWAInstall=(()=>{
 let deferredPrompt=null;
 let isIOSSafari=false;
+let toastShown=false;
 const toast=document.getElementById('pwa-toast');
 const installBtn=document.getElementById('install-btn');
 
 function init(){
   // Check if already installed
   if(isInstalled()){
-    console.log('[PWA] Already installed');
     return;
   }
 
@@ -2236,16 +2245,18 @@ function init(){
 
   // Listen for beforeinstallprompt event (Desktop/Android Chrome)
   window.addEventListener('beforeinstallprompt',(e)=>{
-    console.log('[PWA] beforeinstallprompt fired');
     e.preventDefault();
     deferredPrompt=e;
     if(installBtn)installBtn.style.display='inline-block';
-    showInstallToast();
+    // Show toast after a short delay
+    if(!toastShown){
+      setTimeout(showInstallToast, 1500);
+      toastShown=true;
+    }
   }, { once: true });
 
   // Listen for successful install (Desktop/Android Chrome)
   window.addEventListener('appinstalled',()=>{
-    console.log('[PWA] Installed successfully');
     hideInstallToast();
     deferredPrompt=null;
     if(installBtn)installBtn.style.display='none';
@@ -2253,22 +2264,21 @@ function init(){
 
   // iOS Safari detection - show custom install instructions
   isIOSSafari = isIOS()&&isSafari();
-  console.log('[PWA] Is iOS Safari:', isIOSSafari);
-  
+
   if(isIOSSafari){
     // Show install button for iOS
     if(installBtn)installBtn.style.display='inline-block';
     // Show iOS toast after a short delay
     setTimeout(showIOSToast, 2000);
-  } else if (!deferredPrompt) {
-    // For desktop browsers that support PWA but didn't fire event
-    // Show toast after delay if not already shown
+    toastShown=true;
+  } else {
+    // For browsers without beforeinstallprompt, show toast after delay
     setTimeout(() => {
-      if (!toast.classList.contains('show') && !isInstalled()) {
-        console.log('[PWA] Showing manual install prompt');
+      if (!deferredPrompt && !toastShown && !isInstalled()) {
         showInstallToast();
+        toastShown=true;
       }
-    }, 3000);
+    }, 2500);
   }
 }
 
@@ -2295,7 +2305,6 @@ function showInstallToast(){
   toast.querySelector('.pwa-btn-s').onclick=hideInstallToast;
   toast.querySelector('.pwa-close').onclick=hideInstallToast;
   toast.classList.add('show');
-  console.log('[PWA] Install toast shown');
 }
 
 function showIOSToast(){
@@ -2309,7 +2318,6 @@ function showIOSToast(){
   toast.querySelector('.pwa-btn-s').onclick=hideInstallToast;
   toast.querySelector('.pwa-close').onclick=hideInstallToast;
   toast.classList.add('show');
-  console.log('[PWA] iOS toast shown');
 
   // Auto-hide after 10 seconds
   setTimeout(hideInstallToast,10000);
@@ -2317,16 +2325,10 @@ function showIOSToast(){
 
 function installApp(){
   if(!deferredPrompt){
-    console.log('[PWA] No install prompt available');
     return;
   }
   deferredPrompt.prompt();
   deferredPrompt.userChoice.then((choiceResult)=>{
-    if(choiceResult.outcome==='accepted'){
-      console.log('[PWA] User accepted install');
-    } else {
-      console.log('[PWA] User declined install');
-    }
     deferredPrompt=null;
     hideInstallToast();
   });

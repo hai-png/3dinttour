@@ -24,6 +24,7 @@ jobs:
           npm ci
 
       - name: Verify model file exists
+        shell: bash
         run: |
           ls -la model/
           test -f model/building.glb || (echo "ERROR: model/building.glb not found!" && exit 1)
