@@ -1,4 +1,4 @@
-const CACHE_NAME = '3d-tour-v4';
+const CACHE_NAME = '3d-tour-v5';
 const ASSETS = [
   '/',
   '/index.html',
@@ -19,12 +19,30 @@ const ASSETS = [
   '/temerlogo.png'
 ];
 
-// Install event - cache core assets
+// Model and project assets - cache these too
+const MODEL_ASSETS = [
+  '/model/building.glb'
+];
+
+const PROJECT_ASSETS = [
+  // These will be cached dynamically when loaded
+];
+
+// Install event - cache core assets and model
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS).catch(err => {
+      // Cache core assets first
+      return cache.addAll(ASSETS).then(() => {
+        // Then try to cache model (might be large, so separate)
+        return cache.addAll(MODEL_ASSETS).catch(err => {
+          // Model caching is optional - continue even if it fails
+          console.log('[SW] Model caching skipped (will cache on first load):', err);
+          return Promise.resolve();
+        });
+      }).catch(err => {
         // Continue even if some assets fail
+        console.log('[SW] Some assets failed to cache:', err);
         return Promise.resolve();
       });
     }).then(() => {

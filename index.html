@@ -590,8 +590,7 @@ button{font-family:inherit;border:none;cursor:pointer}
   <div class="hdr-row">
     <button class="hbtn" id="open-pd">📋 Details</button>
     <button class="hbtn" id="open-contact">📞 Contact</button>
-    <button class="hbtn" id="install-btn" style="display:none">📲 Install</button>
-    <!-- Login button - opens availability panel for auth -->
+    <button class="hbtn" id="install-btn" style="display:none" title="Download for offline use">📲 Install</button>
     <button class="hbtn" id="login-hdr-btn" style="display:none" title="Admin Login">🔐</button>
   </div>
 </header>
@@ -2219,6 +2218,7 @@ async function boot(){
 // ═══ PWA INSTALL HANDLER ═══
 const PWAInstall=(()=>{
 let deferredPrompt=null;
+let installPrompted=false;
 let isIOSSafari=false;
 let toastShown=false;
 const toast=document.getElementById('pwa-toast');
@@ -2234,10 +2234,13 @@ function init(){
   if(installBtn){
     installBtn.onclick=()=>{
       if(deferredPrompt){
+        // Native install prompt available (Android/Windows/ChromeOS)
         installApp();
       } else if(isIOSSafari){
+        // iOS - show instructions
         showIOSToast();
       } else {
+        // Desktop browser without install support - show toast
         showInstallToast();
       }
     };
@@ -2247,7 +2250,11 @@ function init(){
   window.addEventListener('beforeinstallprompt',(e)=>{
     e.preventDefault();
     deferredPrompt=e;
-    if(installBtn)installBtn.style.display='inline-block';
+    if(installBtn){
+      installBtn.style.display='inline-block';
+      installBtn.textContent='📲 Download';
+      installBtn.title='Download for offline use';
+    }
     // Show toast after a short delay
     if(!toastShown){
       setTimeout(showInstallToast, 1500);
@@ -2267,7 +2274,10 @@ function init(){
 
   if(isIOSSafari){
     // Show install button for iOS
-    if(installBtn)installBtn.style.display='inline-block';
+    if(installBtn){
+      installBtn.style.display='inline-block';
+      installBtn.textContent='📱 Install';
+    }
     // Show iOS toast after a short delay
     setTimeout(showIOSToast, 2000);
     toastShown=true;
