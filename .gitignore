@@ -77,6 +77,9 @@ gg.png
 over.png
 unnecessary*.png
 whatshouldbe.png
+
+# GLB models - except main building model
+!model/*.glb
 *.glb
 
 # Screenshots and temporary images

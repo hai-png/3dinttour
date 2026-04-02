@@ -1,10 +1,14 @@
 {
-  "name": "new-folder",
+  "name": "virtour",
   "version": "1.0.0",
   "description": "3D Tour with Firebase Availability Management",
-  "main": "auth-manager.js",
+  "main": "electron/main.js",
+  "author": "Temer Properties",
+  "license": "ISC",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "build": "electron-builder --win --x64",
+    "build:portable": "electron-builder --win portable --x64",
     "init-availability": "node init-availability.js",
     "serve": "npx http-server -p 8080 -c-1",
     "deploy": "firebase deploy --only hosting"
@@ -16,10 +20,49 @@
     "pwa",
     "3d-tour"
   ],
-  "author": "",
-  "license": "ISC",
+  "build": {
+    "appId": "com.temer.virtour",
+    "productName": "3D Virtual Tour",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "index.html",
+      "manifest.json",
+      "sw.js",
+      "tour-data.json",
+      "availability-system.js",
+      "availability-manager.js",
+      "firebase-service.js",
+      "auth-manager.js",
+      "contact-integration.js",
+      "electron/**/*",
+      "icon-*.png",
+      "project/**/*",
+      "build/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "icon-512.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
   "type": "commonjs",
   "dependencies": {
     "firebase-admin": "^11.11.0"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
   }
 }
