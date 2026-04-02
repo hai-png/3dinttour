@@ -153,28 +153,6 @@ button{font-family:inherit;border:none;cursor:pointer}
   #tools{left:max(8px, env(safe-area-inset-left))}
 }
 
-/* ═══ PWA Install Toast ═══ */
-#pwa-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);z-index:9999;background:var(--card);border-radius:var(--rxl);box-shadow:var(--sl);padding:12px 16px;display:none;align-items:center;gap:10px;max-width:calc(100vw - 24px);border:1px solid var(--b1);animation:slideUp .3s ease forwards}
-#pwa-toast.show{display:flex}
-#pwa-toast .pwa-icon{width:36px;height:36px;background:var(--pri-a);border-radius:var(--rm);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-#pwa-toast .pwa-txt{flex:1;min-width:0}
-#pwa-toast .pwa-txt b{display:block;font-size:12px;color:var(--t1);margin-bottom:1px}
-#pwa-toast .pwa-txt small{font-size:9.5px;color:var(--t3)}
-#pwa-toast .pwa-actions{display:flex;gap:6px;flex-shrink:0}
-#pwa-toast .pwa-btn{padding:6px 12px;border-radius:var(--rm);font-size:11px;font-weight:600;transition:all var(--t-f);white-space:nowrap}
-#pwa-toast .pwa-btn-p{background:var(--pri);color:#fff}
-#pwa-toast .pwa-btn-p:hover{background:var(--pri-d)}
-#pwa-toast .pwa-btn-s{background:var(--card2);color:var(--t2);border:1px solid var(--b1)}
-#pwa-toast .pwa-btn-s:hover{background:var(--pri-a);color:var(--pri)}
-#pwa-toast .pwa-close{width:24px;height:24px;background:transparent;border:none;color:var(--t3);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
-#pwa-toast .pwa-close:hover{color:var(--t1);background:var(--b1)}
-
-@media (max-width: 768px) {
-  #pwa-toast{bottom:70px;width:calc(100vw - 20px);left:10px;transform:none}
-  #pwa-toast .pwa-txt b{font-size:11px}
-  #pwa-toast .pwa-txt small{font-size:9px}
-  #pwa-toast .pwa-btn{padding:5px 10px;font-size:10px}
-}
 
 /* ═══ Connection Status ═══ */
 #connection-status{position:fixed;top:10px;right:12px;z-index:99;padding:5px 10px;background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:var(--rm);display:flex;align-items:center;gap:6px;font-size:10px;color:#fff;transition:all var(--t-f)}
@@ -590,7 +568,7 @@ button{font-family:inherit;border:none;cursor:pointer}
   <div class="hdr-row">
     <button class="hbtn" id="open-pd">📋 Details</button>
     <button class="hbtn" id="open-contact">📞 Contact</button>
-    <button class="hbtn" id="install-btn" style="display:none" title="Download for offline use">📲 Install</button>
+    <button class="hbtn" id="install-btn" style="display:none" title="Install app">📲 Install</button>
     <button class="hbtn" id="login-hdr-btn" style="display:none" title="Admin Login">🔐</button>
   </div>
 </header>
@@ -1784,7 +1762,7 @@ function getTouchCenter(t1,t2){return{x:(t1.clientX+t2.clientX)/2,y:(t1.clientY+
 
 function handleTouchStart(e){
   // Ignore if interacting with UI elements
-  if(e.target.closest('#detail,#search,#pd,#fp,#lb,#pano,#fp2d,.u-card,.hs-card,.pd-m,.fp-m,#hdr,#tools,#gal,#pwa-toast')){
+  if(e.target.closest('#detail,#search,#pd,#fp,#lb,#pano,#fp2d,.u-card,.hs-card,.pd-m,.fp-m,#hdr,#tools,#gal')){
     gestureBlocked=true;
     return;
   }
@@ -2091,8 +2069,13 @@ async function boot(){
     
     if (sys && sys.tourSync && typeof sys.tourSync.markReady === 'function') {
       console.log('[boot] ✅ Marking tour data ready and triggering initial sync');
-      // Mark as ready and trigger sync - this will update TD.units and refresh Srch UI
       sys.tourSync.markReady();
+
+      // Start media caching after tour is loaded
+      setTimeout(() => {
+        console.log('[boot] 📦 Starting media caching for offline support');
+        startMediaCaching();
+      }, 2000);
     } else {
       // Fallback: manually sync from Firebase or state
       console.log('[boot] ⚠️ AvailabilitySystem.tourSync not available, using fallback sync');
@@ -2203,14 +2186,8 @@ async function boot(){
   })();
   */
 
-  // PWA service worker
-  if('serviceWorker'in navigator){
-    navigator.serviceWorker.register('sw.js')
-      .then(registration => {
-        console.log('[SW] Registered:', registration.scope);
-      })
-      .catch(err => console.warn('[SW] Registration failed:', err));
-  }
+  // PWA service worker registration is handled at the bottom of the file
+  // to show caching progress
 
   let frame=0;(function loop(time){requestAnimationFrame(loop);frame++;E.render(time);if(frame%2===0)HS.update()})();
 }
@@ -2218,163 +2195,107 @@ async function boot(){
 // ═══ PWA INSTALL HANDLER ═══
 const PWAInstall=(()=>{
 let deferredPrompt=null;
-let installPrompted=false;
-let isIOSSafari=false;
-let toastShown=false;
-const toast=document.getElementById('pwa-toast');
 const installBtn=document.getElementById('install-btn');
 
 function init(){
-  // Check if already installed
-  if(isInstalled()){
-    return;
-  }
-
-  // Setup install button
   if(installBtn){
-    installBtn.onclick=()=>{
-      if(deferredPrompt){
-        // Native install prompt available (Android/Windows/ChromeOS)
-        installApp();
-      } else if(isIOSSafari){
-        // iOS - show instructions
-        showIOSToast();
-      } else {
-        // Desktop browser without install support - show toast
-        showInstallToast();
-      }
-    };
+    installBtn.onclick=installApp;
   }
-
-  // Listen for beforeinstallprompt event (Desktop/Android Chrome)
+  // Listen for beforeinstallprompt
   window.addEventListener('beforeinstallprompt',(e)=>{
     e.preventDefault();
     deferredPrompt=e;
     if(installBtn){
       installBtn.style.display='inline-block';
-      installBtn.textContent='📲 Download';
-      installBtn.title='Download for offline use';
+      console.log('[PWA] Install prompt ready');
     }
-    // Show toast after a short delay
-    if(!toastShown){
-      setTimeout(showInstallToast, 1500);
-      toastShown=true;
-    }
-  }, { once: true });
-
-  // Listen for successful install (Desktop/Android Chrome)
-  window.addEventListener('appinstalled',()=>{
-    hideInstallToast();
-    deferredPrompt=null;
-    if(installBtn)installBtn.style.display='none';
   });
-
-  // iOS Safari detection - show custom install instructions
-  isIOSSafari = isIOS()&&isSafari();
-
-  if(isIOSSafari){
-    // Show install button for iOS
-    if(installBtn){
-      installBtn.style.display='inline-block';
-      installBtn.textContent='📱 Install';
-    }
-    // Show iOS toast after a short delay
-    setTimeout(showIOSToast, 2000);
-    toastShown=true;
-  } else {
-    // For browsers without beforeinstallprompt, show toast after delay
-    setTimeout(() => {
-      if (!deferredPrompt && !toastShown && !isInstalled()) {
-        showInstallToast();
-        toastShown=true;
-      }
-    }, 2500);
-  }
-}
-
-function isIOS(){
-  return/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
-}
-
-function isSafari(){
-  return/^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-}
-
-function isInstalled(){
-  return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
-}
-
-function showInstallToast(){
-  if(!toast)return;
-  toast.querySelector('.pwa-icon').textContent='📲';
-  toast.querySelector('.pwa-txt b').textContent='Install App';
-  toast.querySelector('.pwa-txt small').textContent='Add to home screen for quick access';
-  toast.querySelector('.pwa-btn-p').textContent='Install';
-  toast.querySelector('.pwa-btn-p').onclick=installApp;
-  toast.querySelector('.pwa-btn-s').style.display='inline-block';
-  toast.querySelector('.pwa-btn-s').onclick=hideInstallToast;
-  toast.querySelector('.pwa-close').onclick=hideInstallToast;
-  toast.classList.add('show');
-}
-
-function showIOSToast(){
-  if(!toast)return;
-  toast.querySelector('.pwa-icon').textContent='📱';
-  toast.querySelector('.pwa-txt b').textContent='Install on iPhone';
-  toast.querySelector('.pwa-txt small').textContent='Tap Share → Add to Home Screen';
-  toast.querySelector('.pwa-btn-p').textContent='Got it';
-  toast.querySelector('.pwa-btn-p').onclick=hideInstallToast;
-  toast.querySelector('.pwa-btn-s').style.display='inline-block';
-  toast.querySelector('.pwa-btn-s').onclick=hideInstallToast;
-  toast.querySelector('.pwa-close').onclick=hideInstallToast;
-  toast.classList.add('show');
-
-  // Auto-hide after 10 seconds
-  setTimeout(hideInstallToast,10000);
+  // Listen for successful install
+  window.addEventListener('appinstalled',()=>{
+    console.log('[PWA] App installed');
+    if(installBtn)installBtn.style.display='none';
+    deferredPrompt=null;
+  });
 }
 
 function installApp(){
   if(!deferredPrompt){
+    console.log('[PWA] No install prompt available');
     return;
   }
   deferredPrompt.prompt();
-  deferredPrompt.userChoice.then((choiceResult)=>{
+  deferredPrompt.userChoice.then((result)=>{
+    console.log('[PWA] User choice:',result.outcome);
     deferredPrompt=null;
-    hideInstallToast();
+    if(installBtn&&result.outcome==='dismissed'){
+      installBtn.style.display='none';
+    }
   });
 }
 
-function hideInstallToast(){
-  if(toast){
-    toast.classList.remove('show');
-  }
-}
-
-// Expose showInstallToast globally for manual trigger
-window.showInstallPrompt = showInstallToast;
-
-return{init,showInstallToast,hideInstallToast,isInstalled};
+return{init};
 })();
 
 // Initialize PWA install handler
 PWAInstall.init();
 
+// ═══ MEDIA CACHING FOR OFFLINE ═══
+let mediaCachingStarted=false;
+function startMediaCaching(){
+  if(mediaCachingStarted){
+    console.log('[Media] Already started');
+    return;
+  }
+  if(!navigator.serviceWorker||!navigator.serviceWorker.controller){
+    console.log('[Media] SW not ready, waiting...');
+    setTimeout(startMediaCaching,1000);
+    return;
+  }
+  mediaCachingStarted=true;
+  console.log('[Media] Fetching tour data...');
+  fetch('/tour-data.json')
+    .then(res=>res.json())
+    .then(data=>{
+      const urls=extractMediaUrls(data);
+      console.log('[Media] Caching',urls.length,'files');
+      navigator.serviceWorker.controller.postMessage({
+        type:'CACHE_MEDIA',
+        urls:urls,
+        currentMediaUrls:urls
+      });
+    })
+    .catch(err=>{
+      console.error('[Media] Failed:',err);
+      mediaCachingStarted=false;
+    });
+}
+
+function extractMediaUrls(data){
+  const urls=new Set();
+  function add(url){
+    if(!url||typeof url!=='string')return;
+    if(/^[\p{Emoji}]+$/u.test(url.trim()))return;
+    const normalized='/'+url.replace(/^\/+/,'').replace(/\/+$/,'');
+    const valid=['.glb','.gltf','.hdr','.jpg','.jpeg','.png','.webp','.svg','.mp4','.webm','.gif'];
+    if(valid.some(ext=>normalized.toLowerCase().endsWith(ext))){
+      urls.add(normalized);
+    }
+  }
+  if(data?.modelFile)add(data.modelFile);
+  if(data?.hdri)add(data.hdri);
+  if(data?.panoramas)data.panoramas.forEach(p=>{if(p.file)add(p.file);});
+  if(data?.floorPlans)data.floorPlans.forEach(fp=>{if(fp.image)add(fp.image);if(fp.image2d)add(fp.image2d);});
+  if(data?.units)data.units.forEach(u=>{
+    if(u.image)add(u.image);
+    if(u.images)u.images.forEach(img=>add(img));
+  });
+  if(data?.gallery)data.gallery.forEach(g=>{if(g.image)add(g.image);});
+  if(data?.amenities)data.amenities.forEach(a=>{if(a.image)add(a.image);});
+  return Array.from(urls);
+}
+
 boot();
 </script>
-
-<!-- PWA Install Toast -->
-<div id="pwa-toast" role="alert">
-  <div class="pwa-icon">📲</div>
-  <div class="pwa-txt">
-    <b>Install App</b>
-    <small>Add to home screen for quick access</small>
-  </div>
-  <div class="pwa-actions">
-    <button class="pwa-btn pwa-btn-s" onclick="PWAInstall.hideInstallToast()">Later</button>
-    <button class="pwa-btn pwa-btn-p">Install</button>
-  </div>
-  <button class="pwa-close" onclick="PWAInstall.hideInstallToast()">×</button>
-</div>
 
 <!-- Authentication Modal -->
 <div id="auth-modal" class="am-modal">
@@ -2438,5 +2359,27 @@ boot();
     </div>
   </div>
 </div>
+
+<script>
+// Register service worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js')
+    .then(reg=>console.log('[SW] Registered:',reg.scope))
+    .catch(err=>console.error('[SW] Registration failed:',err));
+}
+
+// Online/offline status
+function updateOnlineStatus(){
+  const el=document.getElementById('connection-status');
+  if(el){
+    const online=navigator.onLine;
+    el.className='connection-status '+(online?'online':'offline');
+    el.querySelector('.cs-txt').textContent=online?'Online':'Offline';
+  }
+}
+window.addEventListener('online',updateOnlineStatus);
+window.addEventListener('offline',updateOnlineStatus);
+updateOnlineStatus();
+</script>
 </body>
 </html>
