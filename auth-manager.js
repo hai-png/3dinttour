@@ -38,7 +38,6 @@ const AuthManager = {
    * Initialize auth manager
    */
   init() {
-    console.log('[AuthManager] Initializing...');
     this.restoreSession();
     this.startTokenRefresh();
     this.setupNetworkListener();
@@ -67,15 +66,12 @@ const AuthManager = {
             expiry: expiryTime,
             role: this.session.user?.role || 'viewer'
           };
-          console.log('[AuthManager] Session restored');
           this.notifyListeners('restored', this.session.user);
         } else {
-          console.log('[AuthManager] Session expired, clearing...');
           this.clearSession();
         }
       }
     } catch (error) {
-      console.error('[AuthManager] Error restoring session:', error);
       this.clearSession();
     }
   },
@@ -96,7 +92,6 @@ const AuthManager = {
    * @param {boolean} remember - Remember me
    */
   async login(email, password, remember = true) {
-    console.log('[AuthManager] Login attempt for:', email);
 
     try {
       // For demo purposes, we'll use a mock authentication
@@ -109,10 +104,8 @@ const AuthManager = {
       // Notify listeners
       this.notifyListeners('login', response.user);
       
-      console.log('[AuthManager] Login successful');
       return { success: true, user: response.user };
     } catch (error) {
-      console.error('[AuthManager] Login failed:', error);
       return { 
         success: false, 
         error: error.message || 'Authentication failed' 
@@ -204,7 +197,6 @@ const AuthManager = {
         role: data.user.role || 'viewer'
       };
     } catch (error) {
-      console.error('[AuthManager] Error storing session:', error);
       throw error;
     }
   },
@@ -213,7 +205,6 @@ const AuthManager = {
    * Logout current user
    */
   logout() {
-    console.log('[AuthManager] Logging out...');
     this.clearSession();
     this.notifyListeners('logout', null);
   },
@@ -237,7 +228,6 @@ const AuthManager = {
         role: null
       };
     } catch (error) {
-      console.error('[AuthManager] Error clearing session:', error);
     }
   },
 
@@ -285,7 +275,6 @@ const AuthManager = {
         const timeUntilExpiry = this.session.expiry - Date.now();
         
         if (timeUntilExpiry < this.config.tokenRefreshThreshold) {
-          console.log('[AuthManager] Token expiring soon, refreshing...');
           this.refreshToken();
         }
       }
@@ -315,9 +304,7 @@ const AuthManager = {
 
       const data = await response.json();
       this.storeSession(data);
-      console.log('[AuthManager] Token refreshed successfully');
     } catch (error) {
-      console.error('[AuthManager] Token refresh failed:', error);
       // Force logout if refresh fails
       this.logout();
     }
@@ -328,12 +315,10 @@ const AuthManager = {
    */
   setupNetworkListener() {
     window.addEventListener('online', () => {
-      console.log('[AuthManager] Network online');
       this.notifyListeners('online', null);
     });
 
     window.addEventListener('offline', () => {
-      console.log('[AuthManager] Network offline');
       this.notifyListeners('offline', null);
     });
   },
@@ -360,7 +345,6 @@ const AuthManager = {
       try {
         callback(state, user, event);
       } catch (error) {
-        console.error('[AuthManager] Listener error:', error);
       }
     });
   },

@@ -73,16 +73,6 @@
     denormalizeStatus(status) {
       if (!status) return 'available';
       return String(status).toLowerCase();
-    },
-
-    /** Log with namespace */
-    log(namespace, ...args) {
-      console.log(`[${namespace}]`, ...args);
-    },
-
-    /** Log error with namespace */
-    error(namespace, ...args) {
-      console.error(`[${namespace}]`, ...args);
     }
   };
 
@@ -1802,14 +1792,14 @@
   system.saveCache = function() {
     try {
       localStorage.setItem('availability_cache', JSON.stringify(this.state.get('availability')));
-    } catch (e) { console.error('Failed to save cache:', e); }
+    } catch (e) { }
   };
 
   system.loadCachedData = function() {
     try {
       const cached = localStorage.getItem('availability_cache');
       if (cached) this.state.mergeAvailability(JSON.parse(cached));
-    } catch (e) { console.error('Failed to load cache:', e); }
+    } catch (e) { }
   };
 
   system.updateUnitInCache = function(unitKey, data) {
@@ -1825,7 +1815,7 @@
           system.state.mergeAvailability(data);
           system.saveCache();
         })
-        .catch((error) => console.error('Failed to load availability data:', error));
+        .catch((error) =>);
     }
   };
 

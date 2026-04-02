@@ -35,7 +35,6 @@ const FirebaseService = {
    * Initialize Firebase
    */
   async init() {
-    console.log('[FirebaseService] Initializing...');
     
     try {
       // Load Firebase SDK from CDN
@@ -52,13 +51,11 @@ const FirebaseService = {
       // Setup auth listeners
       this.setupAuthListener();
       
-      console.log('[FirebaseService] Initialized successfully');
       this.isConnected = true;
       this.notifyListeners('init', { success: true });
       
       return true;
     } catch (error) {
-      console.error('[FirebaseService] Initialization failed:', error);
       this.isConnected = false;
       this.notifyListeners('init', { success: false, error: error.message });
       return false;
@@ -106,7 +103,6 @@ const FirebaseService = {
     if (!this.auth) return;
     
     this.auth.onAuthStateChanged((user) => {
-      console.log('[FirebaseService] Auth state changed:', user ? user.email : 'logged out');
       this.notifyListeners('auth', user);
       
       if (user) {
@@ -122,7 +118,6 @@ const FirebaseService = {
    */
   setupNetworkListener() {
     window.addEventListener('online', () => {
-      console.log('[FirebaseService] Network online');
       this.isOnline = true;
       this.notifyListeners('online', null);
       this.processOfflineQueue();
@@ -130,7 +125,6 @@ const FirebaseService = {
     });
 
     window.addEventListener('offline', () => {
-      console.log('[FirebaseService] Network offline');
       this.isOnline = false;
       this.notifyListeners('offline', null);
       this.stopRealtimeSync();
@@ -141,12 +135,10 @@ const FirebaseService = {
       const connectedRef = this.db.ref('.info/connected');
       connectedRef.on('value', (snap) => {
         const isConnected = snap.val() === true;
-        console.log('[FirebaseService] Firebase connection:', isConnected ? 'connected' : 'disconnected');
         this.isConnected = isConnected;
         this.notifyListeners('connection', isConnected);
         
         if (isConnected && this.isOnline && this.isAuthenticated()) {
-          console.log('[FirebaseService] Connection established, starting sync...');
           this.startRealtimeSync();
           this.processOfflineQueue();
         }
@@ -158,7 +150,6 @@ const FirebaseService = {
    * Sign in with email and password
    */
   async signIn(email, password) {
-    console.log('[FirebaseService] Sign in attempt:', email);
     
     if (!this.auth) {
       throw new Error('Firebase Auth not initialized');
@@ -166,10 +157,8 @@ const FirebaseService = {
 
     try {
       const userCredential = await this.auth.signInWithEmailAndPassword(email, password);
-      console.log('[FirebaseService] Sign in successful:', userCredential.user.email);
       return { success: true, user: userCredential.user };
     } catch (error) {
-      console.error('[FirebaseService] Sign in failed:', error);
       return { 
         success: false, 
         error: this.getAuthErrorMessage(error.code) 
@@ -181,16 +170,13 @@ const FirebaseService = {
    * Sign out
    */
   async signOut() {
-    console.log('[FirebaseService] Sign out');
     
     if (!this.auth) return;
 
     try {
       await this.auth.signOut();
-      console.log('[FirebaseService] Sign out successful');
       return { success: true };
     } catch (error) {
-      console.error('[FirebaseService] Sign out failed:', error);
       return { success: false, error: error.message };
     }
   },
@@ -231,35 +217,28 @@ const FirebaseService = {
    */
   startRealtimeSync() {
     if (!this.db || !this.isOnline) {
-      console.log('[FirebaseService] Cannot start sync - DB:', !!this.db, 'Online:', this.isOnline);
       return;
     }
 
     // Prevent duplicate listeners
     if (this._syncActive) {
-      console.log('[FirebaseService] Sync already active, skipping');
       return;
     }
     this._syncActive = true;
-
-    console.log('[FirebaseService] Starting realtime sync... Connected:', this.isConnected);
 
     const availabilityRef = this.db.ref('availability');
 
     // First, get initial data
     availabilityRef.once('value').then((snapshot) => {
       const data = snapshot.val() || {};
-      console.log('[FirebaseService] Initial availability data loaded:', Object.keys(data).length, 'units');
       this.availabilityCache = data;
       this.notifyListeners('availability', data);
     }).catch(err => {
-      console.error('[FirebaseService] Failed to load initial data:', err);
     });
 
     // Then setup continuous listeners
     availabilityRef.on('value', (snapshot) => {
       const data = snapshot.val() || {};
-      console.log('[FirebaseService] Availability data updated:', Object.keys(data).length, 'units');
       this.availabilityCache = data;
       this.notifyListeners('availability', data);
     });
@@ -267,14 +246,12 @@ const FirebaseService = {
     availabilityRef.on('child_changed', (snapshot) => {
       const key = snapshot.key;
       const data = snapshot.val();
-      console.log('[FirebaseService] Unit availability changed:', key, data);
       this.notifyListeners('unitChanged', { key, data });
     });
 
     availabilityRef.on('child_added', (snapshot) => {
       const key = snapshot.key;
       const data = snapshot.val();
-      console.log('[FirebaseService] New unit added:', key, data);
       this.notifyListeners('unitAdded', { key, data });
     });
   },
@@ -285,7 +262,6 @@ const FirebaseService = {
   stopRealtimeSync() {
     if (!this.db) return;
 
-    console.log('[FirebaseService] Stopping realtime sync');
     this.db.ref('availability').off();
     this._syncActive = false;
   },
@@ -294,7 +270,6 @@ const FirebaseService = {
    * Update unit availability
    */
   async updateAvailability(unitKey, availabilityData) {
-    console.log('[FirebaseService] Updating availability:', unitKey, availabilityData);
 
     const update = {
       updatedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -305,10 +280,8 @@ const FirebaseService = {
     if (this.isOnline && this.isConnected) {
       try {
         await this.db.ref(`availability/${unitKey}`).update(update);
-        console.log('[FirebaseService] Availability updated successfully');
         return { success: true };
       } catch (error) {
-        console.error('[FirebaseService] Update failed:', error);
         
         // Queue for offline sync
         this.queueOfflineUpdate(unitKey, update);
@@ -342,7 +315,6 @@ const FirebaseService = {
     this.offlineQueue.push(queuedUpdate);
     this.saveOfflineQueue();
     
-    console.log('[FirebaseService] Update queued for offline sync:', queuedUpdate);
     this.notifyListeners('queued', queuedUpdate);
   },
 
@@ -353,7 +325,6 @@ const FirebaseService = {
     try {
       localStorage.setItem('firebase_offline_queue', JSON.stringify(this.offlineQueue));
     } catch (error) {
-      console.error('[FirebaseService] Failed to save offline queue:', error);
     }
   },
 
@@ -367,7 +338,6 @@ const FirebaseService = {
         this.offlineQueue = JSON.parse(saved);
       }
     } catch (error) {
-      console.error('[FirebaseService] Failed to load offline queue:', error);
     }
   },
 
@@ -377,7 +347,6 @@ const FirebaseService = {
   async processOfflineQueue() {
     if (this.offlineQueue.length === 0) return;
     
-    console.log('[FirebaseService] Processing offline queue:', this.offlineQueue.length, 'items');
 
     const queue = [...this.offlineQueue];
     this.offlineQueue = [];
@@ -386,10 +355,8 @@ const FirebaseService = {
     for (const item of queue) {
       try {
         await this.db.ref(`availability/${item.unitKey}`).update(item.data);
-        console.log('[FirebaseService] Synced offline update:', item.unitKey);
         this.notifyListeners('synced', item);
       } catch (error) {
-        console.error('[FirebaseService] Failed to sync offline update:', item.unitKey, error);
         this.offlineQueue.push(item); // Re-queue failed updates
       }
     }
@@ -433,7 +400,6 @@ const FirebaseService = {
       try {
         callback(event, data);
       } catch (error) {
-        console.error('[FirebaseService] Listener error:', error);
       }
     });
   }

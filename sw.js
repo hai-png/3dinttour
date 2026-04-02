@@ -19,17 +19,13 @@ const ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[ServiceWorker] Caching core assets');
       return cache.addAll(ASSETS).catch(err => {
-        console.log('[ServiceWorker] Some assets failed to cache:', err);
         // Continue even if some assets fail
         return Promise.resolve();
       });
     }).then(() => {
-      console.log('[ServiceWorker] Installation complete, skipping waiting');
       return self.skipWaiting();
     }).catch(err => {
-      console.log('[ServiceWorker] Install error:', err);
       // Don't fail installation due to cache errors
       return Promise.resolve();
     })
@@ -44,7 +40,6 @@ self.addEventListener('activate', (event) => {
         cacheNames
           .filter((name) => name !== CACHE_NAME)
           .map((name) => {
-            console.log('[ServiceWorker] Deleting old cache:', name);
             return caches.delete(name);
           })
       );
@@ -93,7 +88,6 @@ self.addEventListener('fetch', (event) => {
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(request, responseToCache).catch(err => {
               // Ignore cache errors (e.g., disk full)
-              console.log('[ServiceWorker] Cache put failed:', err);
             });
           });
           return response;
@@ -149,7 +143,6 @@ self.addEventListener('fetch', (event) => {
 });
 // Handle messages from clients
 self.addEventListener('message', (event) => {
-  console.log('[ServiceWorker] Message received:', event.data);
 
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();

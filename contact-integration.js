@@ -356,7 +356,6 @@ const Contact = {
     
     try {
       // TODO: Replace with actual API endpoint
-      console.log('Contact form submission:', data);
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -365,7 +364,6 @@ const Contact = {
       form.reset();
       this.close();
     } catch (error) {
-      console.error('Form submission error:', error);
       alert('❌ Sorry, there was an error sending your message. Please try again.');
     } finally {
       btn.textContent = originalText;

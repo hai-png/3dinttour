@@ -43,7 +43,6 @@ const AvailabilityManager = {
    * Initialize availability manager
    */
   init() {
-    console.log('[AvailabilityManager] Initializing...');
     
     // Load cached data
     this.loadCachedData();
@@ -54,7 +53,6 @@ const AvailabilityManager = {
     // Setup auth manager listeners
     this.setupAuthListeners();
     
-    console.log('[AvailabilityManager] Initialized');
   },
 
   /**
@@ -65,10 +63,8 @@ const AvailabilityManager = {
       const cached = localStorage.getItem('availability_cache');
       if (cached) {
         this.availabilityData = JSON.parse(cached);
-        console.log('[AvailabilityManager] Loaded cached data:', Object.keys(this.availabilityData).length, 'units');
       }
     } catch (error) {
-      console.error('[AvailabilityManager] Failed to load cache:', error);
     }
   },
 
@@ -77,22 +73,18 @@ const AvailabilityManager = {
    */
   loadAvailabilityData() {
     if (typeof FirebaseService === 'undefined' || !FirebaseService.db) {
-      console.log('[AvailabilityManager] Firebase not ready, waiting...');
       return;
     }
 
-    console.log('[AvailabilityManager] Loading availability data from Firebase...');
     
     FirebaseService.db.ref('availability').once('value')
       .then((snapshot) => {
         const data = snapshot.val() || {};
-        console.log('[AvailabilityManager] Data loaded:', Object.keys(data).length, 'units');
         this.availabilityData = data;
         this.saveCache();
         this.updateUI();
       })
       .catch((error) => {
-        console.error('[AvailabilityManager] Failed to load data:', error);
       });
   },
 
@@ -102,13 +94,11 @@ const AvailabilityManager = {
   setupFirebaseListeners() {
     if (typeof FirebaseService !== 'undefined') {
       FirebaseService.onEvent((event, data) => {
-        console.log('[AvailabilityManager] Firebase event:', event, data);
 
         switch (event) {
           case 'availability':
             this.availabilityData = data || {};
             this.saveCache();
-            console.log('[AvailabilityManager] Availability data updated, queueing sync...');
             // Sync with tour data (unit search) - will be queued if TD not ready
             this.syncWithTourData();
             break;
@@ -121,7 +111,6 @@ const AvailabilityManager = {
             break;
           case 'auth':
             if (data) {
-              console.log('[AvailabilityManager] User authenticated, loading data...');
               this.isAuthenticated = true;
               this.currentUser = data;
               this.updateAuthUI();
@@ -136,7 +125,6 @@ const AvailabilityManager = {
             break;
           case 'connection':
             if (data === true) {
-              console.log('[AvailabilityManager] Firebase connected');
               // If already authenticated, reload data
               if (this.isAuthenticated) {
                 this.loadAvailabilityData();
@@ -153,7 +141,6 @@ const AvailabilityManager = {
             this.showQueuedIndicator(data);
             break;
           case 'synced':
-            console.log('[AvailabilityManager] Data synced with server, queueing refresh...');
             this.showSyncedIndicator(data);
             // Queue UI refresh after sync
             this.syncWithTourData();
@@ -170,7 +157,6 @@ const AvailabilityManager = {
   syncWithTourData() {
     // Queue sync requests until TD is ready
     if (!this.isTdReady) {
-      console.log('[AvailabilityManager] TD not ready, queueing sync request');
       this.syncQueue.push(true);
       return;
     }
@@ -178,18 +164,14 @@ const AvailabilityManager = {
     // Delegate to AvailabilitySystem.tourSync for centralized sync
     const sys = window.AvailabilitySystem;
     if (sys && sys.tourSync) {
-      console.log('[AvailabilityManager] Delegating sync to AvailabilitySystem.tourSync');
       sys.tourSync.sync();
       return;
     }
 
     // Fallback to direct sync if AvailabilitySystem not available
     if (typeof window.TD === 'undefined' || !window.TD || !window.TD.units) {
-      console.warn('[AvailabilityManager] TD or TD.units not available');
       return;
     }
-
-    console.log('[AvailabilityManager] Syncing availability with tour data (fallback)...', Object.keys(this.availabilityData).length, 'units in availability data');
 
     let updatedCount = 0;
     // Update tour data units with availability status
@@ -199,35 +181,27 @@ const AvailabilityManager = {
         // Normalize status to match TD.statusColors keys (capitalized)
         const normalizedStatus = this.normalizeStatus(availData.status);
         if (unit.status !== normalizedStatus) {
-          console.log('[AvailabilityManager] Updating unit', unit.id, 'status from', unit.status, 'to', normalizedStatus);
           updatedCount++;
         }
         unit.status = normalizedStatus;
       }
     });
 
-    console.log('[AvailabilityManager] Updated', updatedCount, 'unit statuses');
-
     // Refresh the unit search display if it exists
     if (typeof Srch !== 'undefined') {
-      console.log('[AvailabilityManager] Calling Srch.sync() to refresh search results');
       // Use the sync method which re-renders and updates highlights
       Srch.sync();
-    } else {
-      console.warn('[AvailabilityManager] Srch not available');
     }
 
     // Also update any status badges in the detail panel
     this.updateStatusBadges();
 
-    console.log('[AvailabilityManager] Sync complete');
   },
 
   /**
    * Mark TD as ready and process queued sync requests
    */
   markTdReady() {
-    console.log('[AvailabilityManager] Marking TD as ready, processing', this.syncQueue.length, 'queued sync requests');
     this.isTdReady = true;
 
     // Clear queue and trigger sync
@@ -235,7 +209,6 @@ const AvailabilityManager = {
 
     // Always trigger sync when TD becomes ready - delegate to AvailabilitySystem
     setTimeout(() => {
-      console.log('[AvailabilityManager] Triggering sync after TD ready');
       this.syncWithTourData();
     }, 50);  // Small delay to ensure TD is fully populated
   },
@@ -269,7 +242,6 @@ const AvailabilityManager = {
   setupAuthListeners() {
     if (typeof AuthManager !== 'undefined') {
       AuthManager.onAuthChange((state, user, event) => {
-        console.log('[AvailabilityManager] Auth state changed:', state);
         this.isAuthenticated = state === 'authenticated';
         this.currentUser = user;
         
@@ -364,7 +336,6 @@ const AvailabilityManager = {
       AuthManager.logout();
       this.showSuccessToast('Signed out successfully');
     } catch (error) {
-      console.error('[AvailabilityManager] Logout error:', error);
     }
   },
 
@@ -440,7 +411,6 @@ const AvailabilityManager = {
       }
 
     } catch (error) {
-      console.error('[AvailabilityManager] Update failed:', error);
       this.showErrorToast('Failed to update availability');
     } finally {
       this.isLoading = false;
@@ -483,7 +453,6 @@ const AvailabilityManager = {
     try {
       localStorage.setItem('availability_cache', JSON.stringify(this.availabilityData));
     } catch (error) {
-      console.error('[AvailabilityManager] Failed to save cache:', error);
     }
   },
 
@@ -677,11 +646,9 @@ const AvailabilityManager = {
   async saveAllChanges() {
     const pendingKeys = Object.keys(this.pendingChanges);
     if (pendingKeys.length === 0) {
-      console.log('[AvailabilityManager] No pending changes to save');
       return;
     }
 
-    console.log('[AvailabilityManager] Saving', pendingKeys.length, 'pending changes...');
     this.isLoading = true;
 
     // Disable save all button
@@ -701,7 +668,6 @@ const AvailabilityManager = {
 
         await FirebaseService.db.ref().update(updates);
         
-        console.log('[AvailabilityManager] All changes saved successfully');
         this.showSuccessToast(`Saved ${pendingKeys.length} unit${pendingKeys.length > 1 ? 's' : ''}`);
 
         // Update local cache
@@ -746,7 +712,6 @@ const AvailabilityManager = {
         this.showSuccessToast(`Saved ${pendingKeys.length} unit${pendingKeys.length > 1 ? 's' : ''} locally`);
       }
     } catch (error) {
-      console.error('[AvailabilityManager] Failed to save changes:', error);
       this.showErrorToast('Failed to save changes');
     } finally {
       this.isLoading = false;
@@ -838,7 +803,6 @@ const AvailabilityManager = {
     const adminBtn = document.getElementById('admin-btn');
     const userInfo = document.getElementById('user-info');
     
-    console.log('[AvailabilityManager] updateAuthUI - isAuthenticated:', this.isAuthenticated);
     
     if (loginBtn) loginBtn.style.display = this.isAuthenticated ? 'none' : 'flex';
     if (logoutBtn) logoutBtn.style.display = this.isAuthenticated ? 'flex' : 'none';
