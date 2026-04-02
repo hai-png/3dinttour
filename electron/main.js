@@ -13,7 +13,7 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true
     },
-    icon: path.join(__dirname, '../icon-512.png'),
+    icon: path.join(__dirname, 'icon-512.png'),
     backgroundColor: '#0d1117'
   });
 
