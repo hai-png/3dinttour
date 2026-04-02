@@ -73,7 +73,13 @@
     denormalizeStatus(status) {
       if (!status) return 'available';
       return String(status).toLowerCase();
-    }
+    },
+
+    /** No-op logger (removed for production) */
+    log() {},
+
+    /** No-op error logger (removed for production) */
+    error() {}
   };
 
   // ============================================================================
@@ -1815,7 +1821,7 @@
           system.state.mergeAvailability(data);
           system.saveCache();
         })
-        .catch((error) =>);
+        .catch((error) => {});
     }
   };
 
