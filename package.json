@@ -24,6 +24,7 @@
   "build": {
     "appId": "com.temer.virtour",
     "productName": "3D Virtual Tour",
+    "publish": null,
     "directories": {
       "output": "dist"
     },
@@ -49,8 +50,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "icon-512.png",
-      "requestedExecutionLevel": "asInvoker"
+      "icon": "icon-512.png"
     },
     "portable": {
       "artifactName": "${productName}-Portable-${version}.${ext}"
