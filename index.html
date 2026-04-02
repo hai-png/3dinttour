@@ -54,9 +54,9 @@ button{font-family:inherit;border:none;cursor:pointer}
   #search{bottom:0;left:0;width:100%;max-width:none;border-radius:var(--rxl) var(--rxl) 0 0;transform:none!important;z-index:140}
   #search .s-body{max-height:200px}
 
-  /* Tools - reposition for thumb access */
-  #tools{left:8px;bottom:8px;top:auto;gap:4px;z-index:130}
-  .tb{width:36px;height:36px;font-size:14px}
+  /* Tools - vertically centered on left for mobile */
+  #tools{left:8px;top:50%;transform:translateY(-50%);gap:6px;z-index:130}
+  .tb{width:40px;height:40px;font-size:16px}
 
   /* Gallery widget - more compact */
   #gal{bottom:8px;right:8px;padding:5px 10px;z-index:120}
@@ -544,7 +544,7 @@ button{font-family:inherit;border:none;cursor:pointer}
 @media(max-width:768px){
   #detail{width:260px;top:48px;right:6px;max-height:calc(100vh - 54px)}
   #search{width:calc(100vw - 280px);left:6px;bottom:6px;max-width:320px}
-  #tools{left:6px;gap:4px}.tb{width:28px;height:28px;font-size:11px}
+  #tools{left:6px;top:50%;transform:translateY(-50%);gap:5px}.tb{width:34px;height:34px;font-size:13px}
   #gal{right:6px;bottom:6px;padding:5px 8px}.gth{width:32px;height:32px}.gmore{width:32px;height:32px;font-size:8px}.gtxt{display:none}
   .fp-view{height:260px}
   .sr.fil{flex-direction:column}
@@ -555,8 +555,7 @@ button{font-family:inherit;border:none;cursor:pointer}
   #search{width:calc(100vw - 12px);left:6px;bottom:6px;max-width:none}
   #search:not(.shut){height:220px}
   #hdr{left:6px;top:6px}#hdr .name{font-size:11px}
-  #tools{left:6px;top:auto;bottom:50px;transform:none;flex-direction:row}
-  .tb{width:26px;height:26px;font-size:10px}
+  #tools{left:6px;top:50%;transform:translateY(-50%);gap:5px}.tb{width:36px;height:36px;font-size:14px}
   #gal{display:none}
   .pd-nearby-grid{grid-template-columns:1fr}
   .fp-view{height:200px}
@@ -1539,8 +1538,8 @@ function init(){if(dark)applyDk(true);wireAll();}
 function applyDk(on){dark=on;document.documentElement.setAttribute('data-theme',on?'dark':'');localStorage.setItem('dark',on?'1':'0');const b=document.getElementById('t-dk');b.textContent=on?'☀️':'🌙';b.classList.toggle('on',on);}
 
 function wireAll(){
-  document.getElementById('d-hdr').onclick=()=>{document.getElementById('detail').classList.toggle('shut');document.getElementById('d-tog').textContent=document.getElementById('detail').classList.contains('shut')?'+':'−';};
-  document.getElementById('s-hdr').onclick=()=>{document.getElementById('search').classList.toggle('shut');document.getElementById('s-tog').textContent=document.getElementById('search').classList.contains('shut')?'+':'−';};
+  document.getElementById('d-hdr').onclick=()=>{const detail=document.getElementById('detail'),search=document.getElementById('search');detail.classList.toggle('shut');document.getElementById('d-tog').textContent=detail.classList.contains('shut')?'+':'−';if(window.innerWidth<=768&&!detail.classList.contains('shut')){search.classList.add('shut');document.getElementById('s-tog').textContent='+';}};
+  document.getElementById('s-hdr').onclick=()=>{const search=document.getElementById('search'),detail=document.getElementById('detail');search.classList.toggle('shut');document.getElementById('s-tog').textContent=search.classList.contains('shut')?'+':'−';if(window.innerWidth<=768&&!search.classList.contains('shut')){detail.classList.add('shut');document.getElementById('d-tog').textContent='+';}};
   document.getElementById('q').oninput=Srch.dbFilter;document.getElementById('sbtn').onclick=Srch.filter;document.getElementById('rbtn').onclick=Srch.reset;
   ['fT','fS','fF'].forEach(id=>document.getElementById(id).onchange=Srch.filter);
   document.getElementById('t-dk').onclick=()=>applyDk(!dark);
@@ -1651,7 +1650,16 @@ function populateProject(){
   document.getElementById('pd-b').innerHTML=html;
 }
 
-function expandDet(){document.getElementById('detail').classList.remove('shut');document.getElementById('d-tog').textContent='−';}
+function expandDet(){
+  const detail=document.getElementById('detail'),search=document.getElementById('search');
+  detail.classList.remove('shut');
+  document.getElementById('d-tog').textContent='−';
+  // On mobile, close search when details are expanded
+  if(window.innerWidth<=768){
+    search.classList.add('shut');
+    document.getElementById('s-tog').textContent='+';
+  }
+}
 
 function showUnit(unit){
   document.getElementById('d-def').style.display='none';const d=document.getElementById('d-dyn');
