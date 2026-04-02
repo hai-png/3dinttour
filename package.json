@@ -9,6 +9,7 @@
     "start": "electron .",
     "build": "electron-builder --win --x64",
     "build:portable": "electron-builder --win portable --x64",
+    "build:all": "electron-builder --win --x64",
     "init-availability": "node init-availability.js",
     "serve": "npx http-server -p 8080 -c-1",
     "deploy": "firebase deploy --only hosting"
@@ -39,22 +40,20 @@
       "electron/**/*",
       "icon-*.png",
       "project/**/*",
-      "build/**/*"
+      "model/**/*"
     ],
     "win": {
       "target": [
         {
-          "target": "nsis",
+          "target": "portable",
           "arch": ["x64"]
         }
       ],
-      "icon": "icon-512.png"
+      "icon": "icon-512.png",
+      "requestedExecutionLevel": "asInvoker"
     },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+    "portable": {
+      "artifactName": "${productName}-Portable-${version}.${ext}"
     }
   },
   "type": "commonjs",
