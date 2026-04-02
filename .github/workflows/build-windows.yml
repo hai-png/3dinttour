@@ -23,6 +23,11 @@ jobs:
         run: |
           npm ci
 
+      - name: Verify model file exists
+        run: |
+          ls -la model/
+          test -f model/building.glb || (echo "ERROR: model/building.glb not found!" && exit 1)
+
       - name: Build Windows executable
         run: |
           npm run build
