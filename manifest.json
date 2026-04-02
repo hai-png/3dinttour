@@ -37,21 +37,8 @@
       "description": "Open the 3D tour",
       "url": "/index.html",
       "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Manage Availability",
-      "short_name": "Availability",
-      "description": "Manage property availability",
-      "url": "/index.html?view=availability",
-      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
     }
   ],
-  "screenshots": [],
-  "related_applications": [],
   "lang": "en-US",
-  "dir": "ltr",
-  "permissions": [
-    "notifications",
-    "background-sync"
-  ]
+  "dir": "ltr"
 }

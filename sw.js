@@ -1,4 +1,4 @@
-const CACHE_NAME = '3d-tour-v3';
+const CACHE_NAME = '3d-tour-v4';
 const ASSETS = [
   '/',
   '/index.html',
@@ -8,11 +8,15 @@ const ASSETS = [
   '/icon.svg',
   '/tour-data.json',
   '/contact-config.json',
-  '/contact-integration.js',
-  '/temerlogo.png',
-  '/auth-manager.js',
+  // Core JavaScript files
+  '/availability-system.js',
+  '/availability-manager.js',
   '/firebase-service.js',
-  '/availability-manager.js'
+  '/auth-manager.js',
+  '/contact-integration.js',
+  '/sw.js',
+  // Assets
+  '/temerlogo.png'
 ];
 
 // Install event - cache core assets
@@ -48,7 +52,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch event - cache-first strategy for assets, network-first for API
+// Fetch event - cache-first strategy for all requests
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -59,84 +63,55 @@ self.addEventListener('fetch', (event) => {
   // Skip chrome-extension and other non-http requests
   if (!url.protocol.startsWith('http')) return;
 
-  // For API calls (contact form), use network-first
-  if (url.pathname.includes('api') || request.headers.get('Accept')?.includes('application/json')) {
-    event.respondWith(
-      fetch(request).catch(() => {
-        return new Response(JSON.stringify({ error: 'Offline' }), {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      })
-    );
-    return;
-  }
-
-  // For same-origin requests, use cache-first
-  if (url.origin === self.location.origin) {
+  // For navigation requests (HTML pages), use cache-first with network fallback
+  if (request.mode === 'navigate') {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
           return cachedResponse;
         }
-        // Not in cache, fetch and cache if successful
+        // Try to fetch from network
         return fetch(request).then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseToCache).catch(err => {
-              // Ignore cache errors (e.g., disk full)
+          // Cache successful responses
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseToCache);
             });
-          });
-          return response;
-        });
-      }).catch(() => {
-        // Offline fallback for navigation requests
-        if (request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
-      })
-    );
-    return;
-  }
-
-  // For Firebase CDN requests, use cache-first
-  if (url.hostname.includes('firebaseio.com') || url.hostname.includes('gstatic.com')) {
-    event.respondWith(
-      caches.match(request).then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        return fetch(request).then((response) => {
-          if (!response || response.status !== 200) {
-            return response;
           }
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseToCache);
-          });
           return response;
+        }).catch(() => {
+          // Offline fallback - serve index.html for navigation
+          return caches.match('/index.html');
         });
       })
     );
     return;
   }
 
-  // For third-party resources (CDN, etc.), use cache-first
+  // For all other requests (JS, CSS, images, data), use cache-first
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
-      return cachedResponse || fetch(request).then((response) => {
-        // Don't cache third-party responses that aren't OK
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      // Not in cache, fetch and cache if successful
+      return fetch(request).then((response) => {
         if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
         const responseToCache = response.clone();
         caches.open(CACHE_NAME).then((cache) => {
-          cache.put(request, responseToCache);
+          cache.put(request, responseToCache).catch(() => {
+            // Ignore cache errors
+          });
         });
         return response;
+      }).catch(() => {
+        // Offline fallback for JS/CSS files
+        if (request.destination === 'script' || request.destination === 'style') {
+          return caches.match(request);
+        }
       });
     })
   );
