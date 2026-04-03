@@ -1,357 +1,263 @@
-/**
- * Service Worker for 3D Tour PWA - Full Offline Support
- * Clean implementation with proper lifecycle management
+/*
+ * Service Worker - Offline PWA Support
+ * Cache-first strategy: serve from cache, fallback to network
  */
 
-const CACHE_NAME = '3d-tour-v5';
-const CACHE_VERSION = '20240402-v2';
+const CACHE_NAME = 'tour-v6';
+const OFFLINE_PAGE = '/offline.html';
 
-// Core assets to cache immediately
-const CORE_ASSETS = [
+// Core files to pre-cache (small files only - model cached at runtime)
+const CORE_FILES = [
   '/',
   '/index.html',
-  '/manifest.json',
   '/offline.html',
+  '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
-  '/icon.svg',
-  '/firebase-service.js',
   '/availability-system.js',
+  '/contact-integration.js',
+  '/firebase-service.js',
   '/availability-manager.js',
   '/auth-manager.js',
-  '/contact-integration.js',
   '/tour-data.json',
-  '/availability-data.json',
-  '/contact-config.json'
+  // Draco decoder (needed for model loading)
+  '/draco/draco_decoder.js',
+  '/draco/draco_decoder.wasm',
 ];
 
-// Media file extensions
-const MEDIA_EXTENSIONS = ['.glb', '.gltf', '.hdr', '.jpg', '.jpeg', '.png', '.webp', '.svg', '.mp4', '.webm', '.gif'];
-
-// Track cached media for cleanup
-let cachedMediaUrls = new Set();
-
-// ============ INSTALL EVENT ============
-self.addEventListener('install', (event) => {
-  console.log('[SW] Install - caching core assets...');
-  event.waitUntil(
+// Install: pre-cache core files
+self.addEventListener('install', (e) => {
+  console.log('[SW] Installing');
+  e.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('[SW] Caching', CORE_ASSETS.length, 'core assets');
-        return cache.addAll(CORE_ASSETS.map(url => 
-          fetch(url, { cache: 'reload' })
-            .then(response => {
-              if (!response.ok) throw new Error(`Failed: ${url}`);
-              return response;
-            })
-            .catch(err => {
-              console.warn('[SW] Core asset failed:', url);
-              // Return empty response to not block install
-              return new Response('', { status: 200 });
-            })
-        ));
-      })
-      .then(() => {
-        console.log('[SW] Core assets cached - taking control');
-        return self.skipWaiting();
-      })
-      .catch(err => {
-        console.error('[SW] Install error:', err);
-        return self.skipWaiting();
-      })
+      .then((cache) => cache.addAll(CORE_FILES))
+      .then(() => self.skipWaiting())
+      .catch((err) => console.warn('[SW] Install warning:', err.message))
   );
 });
 
-// ============ ACTIVATE EVENT ============
-self.addEventListener('activate', (event) => {
-  console.log('[SW] Activate - cleaning old caches');
-  event.waitUntil(
+// Activate: clean old caches
+self.addEventListener('activate', (e) => {
+  console.log('[SW] Activating');
+  e.waitUntil(
     caches.keys()
-      .then(names => names.filter(n => n !== CACHE_NAME))
-      .then(oldNames => {
-        console.log('[SW] Deleting', oldNames.length, 'old caches');
-        return Promise.all(oldNames.map(n => caches.delete(n)));
-      })
-      .then(() => {
-        console.log('[SW] Claiming clients');
-        return self.clients.claim();
-      })
-      .then(() => {
-        // Notify all clients that SW is ready
-        return self.clients.matchAll().then(clients => {
-          clients.forEach(client => {
-            client.postMessage({
-              type: 'SW_READY',
-              status: 'Service worker activated and ready'
+      .then((names) => Promise.all(
+        names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n))
+      ))
+      .then(() => self.clients.claim())
+  );
+});
+
+// Fetch: cache-first, fallback to network
+self.addEventListener('fetch', (e) => {
+  const url = new URL(e.request.url);
+
+  // Skip non-GET and non-http(s)
+  if (e.request.method !== 'GET' || !url.protocol.startsWith('http')) return;
+
+  // Skip Firebase/Firestore requests
+  if (url.hostname.includes('firebase') || url.hostname.includes('firestore')) return;
+
+  // Special handling for model files (use IndexedDB)
+  if (url.pathname.includes('/model/') && url.pathname.endsWith('.glb')) {
+    e.respondWith(
+      caches.match(e.request)
+        .then((cached) => {
+          if (cached) return cached;
+          // Try IndexedDB
+          return getModelFromIndexedDB(url.href).then(blob => {
+            if (blob) {
+              console.log('[SW] Serving model from IndexedDB:', url.pathname);
+              return new Response(blob, { headers: { 'Content-Type': 'model/gltf-binary' }});
+            }
+            // Fetch from network
+            return fetch(e.request).then(resp => {
+              if (resp.ok) {
+                // Cache in IndexedDB for offline
+                const clone = resp.clone();
+                cacheModelBlob(url.href, clone.blob());
+              }
+              return resp;
             });
           });
-        });
-      })
-  );
-});
-
-// ============ MESSAGE HANDLER ============
-self.addEventListener('message', (event) => {
-  const data = event.data;
-  if (!data) return;
-
-  switch (data.type) {
-    case 'SKIP_WAITING':
-      console.log('[SW] Skip waiting requested');
-      self.skipWaiting().then(() => self.clients.claim());
-      break;
-
-    case 'CACHE_MEDIA':
-      console.log('[SW] Cache media:', data.urls?.length, 'files');
-      if (!data.urls || data.urls.length === 0) return;
-      event.waitUntil(cacheMediaFiles(data.urls, data.currentMediaUrls));
-      break;
-
-    case 'CLEANUP_MEDIA':
-      event.waitUntil(cleanupOldMedia(data.currentMediaUrls));
-      break;
-
-    case 'GET_CACHE_STATUS':
-      event.waitUntil(
-        getCacheStatus().then(status => {
-          if (event.ports[0]) {
-            event.ports[0].postMessage(status);
-          }
         })
-      );
-      break;
-  }
-});
-
-// ============ MEDIA CACHING ============
-async function cacheMediaFiles(urls, currentMediaUrls) {
-  console.log('[SW] cacheMediaFiles called with', urls?.length, 'urls');
-  
-  if (!urls || urls.length === 0) {
-    console.log('[SW] No URLs provided');
-    notifyComplete(0, 0, [], 'No media to cache');
+    );
     return;
   }
 
-  let cache;
-  try {
-    cache = await caches.open(CACHE_NAME);
-  } catch (err) {
-    console.error('[SW] Failed to open cache:', err);
-    notifyError('Cache open failed', 0, 0);
-    return;
-  }
-
-  const uniqueUrls = [...new Set(urls)].filter(u => u && u.length > 5);
-  const total = uniqueUrls.length;
-
-  console.log('[SW] Caching', total, 'media files');
-
-  // Check quota
-  try {
-    const estimate = await navigator.storage.estimate();
-    const remaining = estimate.quota - estimate.usage;
-    const needed = total * 2 * 1024 * 1024; // ~2MB per file estimate
-
-    if (needed > remaining) {
-      console.warn('[SW] Low quota:', remaining, 'needed:', needed);
-      notifyError('Insufficient storage', remaining, needed);
-      return;
-    }
-  } catch (e) {
-    console.log('[SW] Quota check skipped:', e.message);
-  }
-
-  let cached = 0;
-  let failed = 0;
-  const failedUrls = [];
-
-  // Track for cleanup
-  cachedMediaUrls = new Set([...cachedMediaUrls, ...uniqueUrls]);
-
-  // Cache in batches
-  const batchSize = 10;
-  try {
-    for (let i = 0; i < uniqueUrls.length; i += batchSize) {
-      const batch = uniqueUrls.slice(i, i + batchSize);
-      console.log('[SW] Processing batch', Math.floor(i/batchSize)+1, ':', batch.length, 'files');
-
-      await Promise.all(batch.map(async url => {
-        try {
-          // Validate with HEAD first
-          const head = await fetch(url, { method: 'HEAD' });
-          if (!head.ok) throw new Error(`HEAD ${head.status}`);
-
-          // Fetch and cache
-          const response = await fetch(url);
-          if (!response.ok) throw new Error(`GET ${response.status}`);
-
-          await cache.put(url, response);
-          cached++;
-          console.log('[SW] Cached:', url, '(', cached+'/'+total, ')');
-        } catch (err) {
-          console.log('[SW] Failed:', url, err.message);
-          failed++;
-          failedUrls.push(url);
-        }
-      }));
-
-      // Progress update
-      console.log('[SW] Batch complete, notifying progress:', cached, '/', total);
-      notifyProgress(cached, total, failed);
-    }
-  } catch (err) {
-    console.error('[SW] Fatal error in caching loop:', err);
-  }
-
-  console.log('[SW] Media caching done:', cached, '/', total);
-  notifyComplete(cached, total, failedUrls, failed > 0 ? `Ready (${failed} failed)` : 'Ready for offline!');
-}
-
-// ============ MEDIA CLEANUP ============
-async function cleanupOldMedia(currentUrls) {
-  if (!currentUrls) return;
-  
-  const cache = await caches.open(CACHE_NAME);
-  const currentSet = new Set(currentUrls);
-  const keys = await cache.keys();
-  let removed = 0;
-
-  for (const key of keys) {
-    if (isMediaUrl(key.url) && !currentSet.has(key.url)) {
-      await cache.delete(key);
-      cachedMediaUrls.delete(key.url);
-      removed++;
-    }
-  }
-
-  console.log('[SW] Cleaned up', removed, 'old media files');
-  
-  self.clients.matchAll().then(clients => {
-    clients.forEach(c => c.postMessage({
-      type: 'MEDIA_CLEANUP_COMPLETE',
-      removed
-    }));
-  });
-}
-
-// ============ FETCH HANDLER ============
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  
-  // Only handle GET requests for same-origin or known domains
-  if (request.method !== 'GET') return;
-  if (!request.url.startsWith('http')) return;
-
-  // Cache-first strategy
-  event.respondWith(
-    caches.match(request)
-      .then(cached => {
+  e.respondWith(
+    caches.match(e.request)
+      .then((cached) => {
         if (cached) {
-          // Return cached, update in background
-          fetchAndCache(request).catch(() => {});
+          console.log('[SW] Serving from cache:', url.pathname || url.href);
           return cached;
         }
-        
-        // Not cached, fetch and cache
-        return fetchAndCache(request);
-      })
-      .catch(() => {
-        // Offline fallback
-        if (request.mode === 'navigate') {
-          return caches.match('/offline.html');
-        }
-        return new Response('Offline', { status: 503 });
+
+        return fetch(e.request)
+          .then((response) => {
+            if (!response || response.status !== 200) return response;
+
+            // Cache ALL successful responses
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(e.request, responseToCache).catch((err) => {
+                console.warn('[SW] Cache put failed for:', url.pathname || url.href, err.message);
+              });
+            }).catch((err) => {
+              console.warn('[SW] Cache open failed:', err.message);
+            });
+            
+            return response;
+          })
+          .catch((fetchErr) => {
+            console.warn('[SW] Fetch failed, trying cache:', url.pathname || url.href);
+            // Offline: serve from cache or fallback
+            if (e.request.mode === 'navigate' ||
+                e.request.headers.get('accept')?.includes('text/html')) {
+              return caches.match(OFFLINE_PAGE);
+            }
+            // For all other requests
+            return caches.match(e.request)
+              .then((cached) => {
+                if (cached) {
+                  console.log('[SW] Serving from cache (offline):', url.pathname || url.href);
+                  return cached;
+                }
+                return new Response('', { status: 404, statusText: 'Not Found (Offline)' });
+              });
+          });
       })
   );
 });
 
-async function fetchAndCache(request) {
-  const response = await fetch(request);
-  
-  // Cache successful responses
-  if (response.ok && response.status === 200) {
-    const cache = await caches.open(CACHE_NAME);
-    cache.put(request, response.clone());
+// IndexedDB helpers for model files
+function getModelFromIndexedDB(url) {
+  return openModelDB().then(db => {
+    return new Promise((resolve) => {
+      const tx = db.transaction('models', 'readonly');
+      const req = tx.objectStore('models').get(url);
+      req.onsuccess = () => {
+        resolve(req.result ? req.result.blob : null);
+      };
+      req.onerror = () => resolve(null);
+    });
+  }).catch(() => null);
+}
+
+function cacheModelBlob(url, blobPromise) {
+  blobPromise.then(blob => {
+    openModelDB().then(db => {
+      const tx = db.transaction('models', 'readwrite');
+      tx.objectStore('models').put({ url, blob, cached: Date.now() });
+    });
+  }).catch(() => {});
+}
+
+// Message handler: force cache everything
+self.addEventListener('message', (e) => {
+  if (e.data === 'CACHE_EVERYTHING') {
+    console.log('[SW] Caching all tour assets...');
+    
+    // Cache Three.js CDN modules (small files via Cache API)
+    const cdnAssets = [
+      'https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js',
+      'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/controls/OrbitControls.js',
+      'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/loaders/GLTFLoader.js',
+      'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/loaders/DRACOLoader.js',
+      'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/loaders/RGBELoader.js',
+      'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/objects/Sky.js',
+      'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/libs/meshopt_decoder.module.js',
+      '/hdr/cobblestone_street_night_1k.hdr',
+    ];
+    
+    // Cache CDN assets via Cache API
+    caches.open(CACHE_NAME).then((cache) => {
+      let cached = 0;
+      const total = cdnAssets.length + 1; // +1 for model
+      
+      const cacheOne = (urls) => {
+        if (urls.length === 0) {
+          // Now cache model via IndexedDB
+          cacheModelViaIndexedDB('/model/building.glb').then(() => {
+            cached++;
+            console.log(`[SW] Cached model via IndexedDB (${cached}/${total})`);
+            console.log(`[SW] Cached ${cached}/${total} assets - offline ready!`);
+            notifyOfflineReady();
+          }).catch(err => {
+            console.warn('[SW] Model cache failed:', err.message);
+            console.log(`[SW] Cached ${cached}/${total} assets (model skipped) - partial offline`);
+            notifyOfflineReady(true);
+          });
+          return;
+        }
+        
+        const url = urls.shift();
+        fetch(url).then(resp => {
+          if (resp.status === 200) {
+            return cache.put(url, resp).then(() => {
+              cached++;
+              console.log(`[SW] Cached (${cached}/${total}):`, url.split('/').pop());
+              cacheOne(urls);
+            });
+          } else {
+            console.warn('[SW] Failed to fetch:', url);
+            cacheOne(urls);
+          }
+        }).catch(err => {
+          console.warn('[SW] Fetch error:', url, err.message);
+          cacheOne(urls);
+        });
+      };
+      
+      cacheOne(cdnAssets);
+    }).catch((err) => {
+      console.warn('[SW] Cache failed:', err.message);
+      notifyOfflineReady(true);
+    });
   }
   
-  return response;
-}
-
-// ============ HELPERS ============
-function isMediaUrl(url) {
-  return MEDIA_EXTENSIONS.some(ext => url.toLowerCase().includes(ext));
-}
-
-function notifyProgress(cached, total, failed) {
-  const msg = {
-    type: 'MEDIA_CACHING_PROGRESS',
-    percent: Math.round((cached / total) * 100),
-    cached,
-    total,
-    failed,
-    status: `Caching: ${cached}/${total}`
-  };
-  self.clients.matchAll().then(clients => {
-    clients.forEach(c => c.postMessage(msg));
-  });
-}
-
-function notifyComplete(cached, total, failedUrls, status) {
-  const msg = {
-    type: 'MEDIA_CACHING_COMPLETE',
-    percent: 100,
-    cached,
-    total,
-    failed: total - cached,
-    failedUrls: failedUrls.slice(0, 10),
-    status
-  };
-  self.clients.matchAll().then(clients => {
-    clients.forEach(c => c.postMessage(msg));
-  });
-}
-
-function notifyError(error, remaining, needed) {
-  self.clients.matchAll().then(clients => {
-    clients.forEach(c => c.postMessage({
-      type: 'MEDIA_CACHING_ERROR',
-      error,
-      remaining,
-      needed
-    }));
-  });
-}
-
-async function getCacheStatus() {
-  const cache = await caches.open(CACHE_NAME);
-  const keys = await cache.keys();
-  let size = 0;
-  
-  for (const key of keys) {
-    const res = await cache.match(key);
-    if (res) {
-      const blob = await res.blob();
-      size += blob.size;
-    }
+  // Force skip waiting
+  if (e.data === 'SKIP_WAITING') {
+    console.log('[SW] Skipping waiting, activating now');
+    self.skipWaiting();
   }
+});
 
-  let quota = {};
-  try {
-    const est = await navigator.storage.estimate();
-    quota = {
-      quota: est.quota,
-      usage: est.usage,
-      percentUsed: Math.round((est.usage / est.quota) * 100)
+// IndexedDB for large model files
+function openModelDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('tour-models', 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains('models')) {
+        db.createObjectStore('models', { keyPath: 'url' });
+      }
     };
-  } catch (e) {}
-
-  return {
-    cachedCount: keys.length,
-    totalSize: size,
-    mediaCount: cachedMediaUrls.size,
-    ...quota
-  };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
 }
 
-console.log('[SW] Service worker loaded');
+function cacheModelViaIndexedDB(url) {
+  return fetch(url).then(resp => {
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return resp.blob().then(blob => {
+      return openModelDB().then(db => {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction('models', 'readwrite');
+          tx.objectStore('models').put({ url, blob, cached: Date.now() });
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      });
+    });
+  });
+}
+
+function notifyOfflineReady(partial = false) {
+  self.clients.matchAll().then(clients => {
+    clients.forEach(client => {
+      client.postMessage({ type: 'OFFLINE_READY', partial });
+    });
+  });
+}

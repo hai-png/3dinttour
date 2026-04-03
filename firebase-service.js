@@ -412,6 +412,11 @@ if (typeof document !== 'undefined') {
   });
 }
 
+// Expose globally for service worker communication
+if (typeof window !== 'undefined') {
+  window.FirebaseService = FirebaseService;
+}
+
 // Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = FirebaseService;

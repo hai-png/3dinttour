@@ -162,6 +162,12 @@ button{font-family:inherit;border:none;cursor:pointer}
 #connection-status.offline .cs-dot{background:var(--warn)}
 .cs-txt{font-weight:600;letter-spacing:.3px}
 
+/* ═══ Offline Ready Notification ═══ */
+.offline-ready{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);z-index:10001;background:rgba(34,197,94,.15);backdrop-filter:blur(12px);border:1px solid rgba(34,197,94,.3);border-radius:var(--rxl);padding:8px 16px;display:flex;align-items:center;gap:8px;box-shadow:0 8px 28px rgba(34,197,94,.2);opacity:0;transition:all .4s ease;pointer-events:none}
+.offline-ready.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.offline-ready .or-icon{font-size:14px;color:#22c55e;font-weight:700}
+.offline-ready .or-txt{font-size:11px;font-weight:600;color:#22c55e;letter-spacing:.3px;white-space:nowrap}
+
 /* ═══ User Info ═══ */
 #user-info{display:flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:var(--rm);font-size:10px;color:#fff;margin-top:6px}
 .ui-avatar{width:20px;height:20px;background:var(--pri);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
@@ -250,6 +256,7 @@ button{font-family:inherit;border:none;cursor:pointer}
   .am-panel{max-width:100%}
   .am-modal-content{max-width:calc(100vw - 20px);margin:10px}
   #connection-status{top:auto;bottom:70px;right:50%;transform:translateX(50%)}
+  .offline-ready{bottom:110px}
   .am-status-buttons{grid-template-columns:1fr}
   .am-status-btn{padding:8px 10px;font-size:10.5px}
 }
@@ -573,6 +580,7 @@ button{font-family:inherit;border:none;cursor:pointer}
   </div>
 </header>
 <div id="connection-status" class="connection-status online"><span class="cs-dot"></span><span class="cs-txt">Online</span></div>
+<div id="offline-ready" class="offline-ready" style="display:none"><span class="or-icon">✓</span><span class="or-txt">Ready for offline use</span></div>
 
 <aside id="detail">
   <div class="d-hdr" id="d-hdr"><div class="ic">🏢</div><span>Details</span><button class="tog" id="d-tog">−</button></div>
@@ -731,7 +739,7 @@ const AL=(()=>{let ld=0,tot=0;const b=()=>document.getElementById('intro-bar'),p
 function upd(l){const pc=tot?Math.round(ld/tot*100):0;b().style.width=pc+'%';p().textContent=l||pc+'%';}
 function trk(n,pr){tot++;return pr.then(r=>{ld++;upd(n+' ✓');return r}).catch(e=>{ld++;upd(n+' ✗');throw e});}
 async function json(u){return trk('Tour data',fetch(u).then(r=>{if(!r.ok)throw Error(`HTTP ${r.status}`);return r.json()}))}
-function glb(u,l){return trk(l||'Model',new Promise((res,rej)=>{const lo=new GLTFLoader();const dr=new DRACOLoader();dr.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');lo.setDRACOLoader(dr);lo.setMeshoptDecoder(MeshoptDecoder);lo.load(u,g=>res(g),xhr=>{if(xhr.total)p().textContent=`${l||'Model'} ${Math.round(xhr.loaded/xhr.total*100)}%`},rej)}))}
+function glb(u,l){return trk(l||'Model',new Promise((res,rej)=>{const lo=new GLTFLoader();const dr=new DRACOLoader();dr.setDecoderPath('/draco/');lo.setDRACOLoader(dr);lo.setMeshoptDecoder(MeshoptDecoder);lo.load(u,g=>res(g),xhr=>{if(xhr.total)p().textContent=`${l||'Model'} ${Math.round(xhr.loaded/xhr.total*100)}%`},rej)}))}
 function hdri(u){return trk('Environment',new Promise((res,rej)=>{new RGBELoader().load(u,t=>{t.mapping=THREE.EquirectangularReflectionMapping;res(t)},undefined,rej)}))}
 function imgs(urls){if(!urls?.length)return Promise.resolve([]);return trk(`${urls.length} images`,Promise.allSettled(urls.map(u=>new Promise((r,j)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>r(i);i.onerror=j;i.src=u}))))}
 function done(){upd('Ready!');document.getElementById('intro-enter').style.display='';}
@@ -2070,12 +2078,6 @@ async function boot(){
     if (sys && sys.tourSync && typeof sys.tourSync.markReady === 'function') {
       console.log('[boot] ✅ Marking tour data ready and triggering initial sync');
       sys.tourSync.markReady();
-
-      // Start media caching after tour is loaded
-      setTimeout(() => {
-        console.log('[boot] 📦 Starting media caching for offline support');
-        startMediaCaching();
-      }, 2000);
     } else {
       // Fallback: manually sync from Firebase or state
       console.log('[boot] ⚠️ AvailabilitySystem.tourSync not available, using fallback sync');
@@ -2192,107 +2194,209 @@ async function boot(){
   let frame=0;(function loop(time){requestAnimationFrame(loop);frame++;E.render(time);if(frame%2===0)HS.update()})();
 }
 
-// ═══ PWA INSTALL HANDLER ═══
-const PWAInstall=(()=>{
-let deferredPrompt=null;
-const installBtn=document.getElementById('install-btn');
-
-function init(){
-  if(installBtn){
-    installBtn.onclick=installApp;
+// ═══ PWA: Service Worker, Offline, Install ═══
+(function(){
+  // Show offline ready notification
+  function showOfflineReady(){
+    const el=document.getElementById('offline-ready');
+    if(el && el.style.display==='none'){
+      el.style.display='flex';
+      // Trigger reflow for animation
+      void el.offsetWidth;
+      el.classList.add('show');
+      console.log('[PWA] Offline ready notification shown');
+      // Auto-hide after 5 seconds
+      setTimeout(()=>{
+        el.classList.remove('show');
+        setTimeout(()=>{ el.style.display='none'; }, 400);
+      }, 5000);
+    }
   }
-  // Listen for beforeinstallprompt
+
+  if('serviceWorker' in navigator){
+    // Auto-clear ALL caches and old SW on load
+    async function cleanSlate(){
+      // Clear old caches
+      const names = await caches.keys();
+      for (const name of names) {
+        if (name !== 'tour-v6') {
+          await caches.delete(name);
+          console.log('[PWA] Cleared old cache:', name);
+        }
+      }
+      // Unregister old SWs
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const reg of regs) {
+        await reg.unregister();
+        console.log('[PWA] Unregistered old SW');
+      }
+    }
+    
+    cleanSlate().then(() => {
+      // Fresh registration
+      return navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    }).then((reg)=>{
+      console.log('[PWA] Registered, scope:', reg.scope);
+      console.log('[PWA] Active:', !!reg.active, 'Installing:', !!reg.installing, 'Waiting:', !!reg.waiting);
+
+      // Force activate if waiting
+      if (reg.waiting) {
+        console.log('[PWA] Sending SKIP_WAITING to waiting SW');
+        reg.waiting.postMessage('SKIP_WAITING');
+      }
+      if (reg.active) {
+        console.log('[PWA] SW already active, controller:', !!navigator.serviceWorker.controller);
+      }
+      
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        console.log('[PWA] New SW installing');
+        newWorker.addEventListener('statechange', () => {
+          console.log('[PWA] SW state:', newWorker.state);
+          if (newWorker.state === 'installed') {
+            console.log('[PWA] Sending SKIP_WAITING');
+            newWorker.postMessage('SKIP_WAITING');
+          }
+          if (newWorker.state === 'activated') {
+            console.log('[PWA] SW activated!');
+          }
+        });
+      });
+
+      // Listen for controller change
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        console.log('[PWA] Controller changed!');
+        setTimeout(triggerCaching, 500);
+      });
+
+      // Wait for service worker to take control, then cache everything
+      let cachingTriggered = false;
+      function triggerCaching(){
+        if (cachingTriggered) return;
+        if (navigator.serviceWorker.controller) {
+          cachingTriggered = true;
+          navigator.serviceWorker.controller.postMessage('CACHE_EVERYTHING');
+          console.log('[PWA] Triggered asset caching');
+        } else {
+          console.log('[PWA] Waiting for SW controller...');
+          setTimeout(triggerCaching, 1000);
+        }
+      }
+      
+      // Start checking after tour loads
+      setTimeout(triggerCaching, 3000);
+    }).catch((err)=>{
+      console.error('[PWA] Registration error:', err);
+      console.error('[PWA] Make sure sw.js is served correctly');
+    });
+
+    // Listen for offline ready message from service worker
+    navigator.serviceWorker.addEventListener('message', (e) => {
+      if (e.data && e.data.type === 'OFFLINE_READY') {
+        showOfflineReady();
+      }
+    });
+  }
+  function updateStatus(){
+    const el=document.getElementById('connection-status');
+    if(el){
+      const on=navigator.onLine;
+      el.className='connection-status '+(on?'online':'offline');
+      el.querySelector('.cs-txt').textContent=on?'Online':'Offline';
+    }
+    if(navigator.onLine&&typeof FirebaseService!=='undefined'){
+      FirebaseService.processOfflineQueue?.();
+    }
+  }
+  window.addEventListener('online',updateStatus);
+  window.addEventListener('offline',updateStatus);
+  updateStatus();
+  let deferredPrompt=null;
+  const installBtn=document.getElementById('install-btn');
+
+  // Show install button always (Chrome may not fire beforeinstallprompt on localhost)
+  if(installBtn) installBtn.style.display='inline-block';
+
   window.addEventListener('beforeinstallprompt',(e)=>{
     e.preventDefault();
     deferredPrompt=e;
+    sessionStorage.setItem('pwa-prompt','1');
     if(installBtn){
       installBtn.style.display='inline-block';
-      console.log('[PWA] Install prompt ready');
+      installBtn.title='Install app';
+      console.log('[PWA] Install prompt captured');
     }
   });
-  // Listen for successful install
+
   window.addEventListener('appinstalled',()=>{
-    console.log('[PWA] App installed');
     if(installBtn)installBtn.style.display='none';
     deferredPrompt=null;
+    sessionStorage.removeItem('pwa-prompt');
+    console.log('[PWA] App installed successfully');
   });
-}
 
-function installApp(){
-  if(!deferredPrompt){
-    console.log('[PWA] No install prompt available');
-    return;
+  if(installBtn){
+    installBtn.onclick=()=>{
+      if(deferredPrompt){
+        // Use the native install prompt
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((r)=>{
+          console.log('[PWA] Install choice:', r.outcome);
+          deferredPrompt=null;
+          sessionStorage.removeItem('pwa-prompt');
+          if(r.outcome==='dismissed'&&installBtn){
+            installBtn.textContent='⚠️ Install';
+            installBtn.title='Install dismissed - try again';
+          }
+        });
+      } else {
+        // No native prompt available - show manual instructions
+        const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        const isHTTPS = location.protocol === 'https:';
+        
+        let msg = '📲 How to Install This App\n\n';
+        
+        if (isLocalhost) {
+          msg += '⚠️ Running on localhost.\n';
+          msg += 'For full install support, deploy to HTTPS hosting.\n\n';
+        }
+        
+        msg += 'Chrome/Edge Desktop:\n';
+        msg += '  • Look for ⊕ icon in address bar → click it\n';
+        msg += '  • Or: Menu (⋮) → "Install 3D Tour"\n\n';
+        msg += 'Chrome Mobile:\n';
+        msg += '  • Menu (⋮) → "Add to Home Screen"\n\n';
+        msg += 'Safari (iOS):\n';
+        msg += '  • Share button → "Add to Home Screen"\n\n';
+        
+        if (!isHTTPS && !isLocalhost) {
+          msg += '⚠️ Install requires HTTPS hosting.\n';
+          msg += 'Deploy to Firebase/Vercel/Netlify for production installs.';
+        }
+        
+        alert(msg);
+      }
+    };
   }
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then((result)=>{
-    console.log('[PWA] User choice:',result.outcome);
-    deferredPrompt=null;
-    if(installBtn&&result.outcome==='dismissed'){
-      installBtn.style.display='none';
-    }
-  });
-}
 
-return{init};
+  // Check if already installed
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    console.log('[PWA] Running as installed PWA');
+    if(installBtn) installBtn.style.display='none';
+  }
+
+  // Log install eligibility
+  setTimeout(() => {
+    console.log('[PWA] === Install Check ===');
+    console.log('[PWA] HTTPS:', location.protocol === 'https:');
+    console.log('[PWA] Localhost:', location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+    console.log('[PWA] Service Worker:', 'serviceWorker' in navigator);
+    console.log('[PWA] Manifest:', !!document.querySelector('link[rel="manifest"]'));
+    console.log('[PWA] Standalone:', window.matchMedia('(display-mode: standalone)').matches);
+    console.log('[PWA] Deferred prompt:', !!deferredPrompt);
+    console.log('[PWA] =====================');
+  }, 2000);
 })();
-
-// Initialize PWA install handler
-PWAInstall.init();
-
-// ═══ MEDIA CACHING FOR OFFLINE ═══
-let mediaCachingStarted=false;
-function startMediaCaching(){
-  if(mediaCachingStarted){
-    console.log('[Media] Already started');
-    return;
-  }
-  if(!navigator.serviceWorker||!navigator.serviceWorker.controller){
-    console.log('[Media] SW not ready, waiting...');
-    setTimeout(startMediaCaching,1000);
-    return;
-  }
-  mediaCachingStarted=true;
-  console.log('[Media] Fetching tour data...');
-  fetch('/tour-data.json')
-    .then(res=>res.json())
-    .then(data=>{
-      const urls=extractMediaUrls(data);
-      console.log('[Media] Caching',urls.length,'files');
-      navigator.serviceWorker.controller.postMessage({
-        type:'CACHE_MEDIA',
-        urls:urls,
-        currentMediaUrls:urls
-      });
-    })
-    .catch(err=>{
-      console.error('[Media] Failed:',err);
-      mediaCachingStarted=false;
-    });
-}
-
-function extractMediaUrls(data){
-  const urls=new Set();
-  function add(url){
-    if(!url||typeof url!=='string')return;
-    if(/^[\p{Emoji}]+$/u.test(url.trim()))return;
-    const normalized='/'+url.replace(/^\/+/,'').replace(/\/+$/,'');
-    const valid=['.glb','.gltf','.hdr','.jpg','.jpeg','.png','.webp','.svg','.mp4','.webm','.gif'];
-    if(valid.some(ext=>normalized.toLowerCase().endsWith(ext))){
-      urls.add(normalized);
-    }
-  }
-  if(data?.modelFile)add(data.modelFile);
-  if(data?.hdri)add(data.hdri);
-  if(data?.panoramas)data.panoramas.forEach(p=>{if(p.file)add(p.file);});
-  if(data?.floorPlans)data.floorPlans.forEach(fp=>{if(fp.image)add(fp.image);if(fp.image2d)add(fp.image2d);});
-  if(data?.units)data.units.forEach(u=>{
-    if(u.image)add(u.image);
-    if(u.images)u.images.forEach(img=>add(img));
-  });
-  if(data?.gallery)data.gallery.forEach(g=>{if(g.image)add(g.image);});
-  if(data?.amenities)data.amenities.forEach(a=>{if(a.image)add(a.image);});
-  return Array.from(urls);
-}
 
 boot();
 </script>
@@ -2361,13 +2465,6 @@ boot();
 </div>
 
 <script>
-// Register service worker
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js')
-    .then(reg=>console.log('[SW] Registered:',reg.scope))
-    .catch(err=>console.error('[SW] Registration failed:',err));
-}
-
 // Online/offline status
 function updateOnlineStatus(){
   const el=document.getElementById('connection-status');

@@ -4,17 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0d1117">
-  <title>Offline - 3D Property Tour</title>
+  <title>Offline - 3D Tour</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -22,166 +17,52 @@
       color: #e6edf3;
       padding: 20px;
     }
-    
-    .container {
-      text-align: center;
-      max-width: 500px;
-    }
-    
-    .icon {
-      font-size: 80px;
-      margin-bottom: 24px;
-    }
-    
-    h1 {
-      font-size: 28px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: #f0f6fc;
-    }
-    
-    p {
-      font-size: 16px;
-      line-height: 1.6;
-      color: #8b949e;
-      margin-bottom: 24px;
-    }
-    
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 20px;
-      background: rgba(56, 139, 253, 0.15);
-      border: 1px solid rgba(56, 139, 253, 0.3);
-      border-radius: 8px;
-      margin-bottom: 24px;
-    }
-    
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background: #388bfd;
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    
+    .box { text-align: center; max-width: 400px; }
+    .icon { font-size: 64px; margin-bottom: 20px; }
+    h1 { font-size: 24px; margin-bottom: 12px; }
+    p { color: #8b949e; margin-bottom: 20px; line-height: 1.5; }
     button {
       background: #238636;
-      color: #ffffff;
+      color: #fff;
       border: none;
-      padding: 14px 28px;
+      padding: 12px 24px;
       font-size: 16px;
-      font-weight: 500;
       border-radius: 8px;
       cursor: pointer;
-      transition: all 0.2s;
     }
-    
-    button:hover {
-      background: #2ea043;
-      transform: translateY(-1px);
-    }
-    
-    button:active {
-      transform: translateY(0);
-    }
-    
-    .cached-info {
-      margin-top: 32px;
-      padding: 20px;
-      background: rgba(110, 118, 129, 0.1);
-      border-radius: 12px;
-      text-align: left;
-    }
-    
-    .cached-info h3 {
+    button:hover { background: #2ea043; }
+    .status {
+      margin-top: 20px;
+      padding: 12px;
+      background: rgba(56, 139, 253, 0.1);
+      border: 1px solid rgba(56, 139, 253, 0.3);
+      border-radius: 8px;
       font-size: 14px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
       color: #8b949e;
-      margin-bottom: 12px;
-    }
-    
-    .cached-list {
-      list-style: none;
-    }
-    
-    .cached-list li {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 0;
-      color: #c9d1d9;
-      font-size: 14px;
-    }
-    
-    .check {
-      color: #3fb950;
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="box">
     <div class="icon">📡</div>
     <h1>You're Offline</h1>
-    <p>
-      Don't worry! The 3D Tour app is designed to work offline. 
-      Your cached data is available and you can continue browsing.
-    </p>
-    
-    <div class="status">
-      <span class="status-dot"></span>
-      <span>Checking connection...</span>
-    </div>
-    
-    <button onclick="window.location.reload()">
-      🔄 Try Again
-    </button>
-    
-    <div class="cached-info">
-      <h3>✅ Available Offline</h3>
-      <ul class="cached-list">
-        <li><span class="check">✓</span> Property tour data</li>
-        <li><span class="check">✓</span> Unit availability</li>
-        <li><span class="check">✓</span> 3D models & images</li>
-        <li><span class="check">✓</span> Floor plans</li>
-      </ul>
-    </div>
+    <p>Your cached data is still available. You can browse previously loaded content.</p>
+    <button onclick="window.location.reload()">🔄 Try Again</button>
+    <div class="status" id="status">Checking connection...</div>
   </div>
-  
   <script>
-    // Check connection status
-    function updateStatus() {
-      const status = document.querySelector('.status');
-      const dot = document.querySelector('.status-dot');
-      const text = status.querySelector('span:last-child');
-      
+    function update() {
+      const el = document.getElementById('status');
       if (navigator.onLine) {
-        dot.style.background = '#3fb950';
-        text.textContent = 'Connection restored! Redirecting...';
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
+        el.textContent = '✅ Back online!';
+        setTimeout(() => window.location.reload(), 1000);
       } else {
-        dot.style.background = '#f0883e';
-        text.textContent = 'Still offline - cached data available';
+        el.textContent = 'Still offline - cached data available';
       }
     }
-    
-    window.addEventListener('online', updateStatus);
-    window.addEventListener('offline', updateStatus);
-    
-    // Initial check
-    updateStatus();
-    
-    // Log offline page view
-    console.log('[Offline] Offline page loaded');
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    update();
   </script>
 </body>
 </html>
