@@ -120,29 +120,26 @@ const AuthManager = {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Demo credentials (replace with real validation)
-    const demoUsers = {
-      'admin@temerproperties.com': {
-        id: '1',
-        email: 'admin@temerproperties.com',
-        name: 'Admin User',
-        role: 'admin',
+    // Demo credentials from brand config
+    const brandAuth = (window.BRAND && window.BRAND.auth) || {};
+    const demoUsersRaw = brandAuth.demoUsers || {};
+    const demoUsers = {};
+    for (const [email, info] of Object.entries(demoUsersRaw)) {
+      demoUsers[email.toLowerCase()] = {
+        id: info.id || email,
+        email: email.toLowerCase(),
+        name: info.name || 'User',
+        role: info.role || 'user',
         avatar: '👤'
-      },
-      'agent@temerproperties.com': {
-        id: '2',
-        email: 'agent@temerproperties.com',
-        name: 'Agent User',
-        role: 'agent',
-        avatar: '👤'
-      }
-    };
+      };
+    }
 
     // Simple demo validation (use real API in production)
     const user = demoUsers[email.toLowerCase()];
-    
+
     if (!user) {
-      throw new Error('Invalid credentials. Try admin@temerproperties.com');
+      const emails = Object.keys(demoUsersRaw);
+      throw new Error('Invalid credentials.' + (emails.length ? ' Try: ' + emails.join(', ') : ''));
     }
 
     // Generate mock token (use real JWT in production)

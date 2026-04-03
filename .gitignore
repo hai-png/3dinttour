@@ -79,6 +79,7 @@ whatshouldbe.png
 
 # GLB models - except main building model
 !model/*.glb
+!3d-floor-plan/*.glb
 *.glb
 
 # Screenshots and temporary images

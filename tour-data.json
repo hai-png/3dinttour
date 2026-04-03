@@ -1,9 +1,9 @@
 {
   "version": 4,
-  "projectName": "Lycee Seken",
-  "projectDescription": "A landmark residential development in the heart of Addis Ababa (Piyassa area), offering premium apartments with world-class amenities. The building features B+G+19+T construction with 8 thoughtfully designed units per floor, optimal space utilization, cross ventilation, and stunning city views.",
+  "projectName": "Yerer Apartment",
+  "projectDescription": "Modern residential apartments in Yerer, Addis Ababa, offering quality living spaces with contemporary amenities.",
   "projectDetails": {
-    "location": "Piyassa, Addis Ababa",
+    "location": "Yerer, Addis Ababa",
     "buildingType": "Residential",
     "buildingSize": "B+G+19+T",
     "lotSize": 1110,
@@ -20,13 +20,13 @@
     "lng": 38.752639
   },
   "defaultCamera": [
-    80,
-    60,
-    80
+    1,
+    1,
+    1
   ],
   "defaultTarget": [
     0,
-    15,
+    0.15,
     0
   ],
   "modelFile": "model/building.glb",
@@ -51,14 +51,17 @@
   "statusColors": {
     "Available": "#22c55e",
     "Reserved": "#f59e0b",
-    "Sold": "#ef4444",
-    "Unavailable": "#8888a0"
+    "Sold": "#ef4444"
   },
   "media": {
-    "developerLogo": "project/temerlogo.png",
-    "heroImage": "project/hero-image-video/seken.png",
+    "developerLogo": "project/Hosea-LOGO-12.png",
+    "heroImage": null,
     "heroVideo": "project/hero-image-video/mainsowreel.mp4",
     "projectFloorPlan": "project/floor-plans/seken-Floorplan.jpg",
+    "amenityImages": [
+      "project/amenities/swimming-pool-amenity.webp"
+    ],
+    "amenityVideos": [],
     "environmentMaps": [
       "hdr/cobblestone_street_night_1k.hdr",
       "hdr/laufenurg_church_1k.hdr",
@@ -178,12 +181,9 @@
       "color": "#10b981",
       "icon": "🔌",
       "type": "amenity",
-      "images": [
-        "project/hotspots/ev_charging/seken.png",
-        "project/hotspots/ev_charging/swimming-pool-amenity.webp"
-      ],
+      "images": [],
       "videos": [
-        "project/hotspots/ev_charging/mainsowreel.mp4"
+        "project/hotspots/ev_charging/ev_charging.mp4"
       ]
     },
     {
@@ -204,11 +204,10 @@
       "icon": "🌱",
       "type": "amenity",
       "images": [
-        "project/hotspots/green_terrace/seken.png",
         "project/hotspots/green_terrace/swimming-pool-amenity.webp"
       ],
       "videos": [
-        "project/hotspots/green_terrace/mainsowreel.mp4"
+        "project/hotspots/green_terrace/green_terrace.mp4"
       ]
     }
   ],
@@ -254,7 +253,7 @@
           "unit-image-video/1-bed-01/mainsowreel.mp4"
         ],
         "heroImage": "unit-image-video/1-bed-01/1.webp",
-        "floorPlan2D": "2d-floor-plan/1-bed-01-floor.webp",
+        "floorPlan2D": null,
         "floorPlan3D": "3d-floor-plan/1-bed-01.glb",
         "panorama": "panorama/1-bed-01.webp"
       }
@@ -317,7 +316,7 @@
           "unit-image-video/2-bed-01/mainsowreel.mp4"
         ],
         "heroImage": "unit-image-video/2-bed-01/ SALON.webp",
-        "floorPlan2D": "2d-floor-plan/2bed-08-floor.webp",
+        "floorPlan2D": null,
         "floorPlan3D": "3d-floor-plan/2-bed-01.glb",
         "panorama": "panorama/2-bed-01.webp"
       }
@@ -392,7 +391,7 @@
           "unit-image-video/3-bed-01/mainsowreel.mp4"
         ],
         "heroImage": "unit-image-video/3-bed-01/212.webp",
-        "floorPlan2D": "2d-floor-plan/3bed-02-floor.webp",
+        "floorPlan2D": null,
         "floorPlan3D": "3d-floor-plan/3d-bed-01.glb",
         "panorama": "panorama/3-bed-01.webp"
       }
@@ -467,7 +466,7 @@
           "unit-image-video/3-bed-02/mainsowreel.mp4"
         ],
         "heroImage": "unit-image-video/3-bed-02/ Marketing-02.webp",
-        "floorPlan2D": "2d-floor-plan/3bed-02-floor.webp",
+        "floorPlan2D": null,
         "floorPlan3D": "3d-floor-plan/3d-bed-01.glb",
         "panorama": "panorama/3-bed-02.webp"
       }
@@ -535,14 +534,13 @@
       "assets": {
         "images": [
           "unit-image-video/3-bed-03/Scene 73.webp",
-          "unit-image-video/3-bed-03/Scene 77.webp",
-          "unit-image-video/3-bed-03/Untitled.webp"
+          "unit-image-video/3-bed-03/Scene 77.webp"
         ],
         "videos": [
           "unit-image-video/3-bed-03/mainsowreel.mp4"
         ],
         "heroImage": "unit-image-video/3-bed-03/Scene 73.webp",
-        "floorPlan2D": "2d-floor-plan/3-bed-03-floor.webp",
+        "floorPlan2D": null,
         "floorPlan3D": "3d-floor-plan/3d-bed-01.glb",
         "panorama": "panorama/3-bed-03.webp"
       }
@@ -612,7 +610,7 @@
           "unit-image-video/3-bed-04/mainsowreel.mp4"
         ],
         "heroImage": "unit-image-video/3-bed-04/218.webp",
-        "floorPlan2D": "2d-floor-plan/3bed-04-floor.webp",
+        "floorPlan2D": null,
         "floorPlan3D": "3d-floor-plan/3d-bed-01.glb",
         "panorama": "panorama/3-bed-04.webp"
       }
@@ -681,7 +679,7 @@
           "unit-image-video/3-bed-05/mainsowreel.mp4"
         ],
         "heroImage": "unit-image-video/3-bed-05/213.webp",
-        "floorPlan2D": "2d-floor-plan/3-bed-05-floor.webp",
+        "floorPlan2D": null,
         "floorPlan3D": "3d-floor-plan/3d-bed-01.glb",
         "panorama": "panorama/3-bed-05.webp"
       }
@@ -756,7 +754,7 @@
           "unit-image-video/3-bed-06/mainsowreel.mp4"
         ],
         "heroImage": "unit-image-video/3-bed-06/17.webp",
-        "floorPlan2D": "2d-floor-plan/3-bed-06-floor.webp",
+        "floorPlan2D": null,
         "floorPlan3D": "3d-floor-plan/3d-bed-01.glb",
         "panorama": "panorama/3-bed-06.webp"
       }
@@ -825,7 +823,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -919,7 +917,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -1006,14 +1004,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -1102,7 +1099,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -1190,7 +1187,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -1284,7 +1281,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -1378,7 +1375,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -1460,7 +1457,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -1525,7 +1522,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -1619,7 +1616,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -1706,14 +1703,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -1802,7 +1798,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -1890,7 +1886,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -1984,7 +1980,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -2078,7 +2074,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -2160,7 +2156,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -2225,7 +2221,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -2319,7 +2315,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -2406,14 +2402,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -2502,7 +2497,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -2590,7 +2585,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -2684,7 +2679,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -2778,7 +2773,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -2860,7 +2855,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -2925,7 +2920,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -3019,7 +3014,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -3106,14 +3101,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -3202,7 +3196,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -3290,7 +3284,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -3384,7 +3378,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -3478,7 +3472,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -3560,7 +3554,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -3625,7 +3619,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -3719,7 +3713,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -3806,14 +3800,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -3902,7 +3895,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -3990,7 +3983,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -4084,7 +4077,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -4178,7 +4171,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -4260,7 +4253,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -4325,7 +4318,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -4419,7 +4412,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -4506,14 +4499,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -4602,7 +4594,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -4690,7 +4682,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -4784,7 +4776,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -4878,7 +4870,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -4960,7 +4952,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -5025,7 +5017,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -5119,7 +5111,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -5206,14 +5198,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -5302,7 +5293,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -5390,7 +5381,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -5484,7 +5475,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -5578,7 +5569,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -5660,7 +5651,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -5725,7 +5716,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -5819,7 +5810,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -5906,14 +5897,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -6002,7 +5992,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -6090,7 +6080,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -6184,7 +6174,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -6278,7 +6268,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -6360,7 +6350,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -6425,7 +6415,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -6519,7 +6509,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -6606,14 +6596,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -6702,7 +6691,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -6790,7 +6779,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -6884,7 +6873,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -6978,7 +6967,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -7060,7 +7049,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -7125,7 +7114,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -7219,7 +7208,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -7306,14 +7295,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -7402,7 +7390,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -7490,7 +7478,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -7584,7 +7572,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -7678,7 +7666,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -7760,7 +7748,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -7825,7 +7813,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -7919,7 +7907,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -8006,14 +7994,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -8102,7 +8089,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -8190,7 +8177,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -8284,7 +8271,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -8378,7 +8365,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -8460,7 +8447,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -8525,7 +8512,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -8619,7 +8606,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -8706,14 +8693,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -8802,7 +8788,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -8890,7 +8876,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -8984,7 +8970,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -9078,7 +9064,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -9160,7 +9146,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -9225,7 +9211,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -9319,7 +9305,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -9406,14 +9392,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -9502,7 +9487,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -9590,7 +9575,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -9684,7 +9669,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -9778,7 +9763,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -9860,7 +9845,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -9925,7 +9910,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -10019,7 +10004,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -10106,14 +10091,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -10202,7 +10186,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -10290,7 +10274,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -10384,7 +10368,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -10478,7 +10462,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -10560,7 +10544,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     },
     {
@@ -10625,7 +10609,7 @@
         "unit-image-video/1-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/1-bed-01.webp",
-      "floorPlan": "2d-floor-plan/1-bed-01-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/1-bed-01.glb"
     },
     {
@@ -10719,7 +10703,7 @@
         "unit-image-video/3-bed-02/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-02.webp",
-      "floorPlan": "2d-floor-plan/3bed-02-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -10806,14 +10790,13 @@
       "image": "unit-image-video/3-bed-03/Scene 73.webp",
       "images": [
         "unit-image-video/3-bed-03/Scene 73.webp",
-        "unit-image-video/3-bed-03/Scene 77.webp",
-        "unit-image-video/3-bed-03/Untitled.webp"
+        "unit-image-video/3-bed-03/Scene 77.webp"
       ],
       "videos": [
         "unit-image-video/3-bed-03/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-03.webp",
-      "floorPlan": "2d-floor-plan/3-bed-03-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -10902,7 +10885,7 @@
         "unit-image-video/3-bed-04/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-04.webp",
-      "floorPlan": "2d-floor-plan/3bed-04-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -10990,7 +10973,7 @@
         "unit-image-video/3-bed-05/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-05.webp",
-      "floorPlan": "2d-floor-plan/3-bed-05-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -11084,7 +11067,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -11178,7 +11161,7 @@
         "unit-image-video/3-bed-06/mainsowreel.mp4"
       ],
       "panorama": "panorama/3-bed-06.webp",
-      "floorPlan": "2d-floor-plan/3-bed-06-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/3d-bed-01.glb"
     },
     {
@@ -11260,7 +11243,7 @@
         "unit-image-video/2-bed-01/mainsowreel.mp4"
       ],
       "panorama": "panorama/2-bed-01.webp",
-      "floorPlan": "2d-floor-plan/2bed-08-floor.webp",
+      "floorPlan": null,
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     }
   ],
@@ -11272,16 +11255,76 @@
       "category": "hero"
     },
     {
-      "url": "project/hero-image-video/seken.png",
-      "type": "image",
-      "label": "Project Overview",
-      "category": "hero"
-    },
-    {
       "url": "project/amenities/swimming-pool-amenity.webp",
       "type": "image",
       "label": "swimming pool amenity",
       "category": "amenity"
+    },
+    {
+      "url": "project/gallery/120.webp",
+      "type": "image",
+      "label": "120",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/125.webp",
+      "type": "image",
+      "label": "125",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/213.webp",
+      "type": "image",
+      "label": "213",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/218.webp",
+      "type": "image",
+      "label": "218",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/Scene 34.webp",
+      "type": "image",
+      "label": "Scene 34",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/Scene 36.webp",
+      "type": "image",
+      "label": "Scene 36",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/Scene-27_1-enhanced.webp",
+      "type": "image",
+      "label": "Scene 27 1 enhanced",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/image17.webp",
+      "type": "image",
+      "label": "image17",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/image21.webp",
+      "type": "image",
+      "label": "image21",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/mainsowreel.mp4",
+      "type": "video",
+      "label": "mainsowreel",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/photo_6003679379009422639_y.webp",
+      "type": "image",
+      "label": "photo 6003679379009422639 y",
+      "category": "gallery"
     },
     {
       "url": "project/floor-plans/seken-Floorplan.jpg",

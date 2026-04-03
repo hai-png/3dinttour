@@ -1,9 +1,9 @@
 /**
- * Temer Properties Contact Integration
- * 
+ * Contact Integration Module
+ *
  * This module provides contact functionality for the 3D tour application,
- * integrating with Temer Real Estate Ethiopia's contact information.
- * 
+ * reading all contact info from window.BRAND (loaded from brand-config.json).
+ *
  * Usage:
  *   - Contact.open() - Open contact modal
  *   - Contact.call(number) - Initiate phone call
@@ -13,147 +13,66 @@
  */
 
 const ContactConfig = {
-  company: {
-    name: "Temer Properties",
-    fullName: "Temer Real Estate Ethiopia",
-    website: "https://temerproperties.com"
+  get company() {
+    const b = (window.BRAND && window.BRAND.brand) || {};
+    return {
+      name: b.companyName || 'Company',
+      fullName: b.companyName || 'Company',
+      website: (window.BRAND.contact && window.BRAND.contact.website) || ''
+    };
   },
-  
-  contact: {
-    phones: [
-      {
-        type: "hotline",
-        label: "Hotline",
-        value: "6033",
-        tel: "tel:6033",
-        display: "6033",
-        primary: true
-      },
-      {
-        type: "mobile",
-        label: "Mobile 1",
-        value: "+251975666699",
-        tel: "tel:+251975666699",
-        display: "+251 975 666 699"
-      },
-      {
-        type: "mobile",
-        label: "Mobile 2",
-        value: "+251939555558",
-        tel: "tel:+251939555558",
-        display: "+251 939 555 558",
-        whatsapp: true
-      }
-    ],
-    
-    emails: [
-      {
-        type: "general",
-        label: "General Inquiry",
-        value: "info@temerproperties.com",
-        mailto: "mailto:info@temerproperties.com",
-        primary: true
-      }
-    ],
-    
-    whatsapp: {
-      enabled: true,
-      number: "+251939555558",
-      display: "+251 939 555 558",
-      message: "Hello Temer Properties, I'm interested in learning more about your properties."
-    },
-    
-    social: {
-      facebook: {
-        enabled: true,
-        url: "https://www.facebook.com/temerproperties?mibextid=JRoKGi",
-        handle: "@temerproperties",
-        icon: "facebook"
-      },
-      twitter: {
-        enabled: true,
-        url: "https://x.com/TemerProperties",
-        handle: "@TemerProperties",
-        icon: "twitter"
-      },
-      youtube: {
-        enabled: true,
-        url: "https://www.youtube.com/@TemerProperties",
-        handle: "@TemerProperties",
-        icon: "youtube"
-      },
-      instagram: {
-        enabled: true,
-        url: "https://www.instagram.com/temerproperties?igsh=MXJ6ZGozY3QwaXBsMQ",
-        handle: "@temerproperties",
-        icon: "instagram"
-      },
-      tiktok: {
-        enabled: true,
-        url: "https://www.tiktok.com/@temer_properties?_t=8opa5yBARtd&_r=1",
-        handle: "@temer_properties",
-        icon: "tiktok"
-      }
-    }
+  get contact() {
+    return (window.BRAND && window.BRAND.contact) || { phones: [], emails: [], whatsapp: {}, social: {} };
   },
-  
-  location: {
-    address: "Piyassa, Addis Ababa, Ethiopia",
-    city: "Addis Ababa",
-    country: "Ethiopia",
-    coordinates: {
-      lat: 9.036278,
-      lng: 38.752639
-    }
-  },
-  
-  displaySettings: {
-    primaryColor: "#84a441",
-    secondaryColor: "#b09048"
+  get displaySettings() {
+    return (window.BRAND && window.BRAND.displaySettings) || {};
   }
 };
 
 const Contact = {
   modal: null,
-  
+
   /**
    * Initialize contact modal
    */
   init() {
     if (this.modal) return;
-    
+
     this.modal = document.createElement('div');
     this.modal.id = 'contact-modal';
     this.modal.className = 'contact-modal';
     this.modal.innerHTML = this.renderModal();
     document.body.appendChild(this.modal);
-    
+
     this.bindEvents();
   },
-  
+
   /**
    * Render modal HTML
    */
   renderModal() {
     const cfg = ContactConfig;
-    const socials = Object.values(cfg.contact.social).filter(s => s.enabled);
-    
+    const contact = cfg.contact;
+    const company = cfg.company;
+    const location = (window.BRAND && window.BRAND.contact && window.BRAND.contact.address) || '';
+    const socials = Object.values(contact.social || {}).filter(s => s && s.enabled);
+
     return `
       <div class="cm-overlay" onclick="Contact.close()"></div>
       <div class="cm-content">
         <div class="cm-header">
           <div class="cm-logo">🏢</div>
           <div class="cm-title">
-            <h3>${cfg.company.name}</h3>
-            <p>${cfg.location.address}</p>
+            <h3>${company.name}</h3>
+            <p>${location}</p>
           </div>
           <button class="cm-close" onclick="Contact.close()">✕</button>
         </div>
-        
+
         <div class="cm-body">
           <!-- Quick Actions -->
           <div class="cm-quick-actions">
-            ${cfg.contact.phones.filter(p => p.primary).map(p => `
+            ${(contact.phones || []).filter(p => p.primary).map(p => `
               <button class="cm-action-btn primary" onclick="Contact.call('${p.value}')">
                 📞 Call Now
               </button>
@@ -298,7 +217,7 @@ const Contact = {
   email() {
     const cfg = ContactConfig.contact;
     const subject = encodeURIComponent(`Inquiry about ${ContactConfig.company.name}`);
-    const body = encodeURIComponent('Hello Temer Properties,\n\nI am interested in learning more about your properties.\n\nThank you!');
+    const body = encodeURIComponent(`Hello ${ContactConfig.company.name},\n\nI am interested in learning more about your properties.\n\nThank you!`);
     window.location.href = `${cfg.emails[0].mailto}?subject=${subject}&body=${body}`;
   },
   
@@ -419,7 +338,7 @@ contactStyles.textContent = `
     align-items: center;
     gap: 12px;
     padding: 16px;
-    background: linear-gradient(135deg, #84a441, #5a8a2a);
+    background: linear-gradient(135deg, var(--pri), var(--pri-d));
     color: #fff;
   }
   
@@ -489,7 +408,7 @@ contactStyles.textContent = `
   }
   
   .cm-action-btn.primary {
-    background: linear-gradient(135deg, #84a441, #5a8a2a);
+    background: linear-gradient(135deg, var(--pri), var(--pri-d));
     color: #fff;
   }
   
@@ -533,7 +452,7 @@ contactStyles.textContent = `
   .cm-email-item:hover,
   .cm-whatsapp-item:hover {
     background: #f0f1f3;
-    border-color: #84a441;
+    border-color: var(--pri);
   }
   
   .cm-phone-label,
@@ -571,7 +490,7 @@ contactStyles.textContent = `
   
   .cm-social-link:hover {
     background: #f0f1f3;
-    border-color: #84a441;
+    border-color: var(--pri);
   }
   
   .cm-form {
@@ -594,7 +513,7 @@ contactStyles.textContent = `
   
   .cm-input:focus,
   .cm-textarea:focus {
-    border-color: #84a441;
+    border-color: var(--pri);
   }
   
   .cm-textarea {
@@ -604,7 +523,7 @@ contactStyles.textContent = `
   
   .cm-submit-btn {
     padding: 12px 16px;
-    background: linear-gradient(135deg, #84a441, #5a8a2a);
+    background: linear-gradient(135deg, var(--pri), var(--pri-d));
     color: #fff;
     border: none;
     border-radius: 8px;

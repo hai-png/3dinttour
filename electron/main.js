@@ -14,7 +14,7 @@ function createWindow() {
       contextIsolation: true
     },
     icon: path.join(__dirname, 'icon-512.png'),
-    backgroundColor: '#0d1117'
+    backgroundColor: '#0a1628'
   });
 
   // Load the app

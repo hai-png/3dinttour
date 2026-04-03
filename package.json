@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "3D Tour with Firebase Availability Management",
   "main": "electron/main.js",
-  "author": "Temer Properties",
+  "author": "Hosea Real Estate",
   "license": "ISC",
   "scripts": {
     "start": "electron .",
@@ -22,7 +22,7 @@
     "3d-tour"
   ],
   "build": {
-    "appId": "com.temer.virtour",
+    "appId": "com.hosea.virtour",
     "productName": "3D Virtual Tour",
     "publish": null,
     "directories": {

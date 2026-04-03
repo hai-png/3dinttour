@@ -178,7 +178,7 @@
     test(
       'Demo credentials documented',
       true,
-      'admin@temerproperties.com, agent@temerproperties.com'
+      'admin@hosearealestate.com, agent@hosearealestate.com'
     );
     
     // Summary
@@ -196,7 +196,7 @@
     
     // Quick reference
     console.log('\n📚 Quick Reference:');
-    console.log('   - Login: AvailabilitySystem.login("admin@temerproperties.com", "password")');
+    console.log('   - Login: AvailabilitySystem.login("admin@hosearealestate.com", "password")');
     console.log('   - Get data: AvailabilitySystem.getAvailability()');
     console.log('   - Update unit: AvailabilitySystem.updateUnit("unit-101", "reserved", "Notes")');
     console.log('   - Save all: AvailabilitySystem.saveAllChanges()');

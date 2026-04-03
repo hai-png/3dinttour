@@ -13,7 +13,7 @@
  * - TourDataSync: Sync with external tour data systems
  * 
  * @version 2.0.0
- * @author Temer Properties
+ * @author Hosea Real Estate
  */
 
 (function(global) {
@@ -683,29 +683,27 @@
     async login(email, password) {
       Utils.log('AuthAdapter', 'Login attempt:', email);
 
-      // Demo users (replace with real API in production)
-      const demoUsers = {
-        'admin@temerproperties.com': {
-          id: '1',
-          email: 'admin@temerproperties.com',
-          name: 'Admin User',
-          role: 'admin'
-        },
-        'agent@temerproperties.com': {
-          id: '2',
-          email: 'agent@temerproperties.com',
-          name: 'Agent User',
-          role: 'agent'
-        }
-      };
+      // Demo users from brand config
+      const brandAuth = (typeof window !== 'undefined' && window.BRAND && window.BRAND.auth) || {};
+      const demoUsersRaw = brandAuth.demoUsers || {};
+      const demoUsers = {};
+      for (const [email, info] of Object.entries(demoUsersRaw)) {
+        demoUsers[email.toLowerCase()] = {
+          id: info.id || email,
+          email: email.toLowerCase(),
+          name: info.name || 'User',
+          role: info.role || 'user'
+        };
+      }
 
       await new Promise(r => setTimeout(r, 300)); // Simulate network
 
       const user = demoUsers[email.toLowerCase()];
       if (!user) {
-        return { 
-          success: false, 
-          error: 'Invalid credentials. Try admin@temerproperties.com' 
+        const emails = Object.keys(demoUsersRaw);
+        return {
+          success: false,
+          error: 'Invalid credentials.' + (emails.length ? ' Try: ' + emails.join(', ') : '')
         };
       }
 
@@ -1119,9 +1117,16 @@
               <button type="button" class="am-btn am-btn-secondary" onclick="AvailabilitySystem.hideAdminPanel()" style="padding:6px 10px;font-size:9.5px">✕</button>
             </div>
           </form>
-          <div style="font-size:8.5px;color:var(--t3);text-align:center;margin-top:4px">
-            admin@temerproperties.com
+          <div style="font-size:8.5px;color:var(--t3);text-align:center;margin-top:4px" id="admin-panel-hint">
           </div>
+          <script>
+            (function(){
+              const auth = (typeof window !== 'undefined' && window.BRAND && window.BRAND.auth) || {};
+              const emails = Object.keys(auth.demoUsers || {});
+              const el = document.getElementById('admin-panel-hint');
+              if (el) el.textContent = emails.length ? emails[0] : '';
+            })();
+          </script>
         `;
       }
     }
@@ -1907,20 +1912,23 @@
       set: function(val) { this.tourSync.syncQueue = val; }
     },
     config: {
-      value: {
-        adminEmails: ['admin@temerproperties.com', 'agent@temerproperties.com'],
-        statusColors: {
-          available: 'var(--ok)',
-          reserved: 'var(--warn)',
-          sold: 'var(--err)',
-          unavailable: 'var(--t3)'
-        },
-        statusLabels: {
-          available: 'Available',
-          reserved: 'Reserved',
-          sold: 'Sold',
-          unavailable: 'Unavailable'
-        }
+      get value() {
+        const brandAuth = (typeof window !== 'undefined' && window.BRAND && window.BRAND.auth) || {};
+        return {
+          adminEmails: brandAuth.adminEmails || [],
+          statusColors: {
+            available: 'var(--ok)',
+            reserved: 'var(--warn)',
+            sold: 'var(--err)',
+            unavailable: 'var(--t3)'
+          },
+          statusLabels: {
+            available: 'Available',
+            reserved: 'Reserved',
+            sold: 'Sold',
+            unavailable: 'Unavailable'
+          }
+        };
       }
     }
   });

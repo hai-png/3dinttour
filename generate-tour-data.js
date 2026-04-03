@@ -49,17 +49,26 @@ for (const [key, dir] of Object.entries(dirs)) {
   files[key] = getFilesInDir(dir);
 }
 
-const devLogo = path.join(baseDir, 'project', 'developers-logo.jpg');
-const hasDevLogo = fs.existsSync(devLogo);
+const devLogoFiles = ['Hosea-LOGO-12.png', 'developers-logo.jpg', 'logo.png', 'logo.jpg'];
+let devLogo = null;
+let hasDevLogo = false;
+for (const logoFile of devLogoFiles) {
+  const logoPath = path.join(baseDir, 'project', logoFile);
+  if (fs.existsSync(logoPath)) {
+    devLogo = logoPath;
+    hasDevLogo = true;
+    break;
+  }
+}
 
 // ═══════════════════════════════════════════════
 // CONFIGURATION — edit these for your project
 // ═══════════════════════════════════════════════
 
 const PROJECT_CONFIG = {
-  name: 'Lycee Seken',
-  description: 'A landmark residential development in the heart of Addis Ababa (Piyassa area), offering premium apartments with world-class amenities. The building features B+G+19+T construction with 8 thoughtfully designed units per floor, optimal space utilization, cross ventilation, and stunning city views.',
-  location: 'Piyassa, Addis Ababa',
+  name: 'Yerer Apartment',
+  description: 'Modern residential apartments in Yerer, Addis Ababa, offering quality living spaces with contemporary amenities.',
+  location: 'Yerer, Addis Ababa',
   buildingType: 'Residential',
   buildingSize: 'B+G+19+T',
   lotSize: 1110,
@@ -605,8 +614,8 @@ const DEFAULT_HOTSPOTS = [
     color: '#10b981',
     icon: '🔌',
     type: 'amenity',
-    images: ['project/amenities/ev-charging-station.jpg'],
-    videos: []
+    images: [],
+    videos: ['project/hotspots/ev_charging/ev_charging.mp4']
   },
   {
     id: 'h2',
@@ -617,8 +626,8 @@ const DEFAULT_HOTSPOTS = [
     color: '#22c55e',
     icon: '🌱',
     type: 'amenity',
-    images: ['project/amenities/green-terrace.jpg'],
-    videos: []
+    images: ['project/hotspots/green_terrace/swimming-pool-amenity.webp'],
+    videos: ['project/hotspots/green_terrace/green_terrace.mp4']
   }
 ];
 
@@ -698,7 +707,7 @@ const tourData = {
 
   // ── Media ──
   media: {
-    developerLogo: hasDevLogo ? 'project/developers-logo.jpg' : null,
+    developerLogo: hasDevLogo ? `project/${path.basename(devLogo)}` : null,
     heroImage: files.projectHero.find(isImage) ? `project/hero-image-video/${files.projectHero.find(isImage)}` : null,
     heroVideo: files.projectHero.find(isVideo) ? `project/hero-image-video/${files.projectHero.find(isVideo)}` : null,
     projectFloorPlan: files.projectPlans.length > 0 ? `project/floor-plans/${files.projectPlans[0]}` : null,

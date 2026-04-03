@@ -12,6 +12,7 @@ const CORE_FILES = [
   '/index.html',
   '/offline.html',
   '/manifest.json',
+  '/brand-config.json',
   '/icon-192.png',
   '/icon-512.png',
   '/availability-system.js',
@@ -167,27 +168,17 @@ self.addEventListener('message', (e) => {
       'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/loaders/RGBELoader.js',
       'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/objects/Sky.js',
       'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/libs/meshopt_decoder.module.js',
-      '/hdr/cobblestone_street_night_1k.hdr',
     ];
     
     // Cache CDN assets via Cache API
     caches.open(CACHE_NAME).then((cache) => {
       let cached = 0;
-      const total = cdnAssets.length + 1; // +1 for model
+      let total = cdnAssets.length + 2; // +2 for model + HDR (scanned dynamically)
       
       const cacheOne = (urls) => {
         if (urls.length === 0) {
-          // Now cache model via IndexedDB
-          cacheModelViaIndexedDB('/model/building.glb').then(() => {
-            cached++;
-            console.log(`[SW] Cached model via IndexedDB (${cached}/${total})`);
-            console.log(`[SW] Cached ${cached}/${total} assets - offline ready!`);
-            notifyOfflineReady();
-          }).catch(err => {
-            console.warn('[SW] Model cache failed:', err.message);
-            console.log(`[SW] Cached ${cached}/${total} assets (model skipped) - partial offline`);
-            notifyOfflineReady(true);
-          });
+          // Now scan and cache local media files dynamically
+          cacheLocalMedia(cache, cached, total);
           return;
         }
         
@@ -222,6 +213,85 @@ self.addEventListener('message', (e) => {
     self.skipWaiting();
   }
 });
+
+// Scan and cache local media files dynamically
+function cacheLocalMedia(cache, cached, total) {
+  // Scan common media directories for available files
+  const mediaDirs = [
+    '/model/',
+    '/hdr/',
+    '/project/hero-image-video/',
+    '/project/amenities/',
+    '/project/floor-plans/',
+    '/project/gallery/',
+    '/project/hotspot-media/',
+    '/panorama/',
+    '/2d-floor-plan/',
+    '/3d-floor-plan/',
+    '/gallery/',
+    '/unit-image-video/',
+  ];
+  
+  let dirsChecked = 0;
+  let modelFound = false;
+  let hdrFound = false;
+  
+  const checkDir = (dirs) => {
+    if (dirs.length === 0) {
+      // All dirs checked, notify ready
+      console.log(`[SW] Media scan complete. Cached ${cached} assets.`);
+      notifyOfflineReady();
+      return;
+    }
+    
+    const dir = dirs.shift();
+    // Try to fetch directory listing (works on most servers)
+    fetch(dir).then(resp => {
+      if (resp.ok && resp.headers.get('content-type')?.includes('text/html')) {
+        // Parse HTML directory listing for file links
+        return resp.text().then(html => {
+          const matches = html.match(/href="([^"]+\.(glb|gltf|hdr|jpg|jpeg|png|webp|svg|mp4|webm))"/gi) || [];
+          const files = [...new Set(matches.map(m => {
+            const url = m.match(/href="([^"]+)"/i);
+            return url ? dir + url[1] : null;
+          }).filter(Boolean))];
+          
+          // Cache found files
+          let fileIdx = 0;
+          const cacheFile = () => {
+            if (fileIdx >= files.length) {
+              dirsChecked++;
+              checkDir(dirs);
+              return;
+            }
+            const fileUrl = files[fileIdx++];
+            fetch(fileUrl).then(r => {
+              if (r.ok) {
+                return cache.put(fileUrl, r).then(() => {
+                  cached++;
+                  console.log(`[SW] Cached media (${cached}):`, fileUrl.split('/').pop());
+                  if (fileUrl.includes('.glb')) modelFound = true;
+                  if (fileUrl.includes('.hdr')) hdrFound = true;
+                  cacheFile();
+                });
+              }
+              cacheFile();
+            }).catch(() => cacheFile());
+          };
+          cacheFile();
+        });
+      }
+      // If directory listing not available, try known common files
+      dirsChecked++;
+      checkDir(dirs);
+    }).catch(() => {
+      dirsChecked++;
+      checkDir(dirs);
+    });
+  };
+  
+  checkDir(mediaDirs);
+}
 
 // IndexedDB for large model files
 function openModelDB() {

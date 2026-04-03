@@ -9,18 +9,97 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="3D Tour">
-<meta name="theme-color" content="#0d1117">
-<meta name="application-name" content="3D Interactive Tour">
+<meta name="apple-mobile-web-app-title" content="Hosea Tours">
+<meta name="theme-color" content="#0a1628">
+<meta name="application-name" content="Hosea Property Tours">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="icon" type="image/png" sizes="32x32" href="project/Hosea-LOGO-12.png">
+<link rel="icon" type="image/png" sizes="16x16" href="project/Hosea-LOGO-12.png">
+<link rel="apple-touch-icon" sizes="192x192" href="project/Hosea-LOGO-12.png">
+<link rel="icon" type="image/png" sizes="192x192" href="project/Hosea-LOGO-12.png">
+<link rel="icon" type="image/png" sizes="512x512" href="project/Hosea-LOGO-12.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
-<title>3D Interactive Tour</title>
+<link rel="shortcut icon" href="project/Hosea-LOGO-12.png">
+<title>Yerer Apartment</title>
+
+<!-- Brand Config Loader -->
+<script>
+(function(){
+  const defaults = {
+    brand: { companyName: 'Hosea Real Estate', shortName: 'Yerer Apartment', tagline: 'Providing high-quality apartments before promised time', logo: 'project/Hosea-LOGO-12.png', developerLogo: 'project/Hosea-LOGO-12.png' },
+    theme: { primary: '#1a5276', primaryDark: '#0e3a56', primaryLight: '#2980b9', primaryAlpha: 'rgba(26,82,118,.15)', success: '#22c55e', warning: '#f59e0b', error: '#ef4444', info: '#3b82f6', background: '#f4f5f7', card: '#ffffff', cardAlt: '#f9fafb', input: '#ffffff', textPrimary: '#1a1a2e', textSecondary: '#555570', textMuted: '#8888a0', borderLight: 'rgba(0,0,0,.08)', borderMedium: 'rgba(0,0,0,.14)' },
+    contact: { phones: [], emails: [], whatsapp: { enabled: false }, social: {}, address: '', website: '' },
+    project: { name: 'Yerer Apartment', description: 'Modern apartments in Yerer, Addis Ababa', location: 'Yerer, Addis Ababa', buildingType: '', buildingSize: '', deliveryTime: '' },
+    auth: { demoUsers: {}, adminEmails: [] },
+    contactForm: { enabled: true, endpoint: '', fields: [] },
+    displaySettings: { showPhones: true, showEmails: true, showSocial: true, showWhatsApp: true, showContactForm: true, showBusinessHours: true },
+    pwa: { name: 'Yerer Apartment', shortName: 'Yerer', description: 'Explore modern apartments', themeColor: '#0a1628', backgroundColor: '#0a1628', icon192: 'project/Hosea-LOGO-12.png', icon512: 'project/Hosea-LOGO-12.png' }
+  };
+  window.BRAND = JSON.parse(JSON.stringify(defaults));
+
+  fetch('brand-config.json').then(r => r.json()).then(data => {
+    // Deep merge config into defaults
+    function merge(target, source) {
+      for (const key in source) {
+        if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+          if (!target[key]) target[key] = {};
+          merge(target[key], source[key]);
+        } else {
+          target[key] = source[key];
+        }
+      }
+    }
+    merge(window.BRAND, data);
+    applyBrand(window.BRAND);
+  }).catch(() => {
+    console.warn('[Brand] Using defaults');
+    applyBrand(window.BRAND);
+  });
+
+  function applyBrand(c) {
+    const t = c.theme;
+    const style = document.createElement('style');
+    style.id = 'brand-theme';
+    style.textContent = `
+      :root {
+        --pri:${t.primary};--pri-d:${t.primaryDark};--pri-l:${t.primaryLight};--pri-a:${t.primaryAlpha};
+        --ok:${t.success};--warn:${t.warning};--err:${t.error};--info:${t.info};
+      }
+      ${t.dark ? `[data-theme="dark"]{--bg:${t.dark.background};--card:${t.dark.card};--card2:${t.dark.cardAlt};--inp:${t.dark.input};--t1:${t.dark.textPrimary};--t2:${t.dark.textSecondary};--t3:${t.dark.textMuted};--b1:${t.dark.borderLight};--b2:${t.dark.borderMedium};}` : ''}
+    `;
+    document.head.appendChild(style);
+
+    // Update PWA meta tags
+    if (c.pwa) {
+      const tc = document.querySelector('meta[name="theme-color"]');
+      if (tc) tc.content = c.pwa.themeColor || '#0d1117';
+      const at = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if (at) at.content = c.brand.shortName || '3D Tour';
+      const an = document.querySelector('meta[name="application-name"]');
+      if (an) an.content = c.pwa.name || '3D Interactive Property Tour';
+    }
+
+    // Update page title
+    if (c.pwa && c.pwa.name) document.title = c.pwa.name;
+
+    // Update logo after DOM loads
+    document.addEventListener('DOMContentLoaded', () => {
+      const logoImg = document.querySelector('#hdr .logo img, .logo img');
+      if (logoImg && c.brand.logo) logoImg.src = c.brand.logo;
+      
+      const logoLink = document.querySelector('link[rel="apple-touch-icon"]');
+      if (logoLink && c.pwa && c.pwa.icon192) logoLink.href = c.pwa.icon192;
+    });
+
+    console.log('[Brand] Applied:', c.brand.companyName);
+    console.log('[Brand] Config:', c);
+  }
+})();
+</script>
+
 <style>
 :root{
---pri:#7cb342;--pri-d:#5a8a2a;--pri-l:#aed581;--pri-a:rgba(124,179,66,.15);
+--pri:#1a5276;--pri-d:#0e3a56;--pri-l:#2980b9;--pri-a:rgba(26,82,118,.15);
 --ok:#22c55e;--warn:#f59e0b;--err:#ef4444;--info:#3b82f6;
 --bg:#f4f5f7;--card:#fff;--card2:#f9fafb;--inp:#fff;
 --t1:#1a1a2e;--t2:#555570;--t3:#8888a0;
@@ -31,9 +110,9 @@
 /* Mobile responsive breakpoints */
 --mobile-max:768px;--tablet-max:1024px;
 }
-[data-theme="dark"]{--bg:#16162a;--card:#222240;--card2:#282848;--inp:#2c2c4c;--t1:#e4e4f0;--t2:#a8a8c4;--t3:#6e6e94;--b1:rgba(255,255,255,.07);--b2:rgba(255,255,255,.13);}
+[data-theme="dark"]{--bg:#0a1628;--card:#132238;--card2:#1a2d45;--inp:#1e3450;--t1:#e8e8e8;--t2:#b0b8c4;--t3:#7a8594;--b1:rgba(255,255,255,.08);--b2:rgba(255,255,255,.15);}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0d1117;color:var(--t1);overflow:hidden;-webkit-font-smoothing:antialiased;touch-action:none;user-select:none;-webkit-user-select:none}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--t1);overflow:hidden;-webkit-font-smoothing:antialiased;touch-action:none;user-select:none;-webkit-user-select:none}
 button{font-family:inherit;border:none;cursor:pointer}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
 
@@ -277,9 +356,10 @@ button{font-family:inherit;border:none;cursor:pointer}
 #c{position:fixed;inset:0;display:block;z-index:0;touch-action:none}
 
 /* ═══ Tour Intro Overlay ═══ */
-#intro{position:fixed;inset:0;z-index:10000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s}
+#intro{position:fixed;inset:0;z-index:10000;background:linear-gradient(135deg,var(--pri-d) 0%,var(--pri) 50%,#0a1628 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s}
 #intro.gone{opacity:0;visibility:hidden;pointer-events:none}
-#intro .intro-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(8px) brightness(.4);transform:scale(1.1)}
+#intro .intro-bg{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(8px) brightness(.4);transform:scale(1.1);opacity:0;transition:opacity .5s}
+#intro .intro-bg.loaded{opacity:1}
 #intro .intro-content{position:relative;z-index:1;text-align:center;animation:introZoom 1.2s ease both}
 #intro .intro-logo{width:90px;height:90px;border-radius:22px;margin:0 auto 20px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.4);background:#fff;display:flex;align-items:center;justify-content:center;padding:8px}
 #intro .intro-logo img{width:100%;height:100%;object-fit:contain}
@@ -659,7 +739,7 @@ button{font-family:inherit;border:none;cursor:pointer}
   </div>
   <div id="sky-ctrl-body">
     <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.2);">
-      <b style="color:#7cb342;font-size:11px">☀️ Sky Parameters</b>
+      <b style="color:var(--pri);font-size:11px">☀️ Sky Parameters</b>
     </div>
     <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Turbidity</span><span id="sky-turbidity-v">10.0</span></label><input id="sky-turbidity" type="range" min="0" max="20" step="0.1" value="10" style="width:100%"></div>
     <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Rayleigh</span><span id="sky-rayleigh-v">2.5</span></label><input id="sky-rayleigh" type="range" min="0" max="4" step="0.1" value="2.5" style="width:100%"></div>
@@ -669,7 +749,7 @@ button{font-family:inherit;border:none;cursor:pointer}
     <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Sun Azimuth</span><span id="sky-azim-v">45°</span></label><input id="sky-azim" type="range" min="0" max="360" step="1" value="45" style="width:100%"></div>
     <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Exposure</span><span id="sky-exp-v">1.0</span></label><input id="sky-exp" type="range" min="0.1" max="3" step="0.1" value="1" style="width:100%"></div>
     <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.2);">
-      <b style="color:#7cb342;font-size:11px">☁️ Cloud Parameters</b>
+      <b style="color:var(--pri);font-size:11px">☁️ Cloud Parameters</b>
     </div>
     <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Cloud Density</span><span id="cld-density-v">0.55</span></label><input id="cld-density" type="range" min="0.1" max="1" step="0.05" value="0.55" style="width:100%"></div>
     <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Cloud Coverage</span><span id="cld-coverage-v">0.65</span></label><input id="cld-coverage" type="range" min="0.1" max="1" step="0.05" value="0.65" style="width:100%"></div>
@@ -1565,8 +1645,10 @@ function wireAll(){
 
 function populateIntro(){
   const intro=document.getElementById('intro');
-  if(TD.media?.heroImage)document.getElementById('intro-bg').style.backgroundImage=`url(${TD.media.heroImage})`;
-  if(TD.media?.developerLogo)document.getElementById('intro-logo').innerHTML=`<img src="${TD.media.developerLogo}">`;
+  const bgEl=document.getElementById('intro-bg');
+  const logoEl=document.getElementById('intro-logo');
+  if(TD.media?.heroImage){bgEl.style.backgroundImage=`url(${TD.media.heroImage})`;bgEl.classList.add('loaded');}
+  if(TD.media?.developerLogo){logoEl.innerHTML=`<img src="${TD.media.developerLogo}" alt="Logo">`;}
   document.getElementById('intro-name').textContent=TD.projectName||'Tour';
   document.getElementById('intro-loc').innerHTML=`📍 ${TD.projectDetails?.location||''}`;
   const stats=document.getElementById('intro-stats');const pd=TD.projectDetails||{};
@@ -1621,13 +1703,20 @@ function populateProject(){
   // Nearby — compact 2-column
   if(TD.nearbyAttractions?.length){html+=`<div class="pd-sec"><div class="pd-sec-t">📍 Nearby</div><div class="pd-nearby-grid">${TD.nearbyAttractions.map(n=>`<div class="pd-nr"><div class="nr-n">${n.icon||'📍'} ${n.name}</div><div class="nr-d">${n.distance}</div></div>`).join('')}</div></div>`;}
 
-  // Contact Us - using Temer Properties contact info
-  html+=`<div class="pd-contact"><div class="ct-title">📞 Contact Us</div><div class="pd-contact-grid">
-    <a class="pd-contact-btn" href="tel:6033">📱 Call</a>
-    <a class="pd-contact-btn" href="mailto:info@temerproperties.com">📧 Email</a>
-    <a class="pd-contact-btn" href="https://wa.me/251939555558" target="_blank">💬 WhatsApp</a>
-    <a class="pd-contact-btn" href="#" onclick="navigator.share?.({title:'${TD.projectName}',url:location.href});return false;">📤 Share</a>
-  </div></div>`;
+  // Contact Us - dynamically from brand config
+  const bc = window.BRAND.contact || {};
+  const ds = window.BRAND.displaySettings || {};
+  const primaryPhone = (bc.phones || []).find(p => p.primary) || (bc.phones || [])[0];
+  const primaryEmail = (bc.emails || []).find(e => e.primary) || (bc.emails || [])[0];
+  const wa = bc.whatsapp || {};
+  
+  let contactBtns = '';
+  if (ds.showPhones && primaryPhone) contactBtns += `<a class="pd-contact-btn" href="${primaryPhone.tel}">📱 Call</a>`;
+  if (ds.showEmails && primaryEmail) contactBtns += `<a class="pd-contact-btn" href="${primaryEmail.mailto}">📧 Email</a>`;
+  if (ds.showWhatsApp && wa.enabled) contactBtns += `<a class="pd-contact-btn" href="https://wa.me/${wa.number.replace(/[^0-9]/g,'')}" target="_blank">💬 WhatsApp</a>`;
+  contactBtns += `<a class="pd-contact-btn" href="#" onclick="navigator.share?.({title:'${TD.projectName}',url:location.href});return false;">📤 Share</a>`;
+  
+  html+=`<div class="pd-contact"><div class="ct-title">📞 Contact Us</div><div class="pd-contact-grid">${contactBtns}</div></div>`;
 
   // Map
   if(coords.lat&&coords.lng){html+=`<div class="pd-map"><iframe src="https://maps.google.com/maps?q=${coords.lat},${coords.lng}&z=15&output=embed" loading="lazy"></iframe></div><a class="pd-ml" href="https://maps.google.com/maps?q=${coords.lat},${coords.lng}" target="_blank">📍 Open in Maps</a>`;}
@@ -2412,7 +2501,7 @@ boot();
       <form id="auth-form" onsubmit="AvailabilitySystem.handleLogin(event)">
         <div class="am-form-group">
           <label for="auth-email">Email</label>
-          <input type="email" id="auth-email" class="am-input" placeholder="admin@temerproperties.com" required>
+          <input type="email" id="auth-email" class="am-input" placeholder="Enter email" required>
         </div>
         <div class="am-form-group">
           <label for="auth-password">Password</label>
@@ -2422,8 +2511,17 @@ boot();
         <button type="submit" id="auth-submit" class="am-btn am-btn-primary">Sign In</button>
       </form>
       <div class="am-demo-info">
-        <small>Demo accounts:<br>admin@temerproperties.com / agent@temerproperties.com</small>
+        <small id="auth-demo-info">Loading...</small>
       </div>
+      <script>
+        (function(){
+          const auth = window.BRAND.auth || {};
+          const users = auth.demoUsers || {};
+          const emails = Object.keys(users);
+          const el = document.getElementById('auth-demo-info');
+          if (el) el.innerHTML = emails.length ? 'Demo accounts:<br>' + emails.join(' / ') : 'No demo accounts configured';
+        })();
+      </script>
     </div>
   </div>
 </div>

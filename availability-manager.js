@@ -10,24 +10,24 @@
  */
 
 const AvailabilityManager = {
-  // Configuration
-  config: {
-    adminEmails: [
-      'admin@temerproperties.com',
-      'agent@temerproperties.com'
-    ],
-    statusColors: {
-      available: 'var(--ok)',
-      reserved: 'var(--warn)',
-      sold: 'var(--err)',
-      unavailable: 'var(--t3)'
-    },
-    statusLabels: {
-      available: 'Available',
-      reserved: 'Reserved',
-      sold: 'Sold',
-      unavailable: 'Unavailable'
-    }
+  // Configuration - read from brand config
+  get config() {
+    const brandAuth = (typeof window !== 'undefined' && window.BRAND && window.BRAND.auth) || {};
+    return {
+      adminEmails: brandAuth.adminEmails || [],
+      statusColors: {
+        available: 'var(--ok)',
+        reserved: 'var(--warn)',
+        sold: 'var(--err)',
+        unavailable: 'var(--t3)'
+      },
+      statusLabels: {
+        available: 'Available',
+        reserved: 'Reserved',
+        sold: 'Sold',
+        unavailable: 'Unavailable'
+      }
+    };
   },
 
   // State

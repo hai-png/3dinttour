@@ -1,136 +1,81 @@
 {
   "version": "1.0.0",
   "company": {
-    "name": "Temer Properties",
-    "fullName": "Temer Real Estate Ethiopia",
-    "description": "Real estate in Ethiopia - Find your next home or investment with Temer Properties. Explore houses for sale in Addis Ababa",
-    "website": "https://temerproperties.com",
-    "logo": "from website/cropped-Properties-1.png"
+    "name": "Hosea Real Estate",
+    "fullName": "Hosea Real Estate",
+    "description": "Modern apartments in Addis Ababa - Providing high-quality apartments before promised time.",
+    "website": "https://hosearealestate.com",
+    "logo": "project/Hosea-LOGO-12.png"
   },
   "contact": {
     "phones": [
       {
         "type": "hotline",
         "label": "Hotline",
-        "value": "6033",
-        "tel": "tel:6033",
-        "display": "6033",
+        "value": "+251902222225",
+        "tel": "tel:+251902222225",
+        "display": "+251 902 222 225",
         "primary": true
       },
       {
         "type": "mobile",
-        "label": "Mobile 1",
-        "value": "+251975666699",
-        "tel": "tel:+251975666699",
-        "display": "+251 975 666 699",
-        "whatsapp": false
-      },
-      {
-        "type": "mobile",
-        "label": "Mobile 2",
-        "value": "+251939555558",
-        "tel": "tel:+251939555558",
-        "display": "+251 939 555 558",
-        "whatsapp": true
+        "label": "Mobile",
+        "value": "0902222225",
+        "tel": "tel:0902222225",
+        "display": "0902 222 225"
       }
     ],
     "emails": [
       {
         "type": "general",
         "label": "General Inquiry",
-        "value": "info@temerproperties.com",
-        "mailto": "mailto:info@temerproperties.com",
+        "value": "info@hosearealestate.com",
+        "mailto": "mailto:info@hosearealestate.com",
         "primary": true
       }
     ],
     "whatsapp": {
       "enabled": true,
-      "number": "+251939555558",
-      "display": "+251 939 555 558",
-      "message": "Hello Temer Properties, I'm interested in learning more about your properties."
+      "number": "+251902222225",
+      "display": "+251 902 222 225",
+      "message": "Hello Hosea Real Estate, I'm interested in learning more about your properties."
     },
     "social": {
       "facebook": {
         "enabled": true,
-        "url": "https://www.facebook.com/temerproperties?mibextid=JRoKGi",
-        "handle": "@temerproperties",
+        "url": "https://www.facebook.com/hosearealestat/",
+        "handle": "@hosearealestat",
         "icon": "facebook"
       },
-      "twitter": {
-        "enabled": true,
-        "url": "https://x.com/TemerProperties",
-        "handle": "@TemerProperties",
-        "icon": "twitter"
-      },
-      "youtube": {
-        "enabled": true,
-        "url": "https://www.youtube.com/@TemerProperties",
-        "handle": "@TemerProperties",
-        "icon": "youtube"
-      },
-      "instagram": {
-        "enabled": true,
-        "url": "https://www.instagram.com/temerproperties?igsh=MXJ6ZGozY3QwaXBsMQ",
-        "handle": "@temerproperties",
-        "icon": "instagram"
-      },
-      "tiktok": {
-        "enabled": true,
-        "url": "https://www.tiktok.com/@temer_properties?_t=8opa5yBARtd&_r=1",
-        "handle": "@temer_properties",
-        "icon": "tiktok"
-      }
+      "twitter": { "enabled": false },
+      "youtube": { "enabled": false },
+      "instagram": { "enabled": false },
+      "tiktok": { "enabled": false }
     }
   },
   "location": {
-    "address": "Piyassa, Addis Ababa, Ethiopia",
+    "address": "Bole Medhanialem to Atlas Road, in front of Ethiotelecom, Hosea Real Estate Bldg, 1st Floor, Addis Ababa, Ethiopia",
     "city": "Addis Ababa",
     "country": "Ethiopia",
     "coordinates": {
-      "lat": 9.036278,
-      "lng": 38.752639
+      "lat": 9.0100,
+      "lng": 38.7800
     }
   },
   "businessHours": {
-    "enabled": false
+    "enabled": true,
+    "hours": "Monday–Saturday: 8:00 AM – 5:00 PM | Sunday: Closed"
   },
   "contactForm": {
     "enabled": true,
-    "endpoint": "https://temerproperties.com/wp-admin/admin-ajax.php",
+    "endpoint": "https://hosearealestate.com/wp-admin/admin-ajax.php",
     "fields": [
-      {
-        "name": "contact_name",
-        "label": "Your Name",
-        "type": "text",
-        "required": true,
-        "placeholder": "Your Name"
-      },
-      {
-        "name": "contact_email",
-        "label": "Your Email",
-        "type": "email",
-        "required": true,
-        "placeholder": "Your Email"
-      },
-      {
-        "name": "contact_phone",
-        "label": "Your Phone",
-        "type": "tel",
-        "required": false,
-        "placeholder": "Your Phone"
-      },
-      {
-        "name": "contact_content",
-        "label": "Message",
-        "type": "textarea",
-        "required": true,
-        "placeholder": "Type your message..."
-      }
+      { "name": "contact_name", "label": "Your Name", "type": "text", "required": true, "placeholder": "Your Name" },
+      { "name": "contact_email", "label": "Your Email", "type": "email", "required": true, "placeholder": "Your Email" },
+      { "name": "contact_phone", "label": "Your Phone", "type": "tel", "required": false, "placeholder": "Your Phone" },
+      { "name": "contact_content", "label": "Message", "type": "textarea", "required": true, "placeholder": "Type your message..." }
     ],
-    "submitButton": {
-      "label": "Send Message",
-      "icon": "send"
-    }
+    "submitButton": { "label": "Send Message", "icon": "send" }
   },
   "displaySettings": {
     "showPhones": true,
@@ -138,7 +83,7 @@
     "showSocial": true,
     "showWhatsApp": true,
     "showContactForm": true,
-    "primaryColor": "#84a441",
-    "secondaryColor": "#b09048"
+    "primaryColor": "#1a5276",
+    "secondaryColor": "#2980b9"
   }
 }
