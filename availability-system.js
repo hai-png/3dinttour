@@ -1536,7 +1536,13 @@
         saveAllChanges: () => self.saveAllChanges(),
 
         // Tour data sync
-        markTdReady: () => self.tourSync.markReady()
+        markTdReady: () => self.tourSync.markReady(),
+
+        // State subscription (for boot process)
+        subscribe: (key, callback) => self.subscribe(key, callback),
+
+        // State access
+        state: self.state
       };
 
       // Also expose as AvailabilityManager for backwards compatibility

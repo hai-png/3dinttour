@@ -306,7 +306,7 @@ self.addEventListener('message', (e) => {
       './unit-image-video/3-bed-03/Scene 73.webp',
       // 3-bed-04
       './unit-image-video/3-bed-04/GF-DINING ROOM 2.webp',
-      './unit-image-video/3-bed-04/D5_Image_202403 21_163403.webp',
+      './unit-image-video/3-bed-04/D5_Image_20240321_163403.webp',
       './unit-image-video/3-bed-04/218.webp',
       // 3-bed-05
       './unit-image-video/3-bed-05/213.webp',
