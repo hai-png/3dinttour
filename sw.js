@@ -91,12 +91,21 @@ self.addEventListener('fetch', (e) => {
             }
             // Fetch from network
             return fetch(e.request).then(resp => {
-              if (resp.ok) {
-                // Cache in both Cache API and IndexedDB
-                const clone = resp.clone();
-                cacheModelBlob(url.href, clone.blob());
-                caches.open(CACHE_NAME).then(cache => cache.put(e.request, resp));
+              if (!resp.ok) {
+                console.error('[SW] Model fetch failed:', url.pathname, resp.status);
+                return resp;
               }
+              // Clone before using response body
+              const cacheClone = resp.clone();
+              const dbClone = resp.clone();
+              
+              // Store in IndexedDB
+              cacheModelBlob(url.href, dbClone.blob());
+              
+              // Store in Cache API
+              caches.open(CACHE_NAME).then(cache => cache.put(e.request, cacheClone))
+                .catch(err => console.warn('[SW] Cache put failed:', url.pathname, err.message));
+              
               return resp;
             }).catch(err => {
               console.error('[SW] Model fetch failed:', url.pathname, err.message);
@@ -125,11 +134,21 @@ self.addEventListener('fetch', (e) => {
             }
             // Fetch from network
             return fetch(e.request).then(resp => {
-              if (resp.ok) {
-                const clone = resp.clone();
-                cacheModelBlob(url.href, clone.blob());
-                caches.open(CACHE_NAME).then(cache => cache.put(e.request, resp));
+              if (!resp.ok) {
+                console.error('[SW] HDR fetch failed:', url.pathname, resp.status);
+                return resp;
               }
+              // Clone before using response body
+              const cacheClone = resp.clone();
+              const dbClone = resp.clone();
+              
+              // Store in IndexedDB
+              cacheModelBlob(url.href, dbClone.blob());
+              
+              // Store in Cache API
+              caches.open(CACHE_NAME).then(cache => cache.put(e.request, cacheClone))
+                .catch(err => console.warn('[SW] Cache put failed:', url.pathname, err.message));
+              
               return resp;
             }).catch(err => {
               console.error('[SW] HDR fetch failed:', url.pathname, err.message);
@@ -357,13 +376,14 @@ self.addEventListener('message', (e) => {
         fetch(url).then(resp => {
           if (resp.ok) {
             // For large files, also store in IndexedDB
-            const clone = resp.clone();
             if (url.endsWith('.glb') || url.endsWith('.hdr')) {
-              clone.blob().then(blob => {
+              const dbClone = resp.clone();
+              dbClone.blob().then(blob => {
                 cacheModelBlob(url, Promise.resolve(blob));
               });
             }
-            return cache.put(url, resp).then(() => {
+            const cacheClone = resp.clone();
+            return cache.put(url, cacheClone).then(() => {
               cached++;
               const fileName = url.split('/').pop();
               const label = `Caching ${cached}/${totalKnown}: ${fileName}`;
