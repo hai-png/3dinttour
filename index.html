@@ -2358,7 +2358,8 @@ async function boot(){
 
     // Register service worker
     // Detect base path for GitHub Pages subdirectory deployment
-    const basePath = location.pathname.replace(/\/[^/]*$/, '') || '/';
+    let basePath = location.pathname.replace(/\/[^/]*$/, '') || '/';
+    if (!basePath.endsWith('/')) basePath += '/';
     navigator.serviceWorker.register('sw.js', { scope: basePath }).then((reg)=>{
       console.log('[PWA] Registered, scope:', reg.scope);
       console.log('[PWA] Active:', !!reg.active, 'Installing:', !!reg.installing, 'Waiting:', !!reg.waiting);
