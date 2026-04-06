@@ -285,24 +285,12 @@ self.addEventListener('message', (e) => {
       './unit-image-video/3-bed-03/mainsowreel.mp4',
     ];
 
-    // Priority 4: Panorama images (requested when user opens panorama view)
-    const panoramaImages = [
-      './panorama/1-bed-01.webp',
-      './panorama/2-bed-01.webp',
-      './panorama/3-bed-01.webp',
-      './panorama/3-bed-02.webp',
-      './panorama/3-bed-03.webp',
-      './panorama/3-bed-04.webp',
-      './panorama/3-bed-05.webp',
-      './panorama/3-bed-06.webp',
-    ];
-
-    // Priority 5: 2D floor plan
+    // Priority 4: 2D floor plan
     const floorPlan2D = [
       './2d-floor-plan/type2.webp',
     ];
 
-    // Priority 6: Unit images (cached along with unit videos)
+    // Priority 5: Unit images (cached along with unit videos)
     const unitImages = [
       // 1-bed-01
       './unit-image-video/1-bed-01/1.webp',
@@ -348,7 +336,7 @@ self.addEventListener('message', (e) => {
     ];
 
     // Cache in priority order with yield points
-    const allAssets = [...priorityLocal, ...projectMedia, ...unitVideos, ...panoramaImages, ...floorPlan2D, ...unitImages, ...cdnAssets];
+    const allAssets = [...priorityLocal, ...projectMedia, ...unitVideos, ...floorPlan2D, ...unitImages, ...cdnAssets];
     const totalKnown = allAssets.length;
 
     // Helper to send progress to page
@@ -374,17 +362,19 @@ self.addEventListener('message', (e) => {
 
         const url = urls.shift();
         
-        // Add timeout to fetch (30 seconds)
+        // Add timeout to fetch (60 seconds for large model files)
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        const isModelOrHdr = url.endsWith('.glb') || url.endsWith('.hdr');
+        const timeoutMs = isModelOrHdr ? 60000 : 30000;
+        const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
         
         fetch(url, { signal: controller.signal }).then(resp => {
           clearTimeout(timeoutId);
           
           if (resp.ok) {
-            // Skip large files on mobile to avoid memory issues
+            // Skip large files on mobile to avoid memory issues (30MB limit for building model)
             const contentLength = resp.headers.get('content-length');
-            const isLargeFile = contentLength && parseInt(contentLength) > 10 * 1024 * 1024; // 10MB limit
+            const isLargeFile = contentLength && parseInt(contentLength) > 30 * 1024 * 1024; // 30MB limit
             
             if (isLargeFile) {
               console.log(`[SW] Skipping large file cache (${(parseInt(contentLength) / 1024 / 1024).toFixed(1)}MB):`, url.split('/').pop());
@@ -470,7 +460,6 @@ function cacheLocalMedia(cache, cachedCount, totalKnown, sendProgress) {
     './project/gallery/',
     './project/hotspot-media/',
     './project/hotspots/',
-    './panorama/',
     './2d-floor-plan/',
     './3d-floor-plan/',
     './gallery/',
@@ -517,9 +506,9 @@ function cacheLocalMedia(cache, cachedCount, totalKnown, sendProgress) {
             fetch(fileUrl, { signal: controller.signal }).then(r => {
               clearTimeout(timeoutId);
               if (r.ok) {
-                // Check file size
+                // Check file size (30MB limit for building model)
                 const contentLength = r.headers.get('content-length');
-                const isLarge = contentLength && parseInt(contentLength) > 10 * 1024 * 1024;
+                const isLarge = contentLength && parseInt(contentLength) > 30 * 1024 * 1024;
                 
                 if (isLarge) {
                   count++;
