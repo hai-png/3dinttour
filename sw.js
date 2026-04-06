@@ -347,7 +347,7 @@ self.addEventListener('message', (e) => {
       'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/libs/meshopt_decoder.module.js',
     ];
 
-    // Cache in priority order
+    // Cache in priority order with yield points
     const allAssets = [...priorityLocal, ...projectMedia, ...unitVideos, ...panoramaImages, ...floorPlan2D, ...unitImages, ...cdnAssets];
     const totalKnown = allAssets.length;
 
@@ -363,7 +363,7 @@ self.addEventListener('message', (e) => {
     caches.open(CACHE_NAME).then((cache) => {
       let cached = 0;
 
-      // Cache files sequentially - priority files first
+      // Cache files sequentially with yield points to avoid blocking other requests
       const cacheOne = (urls) => {
         if (urls.length === 0) {
           console.log(`[SW] Pre-cached ${cached}/${totalKnown} known assets`);
@@ -393,7 +393,13 @@ self.addEventListener('message', (e) => {
                 console.log(`[SW] Cached (${cached}/${totalKnown}):`, fileName);
               }
               sendProgress(cached, label);
-              cacheOne(urls);
+              
+              // Yield after every 5 assets to allow other fetches
+              if (cached % 5 === 0) {
+                setTimeout(() => cacheOne(urls), 100);
+              } else {
+                cacheOne(urls);
+              }
             });
           } else {
             console.warn('[SW] Failed to fetch:', url, resp.status);

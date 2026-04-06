@@ -2122,19 +2122,8 @@ async function boot(){
   UI.populateIntro();
   E.configure(window.TD);
 
-  // Wait a bit for service worker to cache model files before loading them
-  // This ensures offline mode works - model will be in cache when requested
-  const swReady = new Promise(resolve => {
-    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-      // SW is active, give it 500ms to finish caching priority files
-      setTimeout(resolve, 500);
-    } else {
-      // No SW, proceed immediately
-      resolve();
-    }
-  });
-
-  await swReady;
+  // Don't wait for service worker caching - load model immediately
+  // SW will cache in background without blocking
 
   if(window.TD.hdri){try{E.setEnv(await AL.hdri(window.TD.hdri))}catch(e){E.setFallbackBg()}}else E.setFallbackBg();
   if(window.TD.modelFile){try{Mdl.load(await AL.glb(window.TD.modelFile,'Building'))}catch(e){Mdl.fallback()}}else Mdl.fallback();
@@ -2398,25 +2387,38 @@ async function boot(){
       // Listen for controller change
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         console.log('[PWA] Controller changed!');
-        setTimeout(triggerCaching, 500);
+        // Delay caching until after page is fully loaded
+        setTimeout(() => {
+          if (document.readyState === 'complete') {
+            triggerCaching();
+          } else {
+            window.addEventListener('load', () => triggerCaching(), { once: true });
+          }
+        }, 2000);
       });
 
       // Wait for service worker to take control, then cache everything
+      // But only after page is fully loaded and 3D model is ready
       let cachingTriggered = false;
       function triggerCaching(){
         if (cachingTriggered) return;
         if (navigator.serviceWorker.controller) {
           cachingTriggered = true;
-          navigator.serviceWorker.controller.postMessage('CACHE_EVERYTHING');
-          console.log('[PWA] Triggered asset caching');
+          // Additional delay to ensure model loading has started
+          setTimeout(() => {
+            navigator.serviceWorker.controller.postMessage('CACHE_EVERYTHING');
+            console.log('[PWA] Triggered background asset caching');
+          }, 3000);
         } else {
           console.log('[PWA] Waiting for SW controller...');
           setTimeout(triggerCaching, 1000);
         }
       }
 
-      // Start checking immediately - SW should be ready fast
-      setTimeout(triggerCaching, 1000);
+      // Start checking after page load + delay
+      window.addEventListener('load', () => {
+        setTimeout(triggerCaching, 2000);
+      });
 
       // Fallback: if caching doesn't complete within 60s, show enter anyway
       setTimeout(() => {
