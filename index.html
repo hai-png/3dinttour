@@ -2402,7 +2402,7 @@ async function boot(){
       const names = await caches.keys();
       for (const name of names) {
         // Only delete caches from our app (not other PWAs)
-        if (name.startsWith('tour-v') && name !== 'tour-v7') {
+        if (name.startsWith('tour-v') && name !== 'tour-v8') {
           await caches.delete(name);
           console.log('[PWA] Cleaned old cache:', name);
         }
@@ -2484,11 +2484,11 @@ async function boot(){
         setTimeout(triggerCaching, 2000);
       });
 
-      // Fallback: if caching doesn't complete within 60s, mark SW phase done anyway
+      // Fallback: if caching doesn't complete within 90s, mark SW phase done anyway
       setTimeout(() => {
         console.warn('[PWA] Caching timeout - marking SW phase done');
         markSWDone('✓ Ready (some assets cached)');
-      }, 60000);
+      }, 90000);
     }).catch((err)=>{
       console.error('[PWA] Registration error:', err);
       console.error('[PWA] Make sure sw.js is served correctly');

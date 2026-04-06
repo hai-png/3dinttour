@@ -3,7 +3,7 @@
  * Cache-first strategy: serve from cache, fallback to network
  */
 
-const CACHE_VERSION = 'v7';
+const CACHE_VERSION = 'v8';
 const CACHE_NAME = `tour-${CACHE_VERSION}`;
 const OFFLINE_PAGE = './offline.html';
 
@@ -314,11 +314,8 @@ self.addEventListener('message', (e) => {
 
     // Priority 1: Local media files (MUST be cached first - requested immediately by page)
     const priorityLocal = [
-      // Model files (critical - requested on page load)
+      // Model file (critical - requested on page load)
       './model/building.glb',
-      './3d-floor-plan/1-bed-01.glb',
-      './3d-floor-plan/2-bed-01.glb',
-      './3d-floor-plan/3d-bed-01.glb',
     ];
 
     // Priority 2: Project media (requested shortly after)
@@ -462,6 +459,9 @@ self.addEventListener('message', (e) => {
           clearTimeout(timeoutId);
 
           if (resp.ok) {
+            // Skip caching partial responses (206 Range requests, e.g. videos)
+            const isPartial = resp.status === 206;
+
             // Check file size - skip large files to avoid memory issues
             const contentLength = resp.headers.get('content-length');
             const fileSize = contentLength ? parseInt(contentLength) : 0;
@@ -484,32 +484,42 @@ self.addEventListener('message', (e) => {
                 console.warn('[SW] IndexedDB store failed:', url, err.message);
               });
             }
-            
-            const cacheClone = resp.clone();
-            return cache.put(url, cacheClone).then(() => {
+
+            // Only cache if not a partial response
+            if (!isPartial) {
+              const cacheClone = resp.clone();
+              return cache.put(url, cacheClone).then(() => {
+                cached++;
+                const fileName = url.split('/').pop();
+                const label = `Caching ${cached}/${totalKnown}: ${fileName}`;
+                if (cached <= priorityLocal.length) {
+                  console.log(`[SW] ⚡ Priority cached (${cached}/${totalKnown}):`, fileName);
+                } else {
+                  console.log(`[SW] Cached (${cached}/${totalKnown}):`, fileName);
+                }
+                sendProgress(cached, label);
+
+                // Yield after every 5 assets to allow other fetches
+                if (cached % 5 === 0) {
+                  setTimeout(() => cacheOne(urls), 100);
+                } else {
+                  cacheOne(urls);
+                }
+              }).catch(err => {
+                // Cache.put failed - still count it
+                console.warn('[SW] Cache put failed for:', url, err.message);
+                failed++;
+                sendProgress(cached, `Cache error: ${url.split('/').pop()}`);
+                cacheOne(urls);
+              });
+            } else {
+              // Partial response - still count as cached, just skip Cache API
               cached++;
               const fileName = url.split('/').pop();
-              const label = `Caching ${cached}/${totalKnown}: ${fileName}`;
-              if (cached <= priorityLocal.length) {
-                console.log(`[SW] ⚡ Priority cached (${cached}/${totalKnown}):`, fileName);
-              } else {
-                console.log(`[SW] Cached (${cached}/${totalKnown}):`, fileName);
-              }
+              const label = `Caching ${cached}/${totalKnown}: ${fileName} (partial)`;
               sendProgress(cached, label);
-
-              // Yield after every 5 assets to allow other fetches
-              if (cached % 5 === 0) {
-                setTimeout(() => cacheOne(urls), 100);
-              } else {
-                cacheOne(urls);
-              }
-            }).catch(err => {
-              // Cache.put failed - still count it
-              console.warn('[SW] Cache put failed for:', url, err.message);
-              failed++;
-              sendProgress(cached, `Cache error: ${url.split('/').pop()}`);
               cacheOne(urls);
-            });
+            }
           } else {
             console.warn('[SW] Failed to fetch:', url, resp.status);
             failed++;
