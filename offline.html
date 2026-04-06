@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#0a1628">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="icon-192.png">
   <title>Offline - Yerer Apartment</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -31,8 +33,16 @@
       font-size: 16px;
       border-radius: 8px;
       cursor: pointer;
+      margin: 5px;
     }
     button:hover { background: #2980b9; }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
     .status {
       margin-top: 20px;
       padding: 12px;
@@ -49,7 +59,10 @@
     <div class="icon">📡</div>
     <h1>You're Offline</h1>
     <p>Your cached data is still available. You can browse previously loaded content.</p>
-    <button onclick="window.location.reload()">🔄 Try Again</button>
+    <div class="actions">
+      <button onclick="window.location.href='index.html'">🏠 View Cached Tour</button>
+      <button onclick="window.location.reload()">🔄 Try Again</button>
+    </div>
     <div class="status" id="status">Checking connection...</div>
   </div>
   <script>
@@ -62,9 +75,28 @@
         el.textContent = 'Still offline - cached data available';
       }
     }
+    
+    // Check if we have cached data available
+    function checkCachedData() {
+      if ('serviceWorker' in navigator) {
+        caches.keys().then(names => {
+          const tourCaches = names.filter(n => n.startsWith('tour-v'));
+          if (tourCaches.length === 0) {
+            document.getElementById('status').textContent = '⚠️ No cached data available. Please go online first.';
+            document.querySelector('.actions').style.display = 'none';
+          } else {
+            console.log(`Found ${tourCaches.length} cached version(s):`, tourCaches.join(', '));
+          }
+        }).catch(() => {
+          // Caches API not available
+        });
+      }
+    }
+    
     window.addEventListener('online', update);
     window.addEventListener('offline', update);
     update();
+    checkCachedData();
   </script>
 </body>
 </html>

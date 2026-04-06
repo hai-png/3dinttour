@@ -77,10 +77,9 @@ over.png
 unnecessary*.png
 whatshouldbe.png
 
-# GLB models - except main building model
-!model/*.glb
-!3d-floor-plan/*.glb
+# GLB models
 *.glb
+!model/building.glb
 
 # Screenshots and temporary images
 brave_screenshot_localhost*.png
@@ -93,3 +92,14 @@ serve.js
 
 # Website downloads folder
 from website/
+
+# Documentation (keep READMEs, remove others)
+AVAILABILITY-*.md
+CHANGES-SUMMARY.md
+LOADING-*.md
+OFFLINE-*.md
+PWA-*.md
+IMPLEMENTATION-*.md
+MIGRATION.md
+SETUP-*.md
+UPDATES.md

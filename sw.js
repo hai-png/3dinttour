@@ -3,8 +3,17 @@
  * Cache-first strategy: serve from cache, fallback to network
  */
 
-const CACHE_NAME = 'tour-v7';
+const CACHE_VERSION = 'v7';
+const CACHE_NAME = `tour-${CACHE_VERSION}`;
 const OFFLINE_PAGE = './offline.html';
+
+// Configuration
+const CONFIG = {
+  // Maximum file size to cache (30MB) - files larger than this will be skipped
+  MAX_CACHE_SIZE: 30 * 1024 * 1024,
+  // Use IndexedDB for files larger than 5MB
+  INDEXEDDB_THRESHOLD: 5 * 1024 * 1024,
+};
 
 // Core files to pre-cache (small files only - model cached at runtime)
 const CORE_FILES = [
@@ -64,7 +73,7 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// Fetch: cache-first, fallback to network
+// Fetch: Use different strategies based on resource type
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
@@ -74,49 +83,116 @@ self.addEventListener('fetch', (e) => {
   // Skip Firebase/Firestore requests
   if (url.hostname.includes('firebase') || url.hostname.includes('firestore')) return;
 
-  // Special handling for .glb model files (use IndexedDB)
+  // Strategy 1: .glb model files (use IndexedDB + Cache API)
   if (url.pathname.endsWith('.glb')) {
+    e.respondWith(handleModelRequest(e.request, url));
+    return;
+  }
+
+  // Strategy 2: HTML pages (network-first with cache fallback for fresh content)
+  if (e.request.headers.get('accept')?.includes('text/html') || 
+      e.request.mode === 'navigate') {
     e.respondWith(
-      caches.match(e.request)
-        .then((cached) => {
+      fetch(e.request)
+        .then(response => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(e.request, clone).catch(err => 
+                console.warn('[SW] HTML cache put failed:', err.message)
+              );
+            });
+          }
+          return response;
+        })
+        .catch(() => caches.match(e.request).then(cached => {
           if (cached) {
-            console.log('[SW] Serving model from cache:', url.pathname);
+            console.log('[SW] Serving HTML from cache (offline):', url.pathname);
             return cached;
           }
-          // Try IndexedDB
-          return getModelFromIndexedDB(url.href).then(blob => {
-            if (blob) {
-              console.log('[SW] Serving model from IndexedDB:', url.pathname);
-              return new Response(blob, { headers: { 'Content-Type': 'model/gltf-binary' }});
-            }
-            // Fetch from network
-            return fetch(e.request).then(resp => {
-              if (!resp.ok) {
-                console.error('[SW] Model fetch failed:', url.pathname, resp.status);
-                return resp;
-              }
-              // Clone before using response body
-              const cacheClone = resp.clone();
-              const dbClone = resp.clone();
-              
-              // Store in IndexedDB
-              cacheModelBlob(url.href, dbClone.blob());
-              
-              // Store in Cache API
-              caches.open(CACHE_NAME).then(cache => cache.put(e.request, cacheClone))
-                .catch(err => console.warn('[SW] Cache put failed:', url.pathname, err.message));
-              
-              return resp;
-            }).catch(err => {
-              console.error('[SW] Model fetch failed:', url.pathname, err.message);
-              return new Response('', { status: 404, statusText: 'Model not available offline' });
-            });
-          });
-        })
+          return caches.match(OFFLINE_PAGE);
+        }))
     );
     return;
   }
 
+  // Strategy 3: Images, videos, fonts (cache-first, fallback to network)
+  if (e.request.destination === 'image' || 
+      e.request.destination === 'video' ||
+      e.request.destination === 'font' ||
+      url.pathname.match(/\.(jpg|jpeg|png|webp|gif|svg|mp4|webm|woff2?|ttf|eot)$/i)) {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        if (cached) {
+          return cached;
+        }
+        return fetch(e.request).then(response => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(e.request, clone).catch(err => 
+                console.warn('[SW] Media cache put failed:', err.message)
+              );
+            });
+          }
+          return response;
+        }).catch(() => {
+          console.warn('[SW] Media fetch failed, offline:', url.pathname);
+          return new Response('', { status: 404, statusText: 'Not Found (Offline)' });
+        });
+      })
+    );
+    return;
+  }
+
+  // Strategy 4: JS/CSS files (cache-first, version-based invalidation)
+  if (e.request.destination === 'script' || 
+      e.request.destination === 'style' ||
+      url.pathname.match(/\.(js|css)$/i)) {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        if (cached) {
+          console.log('[SW] Serving JS/CSS from cache:', url.pathname);
+          return cached;
+        }
+        return fetch(e.request).then(response => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(e.request, clone).catch(err => 
+                console.warn('[SW] Script cache put failed:', err.message)
+              );
+            });
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // Strategy 5: CDN assets (cache-first with long TTL)
+  if (url.hostname.includes('cdn') || url.hostname.includes('jsdelivr')) {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        if (cached) return cached;
+        return fetch(e.request).then(response => {
+          if (response && response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(e.request, clone).catch(err => 
+                console.warn('[SW] CDN cache put failed:', err.message)
+              );
+            });
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
+  // Default: Cache-first for all other requests
   e.respondWith(
     caches.match(e.request)
       .then((cached) => {
@@ -129,7 +205,7 @@ self.addEventListener('fetch', (e) => {
           .then((response) => {
             if (!response || response.status !== 200) return response;
 
-            // Cache ALL successful responses
+            // Cache successful responses
             const responseToCache = response.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(e.request, responseToCache).catch((err) => {
@@ -162,6 +238,46 @@ self.addEventListener('fetch', (e) => {
   );
 });
 
+// Helper: Handle model file requests with IndexedDB + Cache API
+function handleModelRequest(request, url) {
+  return caches.match(request)
+    .then((cached) => {
+      if (cached) {
+        console.log('[SW] Serving model from cache:', url.pathname);
+        return cached;
+      }
+      // Try IndexedDB
+      return getModelFromIndexedDB(url.href).then(blob => {
+        if (blob) {
+          console.log('[SW] Serving model from IndexedDB:', url.pathname);
+          return new Response(blob, { headers: { 'Content-Type': 'model/gltf-binary' }});
+        }
+        // Fetch from network
+        return fetch(request).then(resp => {
+          if (!resp.ok) {
+            console.error('[SW] Model fetch failed:', url.pathname, resp.status);
+            return resp;
+          }
+          // Clone before using response body
+          const cacheClone = resp.clone();
+          const dbClone = resp.clone();
+
+          // Store in IndexedDB
+          cacheModelBlob(url.href, dbClone.blob());
+
+          // Store in Cache API
+          caches.open(CACHE_NAME).then(cache => cache.put(request, cacheClone))
+            .catch(err => console.warn('[SW] Cache put failed:', url.pathname, err.message));
+
+          return resp;
+        }).catch(err => {
+          console.error('[SW] Model fetch failed:', url.pathname, err.message);
+          return new Response('', { status: 404, statusText: 'Model not available offline' });
+        });
+      });
+    });
+}
+
 // IndexedDB helpers for model files
 function getModelFromIndexedDB(url) {
   return openModelDB().then(db => {
@@ -187,6 +303,12 @@ function cacheModelBlob(url, blobPromise) {
 
 // Message handler: force cache everything
 self.addEventListener('message', (e) => {
+  // Verify origin for security
+  if (e.origin !== self.location.origin && e.origin !== '') {
+    console.warn('[SW] Ignoring message from unauthorized origin:', e.origin);
+    return;
+  }
+
   if (e.data === 'CACHE_EVERYTHING') {
     console.log('[SW] Caching all tour assets...');
 
@@ -315,42 +437,46 @@ self.addEventListener('message', (e) => {
 
     caches.open(CACHE_NAME).then((cache) => {
       let cached = 0;
+      let failed = 0;
+      let skipped = 0;
 
       // Cache files sequentially with yield points to avoid blocking other requests
       const cacheOne = (urls) => {
         if (urls.length === 0) {
-          console.log(`[SW] Pre-cached ${cached}/${totalKnown} known assets`);
-          // Now scan for additional media
-          cacheLocalMedia(cache, cached, totalKnown, sendProgress);
+          console.log(`[SW] Pre-cached ${cached}/${totalKnown} known assets (${failed} failed, ${skipped} skipped)`);
+          // All done - send final OFFLINE_READY
+          sendProgress(cached, `✓ ${cached} assets cached`);
+          notifyOfflineReady();
           return;
         }
 
         const url = urls.shift();
-        
+
         // Add timeout to fetch (60 seconds for large model files)
         const controller = new AbortController();
         const isModelOrHdr = url.endsWith('.glb') || url.endsWith('.hdr');
         const timeoutMs = isModelOrHdr ? 60000 : 30000;
         const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-        
+
         fetch(url, { signal: controller.signal }).then(resp => {
           clearTimeout(timeoutId);
-          
+
           if (resp.ok) {
-            // Skip large files on mobile to avoid memory issues (30MB limit for building model)
+            // Check file size - skip large files to avoid memory issues
             const contentLength = resp.headers.get('content-length');
-            const isLargeFile = contentLength && parseInt(contentLength) > 30 * 1024 * 1024; // 30MB limit
-            
+            const fileSize = contentLength ? parseInt(contentLength) : 0;
+            const isLargeFile = fileSize > CONFIG.MAX_CACHE_SIZE;
+
             if (isLargeFile) {
-              console.log(`[SW] Skipping large file cache (${(parseInt(contentLength) / 1024 / 1024).toFixed(1)}MB):`, url.split('/').pop());
-              cached++;
+              console.log(`[SW] Skipping large file cache (${(fileSize / 1024 / 1024).toFixed(1)}MB):`, url.split('/').pop());
+              skipped++;
               sendProgress(cached, `Skipped (large): ${url.split('/').pop()}`);
               cacheOne(urls);
               return;
             }
-            
-            // For large files, also store in IndexedDB (but with size check)
-            if (url.endsWith('.glb') || url.endsWith('.hdr')) {
+
+            // For files above threshold, also store in IndexedDB
+            if (fileSize > CONFIG.INDEXEDDB_THRESHOLD || isModelOrHdr) {
               const dbClone = resp.clone();
               dbClone.blob().then(blob => {
                 cacheModelBlob(url, Promise.resolve(blob));
@@ -358,6 +484,7 @@ self.addEventListener('message', (e) => {
                 console.warn('[SW] IndexedDB store failed:', url, err.message);
               });
             }
+            
             const cacheClone = resp.clone();
             return cache.put(url, cacheClone).then(() => {
               cached++;
@@ -369,7 +496,7 @@ self.addEventListener('message', (e) => {
                 console.log(`[SW] Cached (${cached}/${totalKnown}):`, fileName);
               }
               sendProgress(cached, label);
-              
+
               // Yield after every 5 assets to allow other fetches
               if (cached % 5 === 0) {
                 setTimeout(() => cacheOne(urls), 100);
@@ -379,20 +506,20 @@ self.addEventListener('message', (e) => {
             }).catch(err => {
               // Cache.put failed - still count it
               console.warn('[SW] Cache put failed for:', url, err.message);
-              cached++;
+              failed++;
               sendProgress(cached, `Cache error: ${url.split('/').pop()}`);
               cacheOne(urls);
             });
           } else {
             console.warn('[SW] Failed to fetch:', url, resp.status);
-            cached++;
+            failed++;
             sendProgress(cached, `Failed: ${url.split('/').pop()}`);
             cacheOne(urls);
           }
         }).catch(err => {
           clearTimeout(timeoutId);
           console.warn('[SW] Fetch error:', url, err.message);
-          cached++;
+          failed++;
           sendProgress(cached, `Error: ${url.split('/').pop()}`);
           cacheOne(urls);
         });
@@ -412,117 +539,6 @@ self.addEventListener('message', (e) => {
     self.skipWaiting();
   }
 });
-
-// Scan and cache local media files dynamically
-function cacheLocalMedia(cache, cachedCount, totalKnown, sendProgress) {
-  // Scan common media directories for available files
-  const mediaDirs = [
-    './model/',
-    './project/hero-image-video/',
-    './project/amenities/',
-    './project/floor-plans/',
-    './project/gallery/',
-    './project/hotspot-media/',
-    './project/hotspots/',
-    './panorama/',
-    './2d-floor-plan/',
-    './3d-floor-plan/',
-    './gallery/',
-    './unit-image-video/',
-  ];
-
-  let dirsChecked = 0;
-  let count = cachedCount;
-
-  const checkDir = (dirs) => {
-    if (dirs.length === 0) {
-      console.log(`[SW] Media scan complete. Total cached: ${count}`);
-      // All done - send final OFFLINE_READY
-      sendProgress(count, `✓ All ${count} assets cached`);
-      notifyOfflineReady();
-      return;
-    }
-
-    const dir = dirs.shift();
-    // Try to fetch directory listing (works on most servers)
-    fetch(dir).then(resp => {
-      if (resp.ok && resp.headers.get('content-type')?.includes('text/html')) {
-        return resp.text().then(html => {
-          const matches = html.match(/href="([^"]+\.(glb|gltf|hdr|jpg|jpeg|png|webp|svg|mp4|webm))"/gi) || [];
-          const files = [...new Set(matches.map(m => {
-            const url = m.match(/href="([^"]+)"/i);
-            return url ? dir + url[1] : null;
-          }).filter(Boolean))];
-
-          // Cache found files
-          let fileIdx = 0;
-          const cacheFile = () => {
-            if (fileIdx >= files.length) {
-              dirsChecked++;
-              checkDir(dirs);
-              return;
-            }
-            const fileUrl = files[fileIdx++];
-            
-            // Add timeout to fetch
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000);
-            
-            fetch(fileUrl, { signal: controller.signal }).then(r => {
-              clearTimeout(timeoutId);
-              if (r.ok) {
-                // Check file size (30MB limit for building model)
-                const contentLength = r.headers.get('content-length');
-                const isLarge = contentLength && parseInt(contentLength) > 30 * 1024 * 1024;
-                
-                if (isLarge) {
-                  count++;
-                  sendProgress(count, `Skipped (large): ${fileUrl.split('/').pop()}`);
-                  cacheFile();
-                  return;
-                }
-                
-                const clone = r.clone();
-                cache.put(fileUrl, r).then(() => {
-                  count++;
-                  const label = `Scanning ${count}: ${fileUrl.split('/').pop()}`;
-                  console.log(`[SW] ${label}`);
-                  sendProgress(count, label);
-                  // Also store large files in IndexedDB
-                  if (fileUrl.endsWith('.glb') || fileUrl.endsWith('.hdr')) {
-                    clone.blob().then(blob => cacheModelBlob(fileUrl, Promise.resolve(blob)))
-                      .catch(err => console.warn('[SW] IndexedDB store failed:', err.message));
-                  }
-                  cacheFile();
-                }).catch(err => {
-                  console.warn('[SW] Cache put failed during scan:', fileUrl, err.message);
-                  count++;
-                  sendProgress(count, `Cache error: ${fileUrl.split('/').pop()}`);
-                  cacheFile();
-                });
-              } else {
-                cacheFile();
-              }
-            }).catch(err => {
-              clearTimeout(timeoutId);
-              console.warn('[SW] Scan fetch error:', fileUrl, err.message);
-              cacheFile();
-            });
-          };
-          cacheFile();
-        });
-      }
-      // If directory listing not available, try known common files
-      dirsChecked++;
-      checkDir(dirs);
-    }).catch(() => {
-      dirsChecked++;
-      checkDir(dirs);
-    });
-  };
-
-  checkDir(mediaDirs);
-}
 
 // IndexedDB for large model files
 function openModelDB() {
@@ -556,6 +572,20 @@ function cacheModelViaIndexedDB(url) {
 }
 
 function notifyOfflineReady(partial = false) {
+  // Check storage usage and warn if approaching quota
+  if (navigator.storage && navigator.storage.estimate) {
+    navigator.storage.estimate().then(estimate => {
+      const usagePercent = ((estimate.usage / estimate.quota) * 100).toFixed(2);
+      console.log(`[SW] Storage usage: ${usagePercent}% (${(estimate.usage / 1024 / 1024).toFixed(2)}MB / ${(estimate.quota / 1024 / 1024).toFixed(2)}MB)`);
+      
+      if (usagePercent > 80) {
+        console.warn('[SW] ⚠️ Storage usage above 80%! Consider reducing cached assets.');
+      }
+    }).catch(err => {
+      console.warn('[SW] Could not estimate storage:', err);
+    });
+  }
+
   self.clients.matchAll().then(clients => {
     clients.forEach(client => {
       client.postMessage({ type: 'OFFLINE_READY', partial });

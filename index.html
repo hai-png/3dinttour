@@ -9,16 +9,17 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Hosea Tours">
+<meta name="apple-mobile-web-app-title" content="Yerer Apartment">
 <meta name="theme-color" content="#0a1628">
-<meta name="application-name" content="Hosea Property Tours">
+<meta name="application-name" content="Yerer Apartment">
+<meta name="description" content="Explore modern apartments with 3D interactive tours by Hosea Real Estate. View unit availability, floor plans, and amenities.">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" sizes="32x32" href="project/Hosea-LOGO-12.png">
-<link rel="icon" type="image/png" sizes="16x16" href="project/Hosea-LOGO-12.png">
-<link rel="apple-touch-icon" href="project/Hosea-LOGO-12.png">
-<link rel="icon" type="image/png" sizes="192x192" href="project/Hosea-LOGO-12.png">
-<link rel="icon" type="image/png" sizes="512x512" href="project/Hosea-LOGO-12.png">
-<link rel="shortcut icon" href="project/Hosea-LOGO-12.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon.ico">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="shortcut icon" href="favicon.ico">
 <title>Yerer Apartment</title>
 
 <!-- Brand Config Loader -->
@@ -2335,28 +2336,28 @@ async function boot(){
   };
 
   if('serviceWorker' in navigator){
-    // Auto-clear ALL caches and old SW on load
-    async function cleanSlate(){
-      // Clear old caches
+    // Only clean old caches on first visit or when SW version changes
+    // This preserves cached assets for fast repeat visits
+    async function cleanOldCaches(){
       const names = await caches.keys();
       for (const name of names) {
-        if (name !== 'tour-v7') {
+        // Only delete caches from our app (not other PWAs)
+        if (name.startsWith('tour-v') && name !== 'tour-v7') {
           await caches.delete(name);
-          console.log('[PWA] Cleared old cache:', name);
+          console.log('[PWA] Cleaned old cache:', name);
         }
-      }
-      // Unregister old SWs
-      const regs = await navigator.serviceWorker.getRegistrations();
-      for (const reg of regs) {
-        await reg.unregister();
-        console.log('[PWA] Unregistered old SW');
       }
     }
 
-    cleanSlate().then(() => {
-      // Fresh registration
-      return navigator.serviceWorker.register('sw.js', { scope: './' });
-    }).then((reg)=>{
+    // Clean old caches once per session (not on every load)
+    if (!sessionStorage.getItem('sw-cleaned')) {
+      cleanOldCaches().then(() => {
+        sessionStorage.setItem('sw-cleaned', 'true');
+      });
+    }
+
+    // Register service worker
+    navigator.serviceWorker.register('sw.js', { scope: '/' }).then((reg)=>{
       console.log('[PWA] Registered, scope:', reg.scope);
       console.log('[PWA] Active:', !!reg.active, 'Installing:', !!reg.installing, 'Waiting:', !!reg.waiting);
 
@@ -2463,8 +2464,24 @@ async function boot(){
   let deferredPrompt=null;
   const installBtn=document.getElementById('install-btn');
 
-  // Show install button always (Chrome may not fire beforeinstallprompt on localhost/mobile)
-  if(installBtn) installBtn.style.display='inline-flex';
+  // Only show install button if not already installed
+  // Chrome may not fire beforeinstallprompt on localhost/mobile
+  function updateInstallButton() {
+    if (!installBtn) return;
+    
+    // Hide if already installed (running as PWA)
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      installBtn.style.display = 'none';
+      console.log('[PWA] Running as installed PWA - hiding install button');
+      return;
+    }
+    
+    // Show button for potential installation
+    installBtn.style.display = 'inline-flex';
+  }
+  
+  // Initial check
+  updateInstallButton();
 
   window.addEventListener('beforeinstallprompt',(e)=>{
     e.preventDefault();
