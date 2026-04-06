@@ -3,7 +3,7 @@
  * Cache-first strategy: serve from cache, fallback to network
  */
 
-const CACHE_VERSION = 'v8';
+const CACHE_VERSION = 'v9';
 const CACHE_NAME = `tour-${CACHE_VERSION}`;
 const OFFLINE_PAGE = './offline.html';
 
@@ -314,8 +314,11 @@ self.addEventListener('message', (e) => {
 
     // Priority 1: Local media files (MUST be cached first - requested immediately by page)
     const priorityLocal = [
-      // Model file (critical - requested on page load)
+      // Model files (critical - requested on page load)
       './model/building.glb',
+      './3d-floor-plan/1-bed-01.glb',
+      './3d-floor-plan/2-bed-01.glb',
+      './3d-floor-plan/3d-bed-01.glb',
     ];
 
     // Priority 2: Project media (requested shortly after)

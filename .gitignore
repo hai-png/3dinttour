@@ -80,6 +80,9 @@ whatshouldbe.png
 # GLB models
 *.glb
 !model/building.glb
+!3d-floor-plan/1-bed-01.glb
+!3d-floor-plan/2-bed-01.glb
+!3d-floor-plan/3d-bed-01.glb
 
 # Screenshots and temporary images
 brave_screenshot_localhost*.png
