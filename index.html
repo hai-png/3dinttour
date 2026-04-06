@@ -640,7 +640,7 @@ button{font-family:inherit;border:none;cursor:pointer}
     <div class="intro-tag">Interactive 3D Tour</div>
     <div class="intro-stats" id="intro-stats"></div>
     <div class="intro-progress"><i id="intro-bar"></i></div>
-    <div class="intro-pct" id="intro-pct">Preparing...</div>
+    <div class="intro-pct" id="intro-pct">Preparing offline mode...</div>
     <button class="intro-enter" id="intro-enter" style="display:none">Explore Now →</button>
   </div>
 </div>
@@ -660,7 +660,7 @@ button{font-family:inherit;border:none;cursor:pointer}
   </div>
 </header>
 <div id="connection-status" class="connection-status online"><span class="cs-dot"></span><span class="cs-txt">Online</span></div>
-<div id="offline-ready" class="offline-ready" style="display:none"><span class="or-icon">✓</span><span class="or-txt">Ready for offline use</span></div>
+<div id="offline-ready" class="offline-ready" style="display:none"><span class="or-icon">✓</span><span class="or-txt">Ready for offline</span></div>
 
 <aside id="detail">
   <div class="d-hdr" id="d-hdr"><div class="ic">🏢</div><span>Details</span><button class="tog" id="d-tog">−</button></div>
@@ -822,7 +822,7 @@ async function json(u){return trk('Tour data',fetch(u).then(r=>{if(!r.ok)throw E
 function glb(u,l){return trk(l||'Model',new Promise((res,rej)=>{const lo=new GLTFLoader();const dr=new DRACOLoader();dr.setDecoderPath('/draco/');lo.setDRACOLoader(dr);lo.setMeshoptDecoder(MeshoptDecoder);lo.load(u,g=>res(g),xhr=>{if(xhr.total)p().textContent=`${l||'Model'} ${Math.round(xhr.loaded/xhr.total*100)}%`},rej)}))}
 function hdri(u){return trk('Environment',new Promise((res,rej)=>{new RGBELoader().load(u,t=>{t.mapping=THREE.EquirectangularReflectionMapping;res(t)},undefined,rej)}))}
 function imgs(urls){if(!urls?.length)return Promise.resolve([]);return trk(`${urls.length} images`,Promise.allSettled(urls.map(u=>new Promise((r,j)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>r(i);i.onerror=j;i.src=u}))))}
-function done(){upd('Ready!');document.getElementById('intro-enter').style.display='';}
+function done(){upd('Ready!');if(window.markAppLoaded)window.markAppLoaded();}
 return{json,glb,hdri,imgs,done,upd}})();
 
 // ═══ ENGINE ═══
@@ -2123,6 +2123,20 @@ async function boot(){
   UI.populateIntro();
   E.configure(window.TD);
 
+  // Wait a bit for service worker to cache model files before loading them
+  // This ensures offline mode works - model will be in cache when requested
+  const swReady = new Promise(resolve => {
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+      // SW is active, give it 500ms to finish caching priority files
+      setTimeout(resolve, 500);
+    } else {
+      // No SW, proceed immediately
+      resolve();
+    }
+  });
+
+  await swReady;
+
   if(window.TD.hdri){try{E.setEnv(await AL.hdri(window.TD.hdri))}catch(e){E.setFallbackBg()}}else E.setFallbackBg();
   if(window.TD.modelFile){try{Mdl.load(await AL.glb(window.TD.modelFile,'Building'))}catch(e){Mdl.fallback()}}else Mdl.fallback();
 
@@ -2285,22 +2299,52 @@ async function boot(){
 
 // ═══ PWA: Service Worker, Offline, Install ═══
 (function(){
-  // Show offline ready notification
+  const pctEl = document.getElementById('intro-pct');
+  const barEl = document.getElementById('intro-bar');
+  const enterBtn = document.getElementById('intro-enter');
+  const offlineEl = document.getElementById('offline-ready');
+  let cachingComplete = false;
+  let offlineReady = false;
+
+  // Show "Ready for offline" badge only when everything is cached
   function showOfflineReady(){
-    const el=document.getElementById('offline-ready');
-    if(el && el.style.display==='none'){
-      el.style.display='flex';
-      // Trigger reflow for animation
-      void el.offsetWidth;
-      el.classList.add('show');
-      console.log('[PWA] Offline ready notification shown');
-      // Auto-hide after 5 seconds
-      setTimeout(()=>{
-        el.classList.remove('show');
-        setTimeout(()=>{ el.style.display='none'; }, 400);
-      }, 5000);
+    if (offlineReady) return;
+    offlineReady = true;
+    if (offlineEl) {
+      offlineEl.style.display = 'flex';
+      void offlineEl.offsetWidth;
+      offlineEl.classList.add('show');
+      console.log('[PWA] ✓ Ready for offline use');
+    }
+    // If caching is also done, show Enter button
+    if (cachingComplete) showEnter();
+  }
+
+  // Show "Explore Now" button only when both:
+  // 1. All assets are cached (offline ready)
+  // 2. The 3D scene is loaded
+  function showEnter(){
+    if (!cachingComplete || !offlineReady) return;
+    if (enterBtn) {
+      enterBtn.style.display = '';
+      console.log('[PWA] ✓ Explore Now shown');
     }
   }
+
+  // Update loading progress
+  function updateProgress(cached, total, label){
+    if (!pctEl || !barEl) return;
+    const pct = total > 0 ? Math.round(cached / total * 100) : 0;
+    barEl.style.width = pct + '%';
+    pctEl.textContent = label || `${pct}%`;
+  }
+
+  // Mark that app assets are loaded (scene, model, etc)
+  window.markAppLoaded = function(){
+    cachingComplete = true;
+    // If offline is already ready, show enter
+    if (offlineReady) showEnter();
+  };
 
   if('serviceWorker' in navigator){
     // Auto-clear ALL caches and old SW on load
@@ -2308,7 +2352,7 @@ async function boot(){
       // Clear old caches
       const names = await caches.keys();
       for (const name of names) {
-        if (name !== 'tour-v6') {
+        if (name !== 'tour-v7') {
           await caches.delete(name);
           console.log('[PWA] Cleared old cache:', name);
         }
@@ -2320,7 +2364,7 @@ async function boot(){
         console.log('[PWA] Unregistered old SW');
       }
     }
-    
+
     cleanSlate().then(() => {
       // Fresh registration
       return navigator.serviceWorker.register('/sw.js', { scope: '/' });
@@ -2336,7 +2380,7 @@ async function boot(){
       if (reg.active) {
         console.log('[PWA] SW already active, controller:', !!navigator.serviceWorker.controller);
       }
-      
+
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
         console.log('[PWA] New SW installing');
@@ -2371,17 +2415,32 @@ async function boot(){
           setTimeout(triggerCaching, 1000);
         }
       }
-      
-      // Start checking after tour loads
-      setTimeout(triggerCaching, 3000);
+
+      // Start checking immediately - SW should be ready fast
+      setTimeout(triggerCaching, 1000);
+
+      // Fallback: if caching doesn't complete within 60s, show enter anyway
+      setTimeout(() => {
+        if (!cachingComplete) {
+          console.warn('[PWA] Caching timeout - showing enter anyway');
+          cachingComplete = true;
+          if (offlineReady) showEnter();
+        }
+      }, 60000);
     }).catch((err)=>{
       console.error('[PWA] Registration error:', err);
       console.error('[PWA] Make sure sw.js is served correctly');
     });
 
-    // Listen for offline ready message from service worker
+    // Listen for messages from service worker
     navigator.serviceWorker.addEventListener('message', (e) => {
-      if (e.data && e.data.type === 'OFFLINE_READY') {
+      if (!e.data || !e.data.type) return;
+
+      if (e.data.type === 'CACHE_PROGRESS') {
+        updateProgress(e.data.cached, e.data.total, e.data.label);
+      }
+
+      if (e.data.type === 'OFFLINE_READY') {
         showOfflineReady();
       }
     });
@@ -2403,15 +2462,15 @@ async function boot(){
   let deferredPrompt=null;
   const installBtn=document.getElementById('install-btn');
 
-  // Show install button always (Chrome may not fire beforeinstallprompt on localhost)
-  if(installBtn) installBtn.style.display='inline-block';
+  // Show install button always (Chrome may not fire beforeinstallprompt on localhost/mobile)
+  if(installBtn) installBtn.style.display='inline-flex';
 
   window.addEventListener('beforeinstallprompt',(e)=>{
     e.preventDefault();
     deferredPrompt=e;
     sessionStorage.setItem('pwa-prompt','1');
     if(installBtn){
-      installBtn.style.display='inline-block';
+      installBtn.style.display='inline-flex';
       installBtn.title='Install app';
       console.log('[PWA] Install prompt captured');
     }
@@ -2442,27 +2501,39 @@ async function boot(){
         // No native prompt available - show manual instructions
         const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
         const isHTTPS = location.protocol === 'https:';
-        
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
         let msg = '📲 How to Install This App\n\n';
-        
+
+        if (isIOS) {
+          msg += '🍎 Safari (iOS):\n';
+          msg += '  1. Tap the Share button (box with arrow)\n';
+          msg += '  2. Scroll down and tap "Add to Home Screen"\n';
+          msg += '  3. Tap "Add" to confirm\n\n';
+        } else if (isAndroid) {
+          msg += '🤖 Chrome Mobile:\n';
+          msg += '  1. Tap the Menu button (⋮) top-right\n';
+          msg += '  2. Tap "Install app" or "Add to Home screen"\n';
+          msg += '  3. Tap "Install" to confirm\n\n';
+        } else {
+          msg += 'Chrome/Edge Desktop:\n';
+          msg += '  • Look for ⊕ icon in address bar → click it\n';
+          msg += '  • Or: Menu (⋮) → "Install 3D Tour"\n\n';
+        }
+
         if (isLocalhost) {
           msg += '⚠️ Running on localhost.\n';
           msg += 'For full install support, deploy to HTTPS hosting.\n\n';
         }
-        
-        msg += 'Chrome/Edge Desktop:\n';
-        msg += '  • Look for ⊕ icon in address bar → click it\n';
-        msg += '  • Or: Menu (⋮) → "Install 3D Tour"\n\n';
-        msg += 'Chrome Mobile:\n';
-        msg += '  • Menu (⋮) → "Add to Home Screen"\n\n';
-        msg += 'Safari (iOS):\n';
-        msg += '  • Share button → "Add to Home Screen"\n\n';
-        
+
         if (!isHTTPS && !isLocalhost) {
           msg += '⚠️ Install requires HTTPS hosting.\n';
-          msg += 'Deploy to Firebase/Vercel/Netlify for production installs.';
+          msg += 'Deploy to Firebase/Vercel/Netlify for production installs.\n\n';
         }
-        
+
+        msg += '💡 Tip: Once installed, the app works offline!';
+
         alert(msg);
       }
     };

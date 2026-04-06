@@ -3,7 +3,7 @@
  * Cache-first strategy: serve from cache, fallback to network
  */
 
-const CACHE_NAME = 'tour-v6';
+const CACHE_NAME = 'tour-v7';
 const OFFLINE_PAGE = '/offline.html';
 
 // Core files to pre-cache (small files only - model cached at runtime)
@@ -13,8 +13,7 @@ const CORE_FILES = [
   '/offline.html',
   '/manifest.json',
   '/brand-config.json',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/project/Hosea-LOGO-12.png',
   '/availability-system.js',
   '/contact-integration.js',
   '/firebase-service.js',
@@ -31,8 +30,24 @@ self.addEventListener('install', (e) => {
   console.log('[SW] Installing');
   e.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(CORE_FILES))
-      .then(() => self.skipWaiting())
+      .then((cache) => {
+        // Try to cache all files, but don't fail if some are missing
+        const promises = CORE_FILES.map(url => {
+          return fetch(url).then(response => {
+            if (response.ok) {
+              return cache.put(url, response);
+            }
+            console.warn('[SW] Could not cache:', url);
+          }).catch(err => {
+            console.warn('[SW] Failed to cache:', url, err.message);
+          });
+        });
+        return Promise.all(promises);
+      })
+      .then(() => {
+        console.log('[SW] Install complete');
+        return self.skipWaiting();
+      })
       .catch((err) => console.warn('[SW] Install warning:', err.message))
   );
 });
@@ -59,12 +74,15 @@ self.addEventListener('fetch', (e) => {
   // Skip Firebase/Firestore requests
   if (url.hostname.includes('firebase') || url.hostname.includes('firestore')) return;
 
-  // Special handling for model files (use IndexedDB)
-  if (url.pathname.includes('/model/') && url.pathname.endsWith('.glb')) {
+  // Special handling for .glb model files (use IndexedDB)
+  if (url.pathname.endsWith('.glb')) {
     e.respondWith(
       caches.match(e.request)
         .then((cached) => {
-          if (cached) return cached;
+          if (cached) {
+            console.log('[SW] Serving model from cache:', url.pathname);
+            return cached;
+          }
           // Try IndexedDB
           return getModelFromIndexedDB(url.href).then(blob => {
             if (blob) {
@@ -74,11 +92,48 @@ self.addEventListener('fetch', (e) => {
             // Fetch from network
             return fetch(e.request).then(resp => {
               if (resp.ok) {
-                // Cache in IndexedDB for offline
+                // Cache in both Cache API and IndexedDB
                 const clone = resp.clone();
                 cacheModelBlob(url.href, clone.blob());
+                caches.open(CACHE_NAME).then(cache => cache.put(e.request, resp));
               }
               return resp;
+            }).catch(err => {
+              console.error('[SW] Model fetch failed:', url.pathname, err.message);
+              return new Response('', { status: 404, statusText: 'Model not available offline' });
+            });
+          });
+        })
+    );
+    return;
+  }
+
+  // Special handling for .hdr files (use IndexedDB for large files, Cache API for small)
+  if (url.pathname.endsWith('.hdr')) {
+    e.respondWith(
+      caches.match(e.request)
+        .then((cached) => {
+          if (cached) {
+            console.log('[SW] Serving HDR from cache:', url.pathname);
+            return cached;
+          }
+          // Try IndexedDB
+          return getModelFromIndexedDB(url.href).then(blob => {
+            if (blob) {
+              console.log('[SW] Serving HDR from IndexedDB:', url.pathname);
+              return new Response(blob, { headers: { 'Content-Type': 'application/octet-stream' }});
+            }
+            // Fetch from network
+            return fetch(e.request).then(resp => {
+              if (resp.ok) {
+                const clone = resp.clone();
+                cacheModelBlob(url.href, clone.blob());
+                caches.open(CACHE_NAME).then(cache => cache.put(e.request, resp));
+              }
+              return resp;
+            }).catch(err => {
+              console.error('[SW] HDR fetch failed:', url.pathname, err.message);
+              return new Response('', { status: 404, statusText: 'HDR not available offline' });
             });
           });
         })
@@ -107,7 +162,7 @@ self.addEventListener('fetch', (e) => {
             }).catch((err) => {
               console.warn('[SW] Cache open failed:', err.message);
             });
-            
+
             return response;
           })
           .catch((fetchErr) => {
@@ -158,8 +213,111 @@ function cacheModelBlob(url, blobPromise) {
 self.addEventListener('message', (e) => {
   if (e.data === 'CACHE_EVERYTHING') {
     console.log('[SW] Caching all tour assets...');
-    
-    // Cache Three.js CDN modules (small files via Cache API)
+
+    // Priority 1: Local media files (MUST be cached first - requested immediately by page)
+    const priorityLocal = [
+      // Model files (critical - requested on page load)
+      '/model/building.glb',
+      '/3d-floor-plan/1-bed-01.glb',
+      '/3d-floor-plan/2-bed-01.glb',
+      '/3d-floor-plan/3d-bed-01.glb',
+      // HDR environment files (critical - requested on page load)
+      '/hdr/laufenurg_church_1k.hdr',
+      '/hdr/cobblestone_street_night_1k.hdr',
+      '/hdr/tree_lined_driveway_1k.hdr',
+    ];
+
+    // Priority 2: Project media (requested shortly after)
+    const projectMedia = [
+      // Hero & gallery
+      '/project/hero-image-video/mainsowreel.mp4',
+      '/project/gallery/mainsowreel.mp4',
+      // Gallery images
+      '/project/gallery/120.webp',
+      '/project/gallery/125.webp',
+      '/project/gallery/213.webp',
+      '/project/gallery/218.webp',
+      '/project/gallery/image17.webp',
+      '/project/gallery/image21.webp',
+      '/project/gallery/photo_6003679379009422639_y.webp',
+      '/project/gallery/Scene 34.webp',
+      '/project/gallery/Scene 36.webp',
+      '/project/gallery/Scene-27_1-enhanced.webp',
+      // Floor plans & amenities
+      '/project/floor-plans/seken-Floorplan.jpg',
+      '/project/amenities/swimming-pool-amenity.webp',
+      // Logos
+      '/project/temerlogo.png',
+      // Hotspot media
+      '/project/hotspots/ev_charging/ev_charging.mp4',
+      '/project/hotspots/green_terrace/green_terrace.mp4',
+      '/project/hotspots/green_terrace/swimming-pool-amenity.webp',
+    ];
+
+    // Priority 3: Unit videos (requested when user opens unit details)
+    const unitVideos = [
+      '/unit-image-video/3-bed-05/mainsowreel.mp4',
+      '/unit-image-video/3-bed-06/mainsowreel.mp4',
+      '/unit-image-video/3-bed-04/mainsowreel.mp4',
+      '/unit-image-video/1-bed-01/mainsowreel.mp4',
+      '/unit-image-video/3-bed-01/mainsowreel.mp4',
+      '/unit-image-video/3-bed-02/mainsowreel.mp4',
+      '/unit-image-video/2-bed-01/mainsowreel.mp4',
+      '/unit-image-video/3-bed-03/mainsowreel.mp4',
+    ];
+
+    // Priority 4: Panorama images (requested when user opens panorama view)
+    const panoramaImages = [
+      '/panorama/1-bed-01.webp',
+      '/panorama/2-bed-01.webp',
+      '/panorama/3-bed-01.webp',
+      '/panorama/3-bed-02.webp',
+      '/panorama/3-bed-03.webp',
+      '/panorama/3-bed-04.webp',
+      '/panorama/3-bed-05.webp',
+      '/panorama/3-bed-06.webp',
+    ];
+
+    // Priority 5: 2D floor plan
+    const floorPlan2D = [
+      '/2d-floor-plan/type2.webp',
+    ];
+
+    // Priority 6: Unit images (cached along with unit videos)
+    const unitImages = [
+      // 1-bed-01
+      '/unit-image-video/1-bed-01/1.webp',
+      '/unit-image-video/1-bed-01/4.webp',
+      '/unit-image-video/1-bed-01/Jambo - Marketing-0.webp',
+      // 2-bed-01
+      '/unit-image-video/2-bed-01/ SALON.webp',
+      '/unit-image-video/2-bed-01/FF FAMILY ROOM DINING & OPEN KITCHEN 2.webp',
+      '/unit-image-video/2-bed-01/Scene 70.webp',
+      // 3-bed-01
+      '/unit-image-video/3-bed-01/212.webp',
+      '/unit-image-video/3-bed-01/Scene 67.webp',
+      '/unit-image-video/3-bed-01/GF-OPEN KITCHEN 1.webp',
+      // 3-bed-02
+      '/unit-image-video/3-bed-02/216.webp',
+      '/unit-image-video/3-bed-02/ Marketing-02.webp',
+      '/unit-image-video/3-bed-02/Jambo - Marketing-2.webp',
+      // 3-bed-03
+      '/unit-image-video/3-bed-03/Scene 77.webp',
+      '/unit-image-video/3-bed-03/Scene 73.webp',
+      // 3-bed-04
+      '/unit-image-video/3-bed-04/GF-DINING ROOM 2.webp',
+      '/unit-image-video/3-bed-04/D5_Image_202403 21_163403.webp',
+      '/unit-image-video/3-bed-04/218.webp',
+      // 3-bed-05
+      '/unit-image-video/3-bed-05/213.webp',
+      '/unit-image-video/3-bed-05/214.webp',
+      // 3-bed-06
+      '/unit-image-video/3-bed-06/17.webp',
+      '/unit-image-video/3-bed-06/Scene 68.webp',
+      '/unit-image-video/3-bed-06/211.webp',
+    ];
+
+    // Priority 7: CDN assets (already cached from previous visits usually)
     const cdnAssets = [
       'https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js',
       'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/controls/OrbitControls.js',
@@ -169,38 +327,70 @@ self.addEventListener('message', (e) => {
       'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/objects/Sky.js',
       'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/libs/meshopt_decoder.module.js',
     ];
-    
-    // Cache CDN assets via Cache API
+
+    // Cache in priority order
+    const allAssets = [...priorityLocal, ...projectMedia, ...unitVideos, ...panoramaImages, ...floorPlan2D, ...unitImages, ...cdnAssets];
+    const totalKnown = allAssets.length;
+
+    // Helper to send progress to page
+    function sendProgress(cached, label) {
+      self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({ type: 'CACHE_PROGRESS', cached, total: totalKnown, label });
+        });
+      });
+    }
+
     caches.open(CACHE_NAME).then((cache) => {
       let cached = 0;
-      let total = cdnAssets.length + 2; // +2 for model + HDR (scanned dynamically)
-      
+
+      // Cache files sequentially - priority files first
       const cacheOne = (urls) => {
         if (urls.length === 0) {
-          // Now scan and cache local media files dynamically
-          cacheLocalMedia(cache, cached, total);
+          console.log(`[SW] Pre-cached ${cached}/${totalKnown} known assets`);
+          // Now scan for additional media
+          cacheLocalMedia(cache, cached, totalKnown, sendProgress);
           return;
         }
-        
+
         const url = urls.shift();
         fetch(url).then(resp => {
-          if (resp.status === 200) {
+          if (resp.ok) {
+            // For large files, also store in IndexedDB
+            const clone = resp.clone();
+            if (url.endsWith('.glb') || url.endsWith('.hdr')) {
+              clone.blob().then(blob => {
+                cacheModelBlob(url, Promise.resolve(blob));
+              });
+            }
             return cache.put(url, resp).then(() => {
               cached++;
-              console.log(`[SW] Cached (${cached}/${total}):`, url.split('/').pop());
+              const fileName = url.split('/').pop();
+              const label = `Caching ${cached}/${totalKnown}: ${fileName}`;
+              if (cached <= priorityLocal.length) {
+                console.log(`[SW] ⚡ Priority cached (${cached}/${totalKnown}):`, fileName);
+              } else {
+                console.log(`[SW] Cached (${cached}/${totalKnown}):`, fileName);
+              }
+              sendProgress(cached, label);
               cacheOne(urls);
             });
           } else {
-            console.warn('[SW] Failed to fetch:', url);
+            console.warn('[SW] Failed to fetch:', url, resp.status);
+            cached++;
+            sendProgress(cached, `Failed: ${url.split('/').pop()}`);
             cacheOne(urls);
           }
         }).catch(err => {
           console.warn('[SW] Fetch error:', url, err.message);
+          cached++;
+          sendProgress(cached, `Error: ${url.split('/').pop()}`);
           cacheOne(urls);
         });
       };
-      
-      cacheOne(cdnAssets);
+
+      // Start with priority files
+      cacheOne(allAssets);
     }).catch((err) => {
       console.warn('[SW] Cache failed:', err.message);
       notifyOfflineReady(true);
@@ -215,7 +405,7 @@ self.addEventListener('message', (e) => {
 });
 
 // Scan and cache local media files dynamically
-function cacheLocalMedia(cache, cached, total) {
+function cacheLocalMedia(cache, cachedCount, totalKnown, sendProgress) {
   // Scan common media directories for available files
   const mediaDirs = [
     '/model/',
@@ -225,37 +415,37 @@ function cacheLocalMedia(cache, cached, total) {
     '/project/floor-plans/',
     '/project/gallery/',
     '/project/hotspot-media/',
+    '/project/hotspots/',
     '/panorama/',
     '/2d-floor-plan/',
     '/3d-floor-plan/',
     '/gallery/',
     '/unit-image-video/',
   ];
-  
+
   let dirsChecked = 0;
-  let modelFound = false;
-  let hdrFound = false;
-  
+  let count = cachedCount;
+
   const checkDir = (dirs) => {
     if (dirs.length === 0) {
-      // All dirs checked, notify ready
-      console.log(`[SW] Media scan complete. Cached ${cached} assets.`);
+      console.log(`[SW] Media scan complete. Total cached: ${count}`);
+      // All done - send final OFFLINE_READY
+      sendProgress(count, `✓ All ${count} assets cached`);
       notifyOfflineReady();
       return;
     }
-    
+
     const dir = dirs.shift();
     // Try to fetch directory listing (works on most servers)
     fetch(dir).then(resp => {
       if (resp.ok && resp.headers.get('content-type')?.includes('text/html')) {
-        // Parse HTML directory listing for file links
         return resp.text().then(html => {
           const matches = html.match(/href="([^"]+\.(glb|gltf|hdr|jpg|jpeg|png|webp|svg|mp4|webm))"/gi) || [];
           const files = [...new Set(matches.map(m => {
             const url = m.match(/href="([^"]+)"/i);
             return url ? dir + url[1] : null;
           }).filter(Boolean))];
-          
+
           // Cache found files
           let fileIdx = 0;
           const cacheFile = () => {
@@ -267,15 +457,21 @@ function cacheLocalMedia(cache, cached, total) {
             const fileUrl = files[fileIdx++];
             fetch(fileUrl).then(r => {
               if (r.ok) {
-                return cache.put(fileUrl, r).then(() => {
-                  cached++;
-                  console.log(`[SW] Cached media (${cached}):`, fileUrl.split('/').pop());
-                  if (fileUrl.includes('.glb')) modelFound = true;
-                  if (fileUrl.includes('.hdr')) hdrFound = true;
+                const clone = r.clone();
+                cache.put(fileUrl, r).then(() => {
+                  count++;
+                  const label = `Scanning ${count}: ${fileUrl.split('/').pop()}`;
+                  console.log(`[SW] ${label}`);
+                  sendProgress(count, label);
+                  // Also store large files in IndexedDB
+                  if (fileUrl.endsWith('.glb') || fileUrl.endsWith('.hdr')) {
+                    clone.blob().then(blob => cacheModelBlob(fileUrl, Promise.resolve(blob)));
+                  }
                   cacheFile();
                 });
+              } else {
+                cacheFile();
               }
-              cacheFile();
             }).catch(() => cacheFile());
           };
           cacheFile();
@@ -289,7 +485,7 @@ function cacheLocalMedia(cache, cached, total) {
       checkDir(dirs);
     });
   };
-  
+
   checkDir(mediaDirs);
 }
 
