@@ -117,49 +117,6 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Special handling for .hdr files (use IndexedDB for large files, Cache API for small)
-  if (url.pathname.endsWith('.hdr')) {
-    e.respondWith(
-      caches.match(e.request)
-        .then((cached) => {
-          if (cached) {
-            console.log('[SW] Serving HDR from cache:', url.pathname);
-            return cached;
-          }
-          // Try IndexedDB
-          return getModelFromIndexedDB(url.href).then(blob => {
-            if (blob) {
-              console.log('[SW] Serving HDR from IndexedDB:', url.pathname);
-              return new Response(blob, { headers: { 'Content-Type': 'application/octet-stream' }});
-            }
-            // Fetch from network
-            return fetch(e.request).then(resp => {
-              if (!resp.ok) {
-                console.error('[SW] HDR fetch failed:', url.pathname, resp.status);
-                return resp;
-              }
-              // Clone before using response body
-              const cacheClone = resp.clone();
-              const dbClone = resp.clone();
-              
-              // Store in IndexedDB
-              cacheModelBlob(url.href, dbClone.blob());
-              
-              // Store in Cache API
-              caches.open(CACHE_NAME).then(cache => cache.put(e.request, cacheClone))
-                .catch(err => console.warn('[SW] Cache put failed:', url.pathname, err.message));
-              
-              return resp;
-            }).catch(err => {
-              console.error('[SW] HDR fetch failed:', url.pathname, err.message);
-              return new Response('', { status: 404, statusText: 'HDR not available offline' });
-            });
-          });
-        })
-    );
-    return;
-  }
-
   e.respondWith(
     caches.match(e.request)
       .then((cached) => {
@@ -240,10 +197,6 @@ self.addEventListener('message', (e) => {
       './3d-floor-plan/1-bed-01.glb',
       './3d-floor-plan/2-bed-01.glb',
       './3d-floor-plan/3d-bed-01.glb',
-      // HDR environment files (critical - requested on page load)
-      './hdr/laufenurg_church_1k.hdr',
-      './hdr/cobblestone_street_night_1k.hdr',
-      './hdr/tree_lined_driveway_1k.hdr',
     ];
 
     // Priority 2: Project media (requested shortly after)
@@ -285,12 +238,24 @@ self.addEventListener('message', (e) => {
       './unit-image-video/3-bed-03/mainsowreel.mp4',
     ];
 
-    // Priority 4: 2D floor plan
+    // Priority 4: Panorama images (requested when user opens panorama view)
+    const panoramaImages = [
+      './panorama/1-bed-01.webp',
+      './panorama/2-bed-01.webp',
+      './panorama/3-bed-01.webp',
+      './panorama/3-bed-02.webp',
+      './panorama/3-bed-03.webp',
+      './panorama/3-bed-04.webp',
+      './panorama/3-bed-05.webp',
+      './panorama/3-bed-06.webp',
+    ];
+
+    // Priority 5: 2D floor plan
     const floorPlan2D = [
       './2d-floor-plan/type2.webp',
     ];
 
-    // Priority 5: Unit images (cached along with unit videos)
+    // Priority 6: Unit images (cached along with unit videos)
     const unitImages = [
       // 1-bed-01
       './unit-image-video/1-bed-01/1.webp',
@@ -336,7 +301,7 @@ self.addEventListener('message', (e) => {
     ];
 
     // Cache in priority order with yield points
-    const allAssets = [...priorityLocal, ...projectMedia, ...unitVideos, ...floorPlan2D, ...unitImages, ...cdnAssets];
+    const allAssets = [...priorityLocal, ...projectMedia, ...unitVideos, ...panoramaImages, ...floorPlan2D, ...unitImages, ...cdnAssets];
     const totalKnown = allAssets.length;
 
     // Helper to send progress to page
@@ -453,13 +418,13 @@ function cacheLocalMedia(cache, cachedCount, totalKnown, sendProgress) {
   // Scan common media directories for available files
   const mediaDirs = [
     './model/',
-    './hdr/',
     './project/hero-image-video/',
     './project/amenities/',
     './project/floor-plans/',
     './project/gallery/',
     './project/hotspot-media/',
     './project/hotspots/',
+    './panorama/',
     './2d-floor-plan/',
     './3d-floor-plan/',
     './gallery/',
