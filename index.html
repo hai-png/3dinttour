@@ -640,7 +640,7 @@ button{font-family:inherit;border:none;cursor:pointer}
     <div class="intro-tag">Interactive 3D Tour</div>
     <div class="intro-stats" id="intro-stats"></div>
     <div class="intro-progress"><i id="intro-bar"></i></div>
-    <div class="intro-pct" id="intro-pct">Preparing offline mode...</div>
+    <div class="intro-pct" id="intro-pct">Initializing…</div>
     <button class="intro-enter" id="intro-enter" style="display:none">Explore Now →</button>
   </div>
 </div>
@@ -2030,6 +2030,106 @@ return{init};
  * Load availability data from Firebase and sync with tour data
  * Using new AvailabilitySystem v2.0 API
  */
+/**
+ * Unified Progress Tracker
+ * Tracks boot phases with weighted percentages:
+ *   App Init:    10%  (config, tour data)
+ *   Firebase:    20%  (connection + availability data)
+ *   3D Scene:    35%  (model, HDRI, gallery images)
+ *   SW Caching:  35%  (background asset caching for offline)
+ * Total = 100%
+ */
+const ProgressTracker = (() => {
+  const barEl = document.getElementById('intro-bar');
+  const pctEl = document.getElementById('intro-pct');
+  const enterBtn = document.getElementById('intro-enter');
+  const offlineEl = document.getElementById('offline-ready');
+
+  const PHASES = {
+    appInit:    { weight: 10, done: false },
+    firebase:   { weight: 20, done: false },
+    scene:      { weight: 35, done: false },
+    swCache:    { weight: 35, done: false },
+  };
+
+  // SW cache progress within its phase (0-100% of the 35% weight)
+  let swProgress = 0; // 0..1
+  let swDone = false;
+
+  let offlineReady = false;
+
+  function calcPercent() {
+    let total = 0;
+    for (const key in PHASES) {
+      if (PHASES[key].done) {
+        total += PHASES[key].weight;
+      }
+    }
+    // Add partial SW cache progress
+    if (!swDone && swProgress > 0) {
+      total += swProgress * PHASES.swCache.weight;
+    }
+    return Math.min(Math.round(total), 100);
+  }
+
+  function updateUI(label) {
+    const pct = calcPercent();
+    if (barEl) barEl.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = label || `${pct}%`;
+  }
+
+  function markPhase(key, label) {
+    if (PHASES[key]) {
+      PHASES[key].done = true;
+    }
+    updateUI(label);
+    checkReady();
+  }
+
+  function updateSWCacheProgress(cached, total, label) {
+    swProgress = total > 0 ? cached / total : 0;
+    updateUI(label || `Caching ${cached}/${total}`);
+  }
+
+  function markSWDone(label) {
+    swDone = true;
+    swProgress = 1;
+    PHASES.swCache.done = true;
+    updateUI(label);
+    checkReady();
+  }
+
+  function checkReady() {
+    const allDone = Object.values(PHASES).every(p => p.done);
+    if (allDone && !offlineReady) {
+      offlineReady = true;
+      // Show offline ready badge
+      if (offlineEl) {
+        offlineEl.style.display = 'flex';
+        void offlineEl.offsetWidth;
+        offlineEl.classList.add('show');
+      }
+      // Show enter button
+      if (enterBtn) {
+        enterBtn.style.display = '';
+      }
+      console.log('[Progress] ✓ 100% — Ready for offline use');
+    }
+  }
+
+  // Expose global API for boot() and SW
+  window.setProgress = markPhase;
+  window.updateSWProgress = updateSWCacheProgress;
+  window.markSWDone = markSWDone;
+  window.markAppLoaded = () => markPhase('scene', 'Loading assets…');
+
+  return {
+    init() {
+      updateUI('Initializing…');
+    }
+  };
+})();
+
 async function loadAvailabilityData(){
   return new Promise((resolve)=>{
     // Wait for AvailabilitySystem to be ready
@@ -2110,14 +2210,17 @@ async function loadAvailabilityData(){
 async function boot(){
   E.init();
 
-  // Load tour data
+  // Phase 1: App Init (10%)
   try{window.TD=await AL.json(CFG.dataPath)}catch(e){console.warn('No tour-data.json');window.TD={projectName:'Demo',units:[],hotspots:[],gallery:[]};}
   window.TD.units=window.TD.units||[];window.TD.hotspots=window.TD.hotspots||[];window.TD.gallery=window.TD.gallery||[];
   window.TD.units.forEach(u=>{u.id=u.id||u.unitNumber||u.name;u.description=u.description||u.desc||'';u.features=u.features||[];});
+  ProgressTracker.init();
+  setProgress('appInit', 'Loading tour data…');
 
-  // Load availability data and wait for it to sync
+  // Phase 2: Firebase (20%)
   console.log('[boot] Waiting for availability data...');
   await loadAvailabilityData();
+  setProgress('firebase', 'Connecting Firebase…');
 
   // Initialize 3D scene and UI
   UI.populateIntro();
@@ -2132,6 +2235,9 @@ async function boot(){
   const urls=new Set();window.TD.gallery.forEach(g=>{if(g.url)urls.add(g.url)});window.TD.units.slice(0,16).forEach(u=>{if(u.image)urls.add(u.image)});
   if(window.TD.media?.heroImage)urls.add(window.TD.media.heroImage);
   if(urls.size)await AL.imgs([...urls].slice(0,15));
+
+  // Phase 3: 3D Scene loaded (35%)
+  setProgress('scene', 'Loading assets…');
 
   U.build();HS.build();Srch.init();Gal.init();UI.init();UI.populateProject();Gestures.init();
   AL.done();
@@ -2288,52 +2394,6 @@ async function boot(){
 
 // ═══ PWA: Service Worker, Offline, Install ═══
 (function(){
-  const pctEl = document.getElementById('intro-pct');
-  const barEl = document.getElementById('intro-bar');
-  const enterBtn = document.getElementById('intro-enter');
-  const offlineEl = document.getElementById('offline-ready');
-  let cachingComplete = false;
-  let offlineReady = false;
-
-  // Show "Ready for offline" badge only when everything is cached
-  function showOfflineReady(){
-    if (offlineReady) return;
-    offlineReady = true;
-    if (offlineEl) {
-      offlineEl.style.display = 'flex';
-      void offlineEl.offsetWidth;
-      offlineEl.classList.add('show');
-      console.log('[PWA] ✓ Ready for offline use');
-    }
-    // If caching is also done, show Enter button
-    if (cachingComplete) showEnter();
-  }
-
-  // Show "Explore Now" button only when both:
-  // 1. All assets are cached (offline ready)
-  // 2. The 3D scene is loaded
-  function showEnter(){
-    if (!cachingComplete || !offlineReady) return;
-    if (enterBtn) {
-      enterBtn.style.display = '';
-      console.log('[PWA] ✓ Explore Now shown');
-    }
-  }
-
-  // Update loading progress
-  function updateProgress(cached, total, label){
-    if (!pctEl || !barEl) return;
-    const pct = total > 0 ? Math.round(cached / total * 100) : 0;
-    barEl.style.width = pct + '%';
-    pctEl.textContent = label || `${pct}%`;
-  }
-
-  // Mark that app assets are loaded (scene, model, etc)
-  window.markAppLoaded = function(){
-    cachingComplete = true;
-    // If offline is already ready, show enter
-    if (offlineReady) showEnter();
-  };
 
   if('serviceWorker' in navigator){
     // Only clean old caches on first visit or when SW version changes
@@ -2424,17 +2484,16 @@ async function boot(){
         setTimeout(triggerCaching, 2000);
       });
 
-      // Fallback: if caching doesn't complete within 60s, show enter anyway
+      // Fallback: if caching doesn't complete within 60s, mark SW phase done anyway
       setTimeout(() => {
-        if (!cachingComplete) {
-          console.warn('[PWA] Caching timeout - showing enter anyway');
-          cachingComplete = true;
-          if (offlineReady) showEnter();
-        }
+        console.warn('[PWA] Caching timeout - marking SW phase done');
+        markSWDone('✓ Ready (some assets cached)');
       }, 60000);
     }).catch((err)=>{
       console.error('[PWA] Registration error:', err);
       console.error('[PWA] Make sure sw.js is served correctly');
+      // If SW fails, still mark phase done so user isn't stuck
+      markSWDone('⚠ Ready (SW unavailable)');
     });
 
     // Listen for messages from service worker
@@ -2442,14 +2501,20 @@ async function boot(){
       if (!e.data || !e.data.type) return;
 
       if (e.data.type === 'CACHE_PROGRESS') {
-        updateProgress(e.data.cached, e.data.total, e.data.label);
+        updateSWProgress(e.data.cached, e.data.total, e.data.label);
       }
 
       if (e.data.type === 'OFFLINE_READY') {
-        showOfflineReady();
+        markSWDone('✓ Ready for offline use');
       }
     });
   }
+  // If serviceWorker not supported, still mark SW phase done
+  if (!('serviceWorker' in navigator)) {
+    console.warn('[PWA] Service Worker not supported');
+    markSWDone('⚠ Ready (SW not supported)');
+  }
+
   function updateStatus(){
     const el=document.getElementById('connection-status');
     if(el){
