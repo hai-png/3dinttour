@@ -3,7 +3,7 @@
  * Cache-first strategy: serve from cache, fallback to network
  */
 
-const CACHE_VERSION = 'v10';
+const CACHE_VERSION = 'v11';
 const CACHE_NAME = `tour-${CACHE_VERSION}`;
 const OFFLINE_PAGE = './offline.html';
 

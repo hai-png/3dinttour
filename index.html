@@ -2402,7 +2402,7 @@ async function boot(){
       const names = await caches.keys();
       for (const name of names) {
         // Only delete caches from our app (not other PWAs)
-        if (name.startsWith('tour-v') && name !== 'tour-v10') {
+        if (name.startsWith('tour-v') && name !== 'tour-v11') {
           await caches.delete(name);
           console.log('[PWA] Cleaned old cache:', name);
         }
