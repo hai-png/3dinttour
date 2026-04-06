@@ -4,25 +4,25 @@
  */
 
 const CACHE_NAME = 'tour-v7';
-const OFFLINE_PAGE = '/offline.html';
+const OFFLINE_PAGE = './offline.html';
 
 // Core files to pre-cache (small files only - model cached at runtime)
 const CORE_FILES = [
-  '/',
-  '/index.html',
-  '/offline.html',
-  '/manifest.json',
-  '/brand-config.json',
-  '/project/Hosea-LOGO-12.png',
-  '/availability-system.js',
-  '/contact-integration.js',
-  '/firebase-service.js',
-  '/availability-manager.js',
-  '/auth-manager.js',
-  '/tour-data.json',
+  './',
+  './index.html',
+  './offline.html',
+  './manifest.json',
+  './brand-config.json',
+  './project/Hosea-LOGO-12.png',
+  './availability-system.js',
+  './contact-integration.js',
+  './firebase-service.js',
+  './availability-manager.js',
+  './auth-manager.js',
+  './tour-data.json',
   // Draco decoder (needed for model loading)
-  '/draco/draco_decoder.js',
-  '/draco/draco_decoder.wasm',
+  './draco/draco_decoder.js',
+  './draco/draco_decoder.wasm',
 ];
 
 // Install: pre-cache core files
@@ -217,104 +217,104 @@ self.addEventListener('message', (e) => {
     // Priority 1: Local media files (MUST be cached first - requested immediately by page)
     const priorityLocal = [
       // Model files (critical - requested on page load)
-      '/model/building.glb',
-      '/3d-floor-plan/1-bed-01.glb',
-      '/3d-floor-plan/2-bed-01.glb',
-      '/3d-floor-plan/3d-bed-01.glb',
+      './model/building.glb',
+      './3d-floor-plan/1-bed-01.glb',
+      './3d-floor-plan/2-bed-01.glb',
+      './3d-floor-plan/3d-bed-01.glb',
       // HDR environment files (critical - requested on page load)
-      '/hdr/laufenurg_church_1k.hdr',
-      '/hdr/cobblestone_street_night_1k.hdr',
-      '/hdr/tree_lined_driveway_1k.hdr',
+      './hdr/laufenurg_church_1k.hdr',
+      './hdr/cobblestone_street_night_1k.hdr',
+      './hdr/tree_lined_driveway_1k.hdr',
     ];
 
     // Priority 2: Project media (requested shortly after)
     const projectMedia = [
       // Hero & gallery
-      '/project/hero-image-video/mainsowreel.mp4',
-      '/project/gallery/mainsowreel.mp4',
+      './project/hero-image-video/mainsowreel.mp4',
+      './project/gallery/mainsowreel.mp4',
       // Gallery images
-      '/project/gallery/120.webp',
-      '/project/gallery/125.webp',
-      '/project/gallery/213.webp',
-      '/project/gallery/218.webp',
-      '/project/gallery/image17.webp',
-      '/project/gallery/image21.webp',
-      '/project/gallery/photo_6003679379009422639_y.webp',
-      '/project/gallery/Scene 34.webp',
-      '/project/gallery/Scene 36.webp',
-      '/project/gallery/Scene-27_1-enhanced.webp',
+      './project/gallery/120.webp',
+      './project/gallery/125.webp',
+      './project/gallery/213.webp',
+      './project/gallery/218.webp',
+      './project/gallery/image17.webp',
+      './project/gallery/image21.webp',
+      './project/gallery/photo_6003679379009422639_y.webp',
+      './project/gallery/Scene 34.webp',
+      './project/gallery/Scene 36.webp',
+      './project/gallery/Scene-27_1-enhanced.webp',
       // Floor plans & amenities
-      '/project/floor-plans/seken-Floorplan.jpg',
-      '/project/amenities/swimming-pool-amenity.webp',
+      './project/floor-plans/seken-Floorplan.jpg',
+      './project/amenities/swimming-pool-amenity.webp',
       // Logos
-      '/project/temerlogo.png',
+      './project/temerlogo.png',
       // Hotspot media
-      '/project/hotspots/ev_charging/ev_charging.mp4',
-      '/project/hotspots/green_terrace/green_terrace.mp4',
-      '/project/hotspots/green_terrace/swimming-pool-amenity.webp',
+      './project/hotspots/ev_charging/ev_charging.mp4',
+      './project/hotspots/green_terrace/green_terrace.mp4',
+      './project/hotspots/green_terrace/swimming-pool-amenity.webp',
     ];
 
     // Priority 3: Unit videos (requested when user opens unit details)
     const unitVideos = [
-      '/unit-image-video/3-bed-05/mainsowreel.mp4',
-      '/unit-image-video/3-bed-06/mainsowreel.mp4',
-      '/unit-image-video/3-bed-04/mainsowreel.mp4',
-      '/unit-image-video/1-bed-01/mainsowreel.mp4',
-      '/unit-image-video/3-bed-01/mainsowreel.mp4',
-      '/unit-image-video/3-bed-02/mainsowreel.mp4',
-      '/unit-image-video/2-bed-01/mainsowreel.mp4',
-      '/unit-image-video/3-bed-03/mainsowreel.mp4',
+      './unit-image-video/3-bed-05/mainsowreel.mp4',
+      './unit-image-video/3-bed-06/mainsowreel.mp4',
+      './unit-image-video/3-bed-04/mainsowreel.mp4',
+      './unit-image-video/1-bed-01/mainsowreel.mp4',
+      './unit-image-video/3-bed-01/mainsowreel.mp4',
+      './unit-image-video/3-bed-02/mainsowreel.mp4',
+      './unit-image-video/2-bed-01/mainsowreel.mp4',
+      './unit-image-video/3-bed-03/mainsowreel.mp4',
     ];
 
     // Priority 4: Panorama images (requested when user opens panorama view)
     const panoramaImages = [
-      '/panorama/1-bed-01.webp',
-      '/panorama/2-bed-01.webp',
-      '/panorama/3-bed-01.webp',
-      '/panorama/3-bed-02.webp',
-      '/panorama/3-bed-03.webp',
-      '/panorama/3-bed-04.webp',
-      '/panorama/3-bed-05.webp',
-      '/panorama/3-bed-06.webp',
+      './panorama/1-bed-01.webp',
+      './panorama/2-bed-01.webp',
+      './panorama/3-bed-01.webp',
+      './panorama/3-bed-02.webp',
+      './panorama/3-bed-03.webp',
+      './panorama/3-bed-04.webp',
+      './panorama/3-bed-05.webp',
+      './panorama/3-bed-06.webp',
     ];
 
     // Priority 5: 2D floor plan
     const floorPlan2D = [
-      '/2d-floor-plan/type2.webp',
+      './2d-floor-plan/type2.webp',
     ];
 
     // Priority 6: Unit images (cached along with unit videos)
     const unitImages = [
       // 1-bed-01
-      '/unit-image-video/1-bed-01/1.webp',
-      '/unit-image-video/1-bed-01/4.webp',
-      '/unit-image-video/1-bed-01/Jambo - Marketing-0.webp',
+      './unit-image-video/1-bed-01/1.webp',
+      './unit-image-video/1-bed-01/4.webp',
+      './unit-image-video/1-bed-01/Jambo - Marketing-0.webp',
       // 2-bed-01
-      '/unit-image-video/2-bed-01/ SALON.webp',
-      '/unit-image-video/2-bed-01/FF FAMILY ROOM DINING & OPEN KITCHEN 2.webp',
-      '/unit-image-video/2-bed-01/Scene 70.webp',
+      './unit-image-video/2-bed-01/ SALON.webp',
+      './unit-image-video/2-bed-01/FF FAMILY ROOM DINING & OPEN KITCHEN 2.webp',
+      './unit-image-video/2-bed-01/Scene 70.webp',
       // 3-bed-01
-      '/unit-image-video/3-bed-01/212.webp',
-      '/unit-image-video/3-bed-01/Scene 67.webp',
-      '/unit-image-video/3-bed-01/GF-OPEN KITCHEN 1.webp',
+      './unit-image-video/3-bed-01/212.webp',
+      './unit-image-video/3-bed-01/Scene 67.webp',
+      './unit-image-video/3-bed-01/GF-OPEN KITCHEN 1.webp',
       // 3-bed-02
-      '/unit-image-video/3-bed-02/216.webp',
-      '/unit-image-video/3-bed-02/ Marketing-02.webp',
-      '/unit-image-video/3-bed-02/Jambo - Marketing-2.webp',
+      './unit-image-video/3-bed-02/216.webp',
+      './unit-image-video/3-bed-02/ Marketing-02.webp',
+      './unit-image-video/3-bed-02/Jambo - Marketing-2.webp',
       // 3-bed-03
-      '/unit-image-video/3-bed-03/Scene 77.webp',
-      '/unit-image-video/3-bed-03/Scene 73.webp',
+      './unit-image-video/3-bed-03/Scene 77.webp',
+      './unit-image-video/3-bed-03/Scene 73.webp',
       // 3-bed-04
-      '/unit-image-video/3-bed-04/GF-DINING ROOM 2.webp',
-      '/unit-image-video/3-bed-04/D5_Image_202403 21_163403.webp',
-      '/unit-image-video/3-bed-04/218.webp',
+      './unit-image-video/3-bed-04/GF-DINING ROOM 2.webp',
+      './unit-image-video/3-bed-04/D5_Image_202403 21_163403.webp',
+      './unit-image-video/3-bed-04/218.webp',
       // 3-bed-05
-      '/unit-image-video/3-bed-05/213.webp',
-      '/unit-image-video/3-bed-05/214.webp',
+      './unit-image-video/3-bed-05/213.webp',
+      './unit-image-video/3-bed-05/214.webp',
       // 3-bed-06
-      '/unit-image-video/3-bed-06/17.webp',
-      '/unit-image-video/3-bed-06/Scene 68.webp',
-      '/unit-image-video/3-bed-06/211.webp',
+      './unit-image-video/3-bed-06/17.webp',
+      './unit-image-video/3-bed-06/Scene 68.webp',
+      './unit-image-video/3-bed-06/211.webp',
     ];
 
     // Priority 7: CDN assets (already cached from previous visits usually)
@@ -408,19 +408,19 @@ self.addEventListener('message', (e) => {
 function cacheLocalMedia(cache, cachedCount, totalKnown, sendProgress) {
   // Scan common media directories for available files
   const mediaDirs = [
-    '/model/',
-    '/hdr/',
-    '/project/hero-image-video/',
-    '/project/amenities/',
-    '/project/floor-plans/',
-    '/project/gallery/',
-    '/project/hotspot-media/',
-    '/project/hotspots/',
-    '/panorama/',
-    '/2d-floor-plan/',
-    '/3d-floor-plan/',
-    '/gallery/',
-    '/unit-image-video/',
+    './model/',
+    './hdr/',
+    './project/hero-image-video/',
+    './project/amenities/',
+    './project/floor-plans/',
+    './project/gallery/',
+    './project/hotspot-media/',
+    './project/hotspots/',
+    './panorama/',
+    './2d-floor-plan/',
+    './3d-floor-plan/',
+    './gallery/',
+    './unit-image-video/',
   ];
 
   let dirsChecked = 0;
