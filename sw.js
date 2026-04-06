@@ -3,7 +3,7 @@
  * Cache-first strategy: serve from cache, fallback to network
  */
 
-const CACHE_VERSION = 'v9';
+const CACHE_VERSION = 'v10';
 const CACHE_NAME = `tour-${CACHE_VERSION}`;
 const OFFLINE_PAGE = './offline.html';
 
@@ -90,7 +90,7 @@ self.addEventListener('fetch', (e) => {
   }
 
   // Strategy 2: HTML pages (network-first with cache fallback for fresh content)
-  if (e.request.headers.get('accept')?.includes('text/html') || 
+  if (e.request.headers.get('accept')?.includes('text/html') ||
       e.request.mode === 'navigate') {
     e.respondWith(
       fetch(e.request)
@@ -98,7 +98,7 @@ self.addEventListener('fetch', (e) => {
           if (response.ok) {
             const clone = response.clone();
             caches.open(CACHE_NAME).then(cache => {
-              cache.put(e.request, clone).catch(err => 
+              cache.put(e.request, clone).catch(err =>
                 console.warn('[SW] HTML cache put failed:', err.message)
               );
             });
@@ -110,7 +110,14 @@ self.addEventListener('fetch', (e) => {
             console.log('[SW] Serving HTML from cache (offline):', url.pathname);
             return cached;
           }
-          return caches.match(OFFLINE_PAGE);
+          // Try alternate cache keys (pre-cached with relative URLs)
+          return caches.match('./').then(c => {
+            if (c) return c;
+            return caches.match('./index.html').then(c2 => {
+              if (c2) return c2;
+              return caches.match(OFFLINE_PAGE);
+            });
+          });
         }))
     );
     return;
