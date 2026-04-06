@@ -373,13 +373,34 @@ self.addEventListener('message', (e) => {
         }
 
         const url = urls.shift();
-        fetch(url).then(resp => {
+        
+        // Add timeout to fetch (30 seconds)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+        
+        fetch(url, { signal: controller.signal }).then(resp => {
+          clearTimeout(timeoutId);
+          
           if (resp.ok) {
-            // For large files, also store in IndexedDB
+            // Skip large files on mobile to avoid memory issues
+            const contentLength = resp.headers.get('content-length');
+            const isLargeFile = contentLength && parseInt(contentLength) > 10 * 1024 * 1024; // 10MB limit
+            
+            if (isLargeFile) {
+              console.log(`[SW] Skipping large file cache (${(parseInt(contentLength) / 1024 / 1024).toFixed(1)}MB):`, url.split('/').pop());
+              cached++;
+              sendProgress(cached, `Skipped (large): ${url.split('/').pop()}`);
+              cacheOne(urls);
+              return;
+            }
+            
+            // For large files, also store in IndexedDB (but with size check)
             if (url.endsWith('.glb') || url.endsWith('.hdr')) {
               const dbClone = resp.clone();
               dbClone.blob().then(blob => {
                 cacheModelBlob(url, Promise.resolve(blob));
+              }).catch(err => {
+                console.warn('[SW] IndexedDB store failed:', url, err.message);
               });
             }
             const cacheClone = resp.clone();
@@ -400,6 +421,12 @@ self.addEventListener('message', (e) => {
               } else {
                 cacheOne(urls);
               }
+            }).catch(err => {
+              // Cache.put failed - still count it
+              console.warn('[SW] Cache put failed for:', url, err.message);
+              cached++;
+              sendProgress(cached, `Cache error: ${url.split('/').pop()}`);
+              cacheOne(urls);
             });
           } else {
             console.warn('[SW] Failed to fetch:', url, resp.status);
@@ -408,6 +435,7 @@ self.addEventListener('message', (e) => {
             cacheOne(urls);
           }
         }).catch(err => {
+          clearTimeout(timeoutId);
           console.warn('[SW] Fetch error:', url, err.message);
           cached++;
           sendProgress(cached, `Error: ${url.split('/').pop()}`);
@@ -481,8 +509,25 @@ function cacheLocalMedia(cache, cachedCount, totalKnown, sendProgress) {
               return;
             }
             const fileUrl = files[fileIdx++];
-            fetch(fileUrl).then(r => {
+            
+            // Add timeout to fetch
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+            
+            fetch(fileUrl, { signal: controller.signal }).then(r => {
+              clearTimeout(timeoutId);
               if (r.ok) {
+                // Check file size
+                const contentLength = r.headers.get('content-length');
+                const isLarge = contentLength && parseInt(contentLength) > 10 * 1024 * 1024;
+                
+                if (isLarge) {
+                  count++;
+                  sendProgress(count, `Skipped (large): ${fileUrl.split('/').pop()}`);
+                  cacheFile();
+                  return;
+                }
+                
                 const clone = r.clone();
                 cache.put(fileUrl, r).then(() => {
                   count++;
@@ -491,14 +536,24 @@ function cacheLocalMedia(cache, cachedCount, totalKnown, sendProgress) {
                   sendProgress(count, label);
                   // Also store large files in IndexedDB
                   if (fileUrl.endsWith('.glb') || fileUrl.endsWith('.hdr')) {
-                    clone.blob().then(blob => cacheModelBlob(fileUrl, Promise.resolve(blob)));
+                    clone.blob().then(blob => cacheModelBlob(fileUrl, Promise.resolve(blob)))
+                      .catch(err => console.warn('[SW] IndexedDB store failed:', err.message));
                   }
+                  cacheFile();
+                }).catch(err => {
+                  console.warn('[SW] Cache put failed during scan:', fileUrl, err.message);
+                  count++;
+                  sendProgress(count, `Cache error: ${fileUrl.split('/').pop()}`);
                   cacheFile();
                 });
               } else {
                 cacheFile();
               }
-            }).catch(() => cacheFile());
+            }).catch(err => {
+              clearTimeout(timeoutId);
+              console.warn('[SW] Scan fetch error:', fileUrl, err.message);
+              cacheFile();
+            });
           };
           cacheFile();
         });
