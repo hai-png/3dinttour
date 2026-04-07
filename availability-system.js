@@ -312,10 +312,13 @@
 
           if (connected && this.state.get('isOnline')) {
             this._emit('connected');
-            // Start sync when connected (for ALL users, not just authenticated)
+            // Stop existing sync first to clean up stale listeners, then start fresh
+            this.stopSync();
             this.startSync();
           } else {
             this._emit('disconnected');
+            // Clean up listeners so they can be re-established on reconnect
+            this.stopSync();
           }
         });
       }
@@ -1211,6 +1214,7 @@
       row.className = 'am-unit-row';
       row.dataset.unit = key;
 
+      // Normalize status: ensure we store lowercase in Firebase/admin panel
       const status = Utils.denormalizeStatus(unit.status);
       const notes = unit.notes || '';
       const name = unit.name || unit.unitName || key;
@@ -1695,9 +1699,24 @@
 
       Utils.log('AvailabilitySystem', 'Saving', keys.length, 'changes');
 
-      const promises = keys.map(key => 
-        this.firebase.update(key, pending[key])
-      );
+      // Update local state FIRST with normalized status (capitalized for TD.units)
+      // This ensures offline mode still shows correct status immediately
+      keys.forEach(key => {
+        const normalizedData = {
+          ...pending[key],
+          status: Utils.normalizeStatus(pending[key].status)
+        };
+        this.state.updateUnit(key, normalizedData);
+      });
+
+      // Send to Firebase with lowercase status (for storage)
+      const promises = keys.map(key => {
+        const firebaseData = {
+          ...pending[key],
+          status: Utils.denormalizeStatus(pending[key].status)
+        };
+        return this.firebase.update(key, firebaseData);
+      });
 
       const results = await Promise.all(promises);
       const successCount = results.filter(r => r.success).length;
@@ -1706,12 +1725,12 @@
       // Clear pending changes
       this.state.set('pendingChanges', {});
 
-      // Update UI
+      // Update UI (denormalize back to lowercase for admin panel)
       keys.forEach(key => {
         this.ui.updateUnitRow(key, pending[key]);
       });
 
-      // Sync with tour data
+      // Sync with tour data (will use capitalized status from state)
       this.tourSync.sync();
 
       if (successCount > 0) {
@@ -1729,20 +1748,29 @@
      * @param {string} notes
      */
     async updateUnit(unitKey, status, notes = '') {
-      const data = {
-        status,
+      // Prepare data for Firebase (lowercase status)
+      const firebaseData = {
+        status: Utils.denormalizeStatus(status),
         notes,
         updatedAt: Date.now(),
         updatedBy: this.state.get('currentUser')?.email || 'unknown'
       };
 
-      const result = await this.firebase.update(unitKey, data);
-      
+      // Prepare data for local state (capitalized status)
+      const stateData = {
+        status: Utils.normalizeStatus(status),
+        notes,
+        updatedAt: Date.now(),
+        updatedBy: this.state.get('currentUser')?.email || 'unknown'
+      };
+
+      const result = await this.firebase.update(unitKey, firebaseData);
+
       if (result.success) {
-        this.state.updateUnit(unitKey, data);
+        this.state.updateUnit(unitKey, stateData);
         this.ui.showToast('Availability updated', 'success');
       } else if (result.queued) {
-        this.state.updateUnit(unitKey, data);
+        this.state.updateUnit(unitKey, stateData);
         this.ui.showToast('Offline - will sync when online', 'info');
       } else {
         this.ui.showToast('Update failed', 'error');

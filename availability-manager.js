@@ -379,11 +379,19 @@ const AvailabilityManager = {
    * Update availability for a unit
    */
   async updateUnitAvailability(unitKey, status, notes = '') {
+    // Keep status as-is for Firebase (lowercase from admin panel buttons)
     const updateData = {
       status,
       notes,
       updatedAt: Date.now(),
       updatedBy: this.currentUser?.email || 'unknown'
+    };
+
+    // Normalize status to capitalized form for local cache/TD.units
+    const normalizedStatus = this.normalizeStatus(status);
+    const cacheData = {
+      ...updateData,
+      status: normalizedStatus
     };
 
     this.isLoading = true;
@@ -395,18 +403,18 @@ const AvailabilityManager = {
 
         if (result.success) {
           this.showSuccessToast('Availability updated');
-          // Update local cache immediately
-          this.updateUnitInCache(unitKey, updateData);
+          // Update local cache immediately with normalized status
+          this.updateUnitInCache(unitKey, cacheData);
         } else if (result.queued) {
           this.showInfoToast('Offline - changes will sync when online');
-          // Update local cache even when offline
-          this.updateUnitInCache(unitKey, updateData);
+          // Update local cache even when offline with normalized status
+          this.updateUnitInCache(unitKey, cacheData);
         } else {
           this.showErrorToast('Failed to update');
         }
       } else {
-        // No Firebase, just update local cache
-        this.updateUnitInCache(unitKey, updateData);
+        // No Firebase, just update local cache with normalized status
+        this.updateUnitInCache(unitKey, cacheData);
         this.showSuccessToast('Updated locally');
       }
 
@@ -660,21 +668,25 @@ const AvailabilityManager = {
 
     try {
       if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
-        // Batch update to Firebase
+        // Batch update to Firebase (send lowercase status)
         const updates = {};
         pendingKeys.forEach(key => {
           updates[`availability/${key}`] = this.pendingChanges[key];
         });
 
         await FirebaseService.db.ref().update(updates);
-        
+
         this.showSuccessToast(`Saved ${pendingKeys.length} unit${pendingKeys.length > 1 ? 's' : ''}`);
 
-        // Update local cache
+        // Update local cache with normalized status (capitalized for TD.units)
         pendingKeys.forEach(key => {
+          const normalizedData = {
+            ...this.pendingChanges[key],
+            status: this.normalizeStatus(this.pendingChanges[key].status)
+          };
           this.availabilityData[key] = {
             ...this.availabilityData[key],
-            ...this.pendingChanges[key]
+            ...normalizedData
           };
         });
         this.saveCache();
@@ -685,16 +697,21 @@ const AvailabilityManager = {
         // Update UI
         this.renderAdminPanel();
         this.updateStatusBadges();
-        
+
         // Sync with tour data
         this.syncWithTourData();
-        
+
       } else {
         // No Firebase, just update local cache
+        // Still normalize status for consistency
         pendingKeys.forEach(key => {
+          const normalizedData = {
+            ...this.pendingChanges[key],
+            status: this.normalizeStatus(this.pendingChanges[key].status)
+          };
           this.availabilityData[key] = {
             ...this.availabilityData[key],
-            ...this.pendingChanges[key]
+            ...normalizedData
           };
         });
         this.saveCache();
@@ -705,7 +722,7 @@ const AvailabilityManager = {
         // Update UI
         this.renderAdminPanel();
         this.updateStatusBadges();
-        
+
         // Sync with tour data
         this.syncWithTourData();
 
@@ -715,14 +732,14 @@ const AvailabilityManager = {
       this.showErrorToast('Failed to save changes');
     } finally {
       this.isLoading = false;
-      
+
       // Restore save all button
       if (saveAllBtn) {
         saveAllBtn.disabled = false;
         saveAllBtn.innerHTML = '<span class="ico">💾</span> Save All';
         saveAllBtn.style.opacity = '1';
       }
-      
+
       this.updateSaveAllButtonState();
     }
   },
