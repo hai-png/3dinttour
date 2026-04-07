@@ -90,9 +90,6 @@
       const logoLink = document.querySelector('link[rel="apple-touch-icon"]');
       if (logoLink && c.pwa && c.pwa.icon192) logoLink.href = c.pwa.icon192;
     });
-
-    console.log('[Brand] Applied:', c.brand.companyName);
-    console.log('[Brand] Config:', c);
   }
 })();
 </script>
@@ -234,18 +231,44 @@ button{font-family:inherit;border:none;cursor:pointer}
 
 
 /* ═══ Connection Status ═══ */
-#connection-status{position:fixed;top:10px;right:12px;z-index:99;padding:5px 10px;background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:var(--rm);display:flex;align-items:center;gap:6px;font-size:10px;color:#fff;transition:all var(--t-f)}
-#connection-status.online{background:rgba(34,197,94,.2);border-color:rgba(34,197,94,.3)}
-#connection-status.offline{background:rgba(245,158,11,.2);border-color:rgba(245,158,11,.3)}
+#connection-status{position:fixed;top:10px;right:12px;z-index:99;padding:6px 12px;background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:var(--rm);display:flex;align-items:center;gap:6px;font-size:10px;color:#fff;transition:all var(--t-f);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+#connection-status.online{background:rgba(34,197,94,.2);border-color:rgba(34,197,94,.4);box-shadow:0 2px 12px rgba(34,197,94,.3)}
+#connection-status.offline{background:rgba(245,158,11,.25);border-color:rgba(245,158,11,.5);box-shadow:0 2px 12px rgba(245,158,11,.4);animation:pulse-offline 2s infinite}
 .cs-dot{width:6px;height:6px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
 #connection-status.offline .cs-dot{background:var(--warn)}
-.cs-txt{font-weight:600;letter-spacing:.3px}
+.cs-txt{font-weight:600;letter-spacing:.3px;white-space:nowrap}
+
+@keyframes pulse-offline{
+  0%,100%{opacity:1}
+  50%{opacity:.7}
+}
 
 /* ═══ Offline Ready Notification ═══ */
 .offline-ready{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);z-index:10001;background:rgba(34,197,94,.15);backdrop-filter:blur(12px);border:1px solid rgba(34,197,94,.3);border-radius:var(--rxl);padding:8px 16px;display:flex;align-items:center;gap:8px;box-shadow:0 8px 28px rgba(34,197,94,.2);opacity:0;transition:all .4s ease;pointer-events:none}
 .offline-ready.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .offline-ready .or-icon{font-size:14px;color:#22c55e;font-weight:700}
 .offline-ready .or-txt{font-size:11px;font-weight:600;color:#22c55e;letter-spacing:.3px;white-space:nowrap}
+
+/* ═══ Install Prompt Modal ═══ */
+.im-modal{position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;animation:fadeIn .25s}
+.im-modal-content{background:var(--card);border-radius:var(--rxl);box-shadow:0 20px 60px rgba(0,0,0,.3);width:90%;max-width:420px;max-height:90vh;overflow-y:auto;animation:scaleIn .3s}
+.im-modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--b1)}
+.im-modal-header h3{font-size:17px;font-weight:700;color:var(--t1);margin:0}
+.im-modal-close{width:32px;height:32px;background:var(--card2);border:1px solid var(--b1);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--t3);cursor:pointer;transition:all var(--t-f)}
+.im-modal-close:hover{background:var(--pri-a);color:var(--pri)}
+.im-modal-body{padding:20px}
+.im-desc{font-size:14px;color:var(--t2);margin:0 0 20px;line-height:1.5;text-align:center}
+.im-install-btn{width:100%;padding:14px 20px;background:linear-gradient(135deg,var(--pri),var(--pri-d));color:#fff;border:none;border-radius:var(--rm);font-size:15px;font-weight:700;cursor:pointer;transition:all var(--t-f);display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.im-install-btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.im-install-btn:active{transform:translateY(0)}
+.im-platforms{margin-top:20px;border-top:1px solid var(--b1);padding-top:16px}
+.im-platform{display:flex;gap:12px;padding:12px 0}
+.im-plat-icon{font-size:28px;flex-shrink:0;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--card2);border-radius:var(--rm)}
+.im-plat-steps{flex:1}
+.im-plat-steps strong{display:block;font-size:13px;color:var(--t1);margin-bottom:6px}
+.im-plat-steps ol{margin:0;padding-left:18px;font-size:12px;color:var(--t2);line-height:1.6}
+.im-plat-steps ol li{margin-bottom:2px}
+.im-plat-steps ol li strong{display:inline;font-size:12px;color:var(--t1)}
 
 /* ═══ User Info ═══ */
 #user-info{display:flex;align-items:center;gap:6px;padding:5px 10px;background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:var(--rm);font-size:10px;color:#fff;margin-top:6px}
@@ -405,6 +428,8 @@ button{font-family:inherit;border:none;cursor:pointer}
 .hero-car .hero-nav{position:absolute;top:50%;transform:translateY(-50%);width:22px;height:22px;background:rgba(0,0,0,.4);border:none;border-radius:50%;color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;z-index:2;opacity:0;transition:opacity var(--t-f)}
 .hero-car:hover .hero-nav{opacity:1}
 .hero-car .hero-nav.p{left:4px}.hero-car .hero-nav.n{right:4px}
+.hero-car .hero-fs{position:absolute;top:6px;right:6px;width:26px;height:26px;background:rgba(0,0,0,.5);border:none;border-radius:50%;color:#fff;font-size:11px;z-index:3;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity var(--t-f)}
+.hero-car:hover .hero-fs{opacity:1}
 
 .prj-desc{font-size:11px;line-height:1.55;color:var(--t2);background:var(--card2);padding:8px;border-radius:var(--rm);border:1px solid var(--b1)}
 
@@ -413,6 +438,8 @@ button{font-family:inherit;border:none;cursor:pointer}
 .u-carousel{position:relative;width:100%;height:140px;border-radius:var(--rm);overflow:hidden;margin-bottom:8px;background:#111}
 .u-carousel img,.u-carousel video{width:100%;height:100%;object-fit:cover;display:block}
 .u-carousel .mc{position:absolute;top:5px;right:5px;padding:2px 6px;background:rgba(0,0,0,.6);border-radius:6px;font-size:8px;color:#fff;font-weight:600}
+.u-carousel .u-car-fs{position:absolute;top:5px;right:40px;width:22px;height:22px;background:rgba(0,0,0,.5);border:none;border-radius:50%;color:#fff;font-size:10px;z-index:3;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity var(--t-f)}
+.u-carousel:hover .u-car-fs{opacity:1}
 .cb{position:absolute;top:50%;transform:translateY(-50%);width:24px;height:24px;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);border-radius:50%;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;z-index:2;transition:background var(--t-f)}
 .cb:hover{background:rgba(0,0,0,.7)}.cb.p{left:4px}.cb.n{right:4px}
 .cdots{position:absolute;bottom:5px;left:50%;transform:translateX(-50%);display:flex;gap:3px;z-index:2}
@@ -568,9 +595,19 @@ button{font-family:inherit;border:none;cursor:pointer}
 /* ═══ 3D Floor Plan Modal ═══ */
 #fp{position:fixed;inset:0;z-index:8500;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:10px}
 #fp.open{display:flex}
+#fp:fullscreen,#fp:-webkit-full-screen{padding:0!important;background:#000!important;backdrop-filter:none!important;display:flex!important;align-items:stretch!important;justify-content:stretch!important}
+#fp:fullscreen .fp-m,#fp:-webkit-full-screen .fp-m{max-width:none!important;width:100vw!important;height:100vh!important;border-radius:0!important;animation:none!important;display:flex!important;flex-direction:column!important}
+#fp:fullscreen .fp-hd,#fp:-webkit-full-screen .fp-hd{flex-shrink:0;padding:12px 16px}
+#fp:fullscreen .fp-bd,#fp:-webkit-full-screen .fp-bd{flex:1!important;padding:10px!important;display:flex!important;flex-direction:column!important;min-height:0!important}
+#fp:fullscreen .fp-view,#fp:-webkit-full-screen .fp-view{flex:1!important;height:auto!important;min-height:0!important;border:none!important;border-radius:0!important;margin-bottom:0!important;position:relative!important}
+#fp:fullscreen .fp-view canvas,#fp:-webkit-full-screen .fp-view canvas{width:100%!important;height:100%!important}
+#fp:fullscreen .fp-fl,#fp:-webkit-full-screen .fp-fl{margin-bottom:6px}
+#fp:fullscreen .fp-uc,#fp:-webkit-full-screen .fp-uc{margin-bottom:6px}
 .fp-m{width:100%;max-width:680px;background:var(--card);border-radius:var(--rxl);box-shadow:var(--sl);overflow:hidden;animation:scaleIn .2s}
 .fp-hd{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--b1)}
 .fp-hd .ti{flex:1;font-size:13px;font-weight:700;color:var(--t1)}
+.fp-hd .mcl{width:28px;height:28px;background:var(--card2);border:1px solid var(--b1);border-radius:var(--rs);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--t3);cursor:pointer;transition:all var(--t-f)}
+.fp-hd .mcl:hover{background:var(--pri-a);color:var(--pri)}
 .fp-bd{padding:10px 14px}
 .fp-fl{padding:4px 12px;background:var(--pri-a);border-radius:12px;font-size:11px;font-weight:600;color:var(--pri);text-align:center;margin-bottom:8px}
 .fp-uc{font-size:8px;color:var(--t3);text-align:center;display:block;margin-bottom:8px}
@@ -585,7 +622,8 @@ button{font-family:inherit;border:none;cursor:pointer}
 #pano.open{display:flex}
 #pano canvas{flex:1;touch-action:none}
 .pano-hud{position:absolute;top:12px;left:50%;transform:translateX(-50%);padding:4px 12px;background:rgba(0,0,0,.6);border-radius:10px;color:#fff;font-size:10px;font-weight:600;z-index:1;display:flex;align-items:center;gap:5px}
-.pano-x{position:absolute;top:12px;right:12px;width:34px;height:34px;background:rgba(255,255,255,.15);border:none;border-radius:50%;color:#fff;font-size:15px;z-index:1;display:flex;align-items:center;justify-content:center}
+.pano-x{position:absolute;top:12px;right:58px;width:34px;height:34px;background:rgba(255,255,255,.15);border:none;border-radius:50%;color:#fff;font-size:15px;z-index:1;display:flex;align-items:center;justify-content:center}
+.pano-fs{position:absolute;top:12px;right:12px;width:34px;height:34px;background:rgba(255,255,255,.15);border:none;border-radius:50%;color:#fff;font-size:15px;z-index:1;display:flex;align-items:center;justify-content:center}
 .pano-tools{position:absolute;bottom:14px;right:14px;display:flex;gap:4px;z-index:1}
 .pano-tool{width:30px;height:30px;background:rgba(255,255,255,.12);border:none;border-radius:50%;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;transition:background var(--t-f)}.pano-tool:hover{background:rgba(255,255,255,.25)}
 /* Panorama nav hotspots */
@@ -614,6 +652,13 @@ button{font-family:inherit;border:none;cursor:pointer}
   .fp-view{height:260px}
   .sr.fil{flex-direction:column}
   #intro h1{font-size:22px}#intro .intro-stats{gap:14px}#intro .intro-stat b{font-size:18px}
+  /* Mobile fullscreen buttons */
+  .lb-tools{gap:4px;padding:6px 10px}
+  .lb-tool{width:34px;height:34px;font-size:12px}
+  .pano-tool,.pano-fs,.pano-x{width:36px;height:36px;font-size:14px}
+  .fp-hd .mcl{width:32px;height:32px;font-size:15px}
+  .hero-car .hero-fs{width:28px;height:28px;font-size:12px;top:5px;right:5px}
+  .u-carousel .u-car-fs{width:24px;height:24px;font-size:11px;top:4px;right:38px}
 }
 @media(max-width:480px){
   #detail{width:calc(100vw - 12px);right:6px;top:auto;bottom:48px;max-height:40vh;border-radius:var(--rl)}
@@ -625,6 +670,13 @@ button{font-family:inherit;border:none;cursor:pointer}
   .pd-nearby-grid{grid-template-columns:1fr}
   .fp-view{height:200px}
   #intro h1{font-size:18px}#intro .intro-enter{padding:12px 30px;font-size:13px}
+  /* Extra small mobile fullscreen buttons */
+  .lb-tools{gap:3px;padding:5px 8px}
+  .lb-tool{width:32px;height:32px;font-size:11px}
+  .pano-tool,.pano-fs,.pano-x{width:34px;height:34px;font-size:13px}
+  .fp-hd .mcl{width:30px;height:30px;font-size:14px}
+  .hero-car .hero-fs{width:26px;height:26px;font-size:11px;top:4px;right:4px;opacity:1}
+  .u-carousel .u-car-fs{width:22px;height:22px;font-size:10px;top:3px;right:36px;opacity:1}
 }
 </style>
 </head>
@@ -661,6 +713,54 @@ button{font-family:inherit;border:none;cursor:pointer}
 </header>
 <div id="connection-status" class="connection-status online"><span class="cs-dot"></span><span class="cs-txt">Online</span></div>
 <div id="offline-ready" class="offline-ready" style="display:none"><span class="or-icon">✓</span><span class="or-txt">Ready for offline</span></div>
+
+<!-- Install Prompt Modal -->
+<div id="install-modal" class="im-modal" style="display:none">
+  <div class="im-modal-content">
+    <div class="im-modal-header">
+      <h3>📲 Install This App</h3>
+      <button class="im-modal-close" id="im-close">×</button>
+    </div>
+    <div class="im-modal-body">
+      <p class="im-desc">Add this app to your home screen or desktop for offline access anytime.</p>
+      <button class="im-install-btn" id="im-install-btn">📲 Install Now</button>
+      <div class="im-platforms">
+        <div class="im-platform" id="im-ios" style="display:none">
+          <span class="im-plat-icon">🍎</span>
+          <div class="im-plat-steps">
+            <strong>Safari (iOS)</strong>
+            <ol>
+              <li>Tap the <strong>Share</strong> button (box with arrow ↑)</li>
+              <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+              <li>Tap <strong>"Add"</strong> to confirm</li>
+            </ol>
+          </div>
+        </div>
+        <div class="im-platform" id="im-android" style="display:none">
+          <span class="im-plat-icon">🤖</span>
+          <div class="im-plat-steps">
+            <strong>Chrome (Android)</strong>
+            <ol>
+              <li>Tap the <strong>Menu</strong> button (⋮) top-right</li>
+              <li>Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong></li>
+              <li>Tap <strong>"Install"</strong> to confirm</li>
+            </ol>
+          </div>
+        </div>
+        <div class="im-platform" id="im-desktop" style="display:none">
+          <span class="im-plat-icon">💻</span>
+          <div class="im-plat-steps">
+            <strong>Chrome / Edge (Desktop)</strong>
+            <ol>
+              <li>Look for the <strong>⊕ install icon</strong> in the address bar → click it</li>
+              <li>Or: <strong>Menu (⋮)</strong> → <strong>"Install 3D Tour"</strong></li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <aside id="detail">
   <div class="d-hdr" id="d-hdr"><div class="ic">🏢</div><span>Details</span><button class="tog" id="d-tog">−</button></div>
@@ -699,18 +799,20 @@ button{font-family:inherit;border:none;cursor:pointer}
   <div class="lb-tools">
     <button class="lb-tool" id="lb-zin" title="Zoom In">🔍+</button>
     <button class="lb-tool" id="lb-zout" title="Zoom Out">🔎-</button>
+    <button class="lb-tool" id="lb-fs" title="Fullscreen">⛶</button>
     <button class="lb-tool" id="lb-dl" title="Download">💾</button>
   </div>
 </div>
 
 <div id="pd"><div class="pd-m"><div class="pd-h"><div class="ic" id="pd-logo">🏙️</div><div class="ti" id="pd-ti">Project</div><button class="mcl" id="pd-cl">✕</button></div><div class="pd-b" id="pd-b"></div></div></div>
 
-<div id="fp"><div class="fp-m"><div class="fp-hd"><span class="ti">3D Floor Plan</span><button class="mcl" id="fp-cl">✕</button></div><div class="fp-bd"><div class="fp-fl" id="fp-fl">Floor</div><span class="fp-uc" id="fp-uc"></span><div class="fp-view" id="fp-view"><canvas id="fp-can"></canvas><div class="fp-loading" id="fp-loading"><div class="spinner"></div><span>Loading 3D Floor Plan...</span></div></div></div></div></div>
+<div id="fp"><div class="fp-m"><div class="fp-hd"><span class="ti">3D Floor Plan</span><button class="mcl" id="fp-fs" title="Fullscreen">⛶</button><button class="mcl" id="fp-cl">✕</button></div><div class="fp-bd"><div class="fp-fl" id="fp-fl">Floor</div><span class="fp-uc" id="fp-uc"></span><div class="fp-view" id="fp-view"><canvas id="fp-can"></canvas><div class="fp-loading" id="fp-loading"><div class="spinner"></div><span>Loading 3D Floor Plan...</span></div></div></div></div></div>
 
 <div id="pano">
   <canvas id="pano-can"></canvas>
   <div class="pano-hud"><span>🔄</span><span id="pano-ti">Panorama</span></div>
   <button class="pano-x" id="pano-x">✕</button>
+  <button class="pano-fs" id="pano-fs" title="Fullscreen">⛶</button>
   <div class="pano-tools">
     <button class="pano-tool" id="pano-zin" title="Zoom In">＋</button>
     <button class="pano-tool" id="pano-zout" title="Zoom Out">−</button>
@@ -815,15 +917,63 @@ const CFG={dataPath:window.__DATA_PATH||'tour-data.json',zoomStep:5,flyDur:1300}
 window.TD=null;  // Make TD globally accessible across script files
 
 // ═══ LOADER ═══
-const AL=(()=>{let ld=0,tot=0;const b=()=>document.getElementById('intro-bar'),p=()=>document.getElementById('intro-pct');
-function upd(l){const pc=tot?Math.round(ld/tot*100):0;b().style.width=pc+'%';p().textContent=l||pc+'%';}
-function trk(n,pr){tot++;return pr.then(r=>{ld++;upd(n+' ✓');return r}).catch(e=>{ld++;upd(n+' ✗');throw e});}
-async function json(u){return trk('Tour data',fetch(u).then(r=>{if(!r.ok)throw Error(`HTTP ${r.status}`);return r.json()}))}
-function glb(u,l){return trk(l||'Model',new Promise((res,rej)=>{const lo=new GLTFLoader();const dr=new DRACOLoader();dr.setDecoderPath('/draco/');lo.setDRACOLoader(dr);lo.setMeshoptDecoder(MeshoptDecoder);lo.load(u,g=>res(g),xhr=>{if(xhr.total)p().textContent=`${l||'Model'} ${Math.round(xhr.loaded/xhr.total*100)}%`},rej)}))}
-function hdri(u){return trk('Environment',new Promise((res,rej)=>{new RGBELoader().load(u,t=>{t.mapping=THREE.EquirectangularReflectionMapping;res(t)},undefined,rej)}))}
-function imgs(urls){if(!urls?.length)return Promise.resolve([]);return trk(`${urls.length} images`,Promise.allSettled(urls.map(u=>new Promise((r,j)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>r(i);i.onerror=j;i.src=u}))))}
-function done(){upd('Ready!');if(window.markAppLoaded)window.markAppLoaded();}
-return{json,glb,hdri,imgs,done,upd}})();
+const AL=(()=>{
+  let ld=0,tot=0;
+  const barEl=()=>document.getElementById('intro-bar');
+  const pctEl=()=>document.getElementById('intro-pct');
+  
+  function updBar(){
+    const pc=tot?Math.round(ld/tot*100):0;
+    if(barEl())barEl().style.width=pc+'%';
+  }
+  
+  function trk(n,pr){
+    tot++;
+    return pr.then(r=>{ld++;updBar();return r}).catch(e=>{ld++;updBar();throw e});
+  }
+  
+  async function json(u){
+    return trk('Tour data',fetch(u).then(r=>{if(!r.ok)throw Error(`HTTP ${r.status}`);return r.json()}));
+  }
+  
+  function glb(u,l){
+    return trk(l||'Model',new Promise((res,rej)=>{
+      const lo=new GLTFLoader();
+      const dr=new DRACOLoader();
+      dr.setDecoderPath('/draco/');
+      lo.setDRACOLoader(dr);
+      lo.setMeshoptDecoder(MeshoptDecoder);
+      lo.load(u,g=>res(g),xhr=>{
+        // Only update bar percentage during GLB download, not text
+        if(xhr.total&&barEl()){
+          const loadPct=Math.round(xhr.loaded/xhr.total*100);
+          const overallPct=tot?Math.round((ld+loadPct/100)/tot*100):0;
+          barEl().style.width=overallPct+'%';
+        }
+      },rej);
+    }));
+  }
+  
+  function hdri(u){
+    return trk('Environment',new Promise((res,rej)=>{
+      new RGBELoader().load(u,t=>{t.mapping=THREE.EquirectangularReflectionMapping;res(t)},undefined,rej);
+    }));
+  }
+  
+  function imgs(urls){
+    if(!urls?.length)return Promise.resolve([]);
+    return trk(`${urls.length} images`,Promise.allSettled(urls.map(u=>new Promise((r,j)=>{
+      const i=new Image();i.crossOrigin='anonymous';i.onload=()=>r(i);i.onerror=j;i.src=u;
+    }))));
+  }
+  
+  function done(){
+    updBar();
+    if(window.markAppLoaded)window.markAppLoaded();
+  }
+  
+  return{json,glb,hdri,imgs,done,updBar};
+})();
 
 // ═══ ENGINE ═══
 const E=(()=>{
@@ -841,7 +991,9 @@ function init(){
   S=new THREE.Scene();S.fog=new THREE.FogExp2(0x87ceeb,0.002);
   C=new THREE.PerspectiveCamera(50,innerWidth/innerHeight,.1,500);
   C.position.set(100,80,100);
-  Ctrl=new OrbitControls(C,cv);Ctrl.enableDamping=true;Ctrl.dampingFactor=.06;Ctrl.minDistance=10;Ctrl.maxDistance=180;Ctrl.maxPolarAngle=Math.PI/2-.02;
+  Ctrl=new OrbitControls(C,cv);Ctrl.enableDamping=true;Ctrl.dampingFactor=.06;Ctrl.minDistance=10;Ctrl.maxDistance=180;Ctrl.maxPolarAngle=Math.PI/2-.02;Ctrl.enablePan=true;
+  // Configure two-finger gesture: pinch to zoom, two-finger drag to pan
+  Ctrl.touches={ONE:THREE.TOUCH.ROTATE,TWO:THREE.TOUCH.DOLLY_PAN};
   Ctrl.target.set(0,15,0);
   addEventListener('resize',()=>{C.aspect=innerWidth/innerHeight;C.updateProjectionMatrix();R.setSize(innerWidth,innerHeight)});
 }
@@ -1468,7 +1620,7 @@ function init(){
   render(TD.units);
 }
 function filter(){const q=document.getElementById('q').value.toLowerCase();const ft=document.getElementById('fT').value,fs=document.getElementById('fS').value,ff=document.getElementById('fF').value;const filtered=TD.units.filter(u=>{if(q&&!u.name.toLowerCase().includes(q)&&!u.type.toLowerCase().includes(q)&&!(u.description||'').toLowerCase().includes(q)&&!u.unitNumber?.includes(q))return false;if(ft&&u.type!==ft)return false;if(fs&&u.status!==fs)return false;if(ff&&u.floor!==+ff)return false;return true;});render(filtered);hlIds=new Set(filtered.map(u=>u.id));updateHighlights();}
-function render(units){const grid=document.getElementById('rg');const sc=TD.statusColors||{};const s=U.sel();console.log('[Srch.render] Rendering', units.length, 'units, first 3:', units.slice(0,3).map(u=>u.id+':'+u.status).join(', '));if(!units.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:14px;color:var(--t3);font-size:11px">🔍 No units found</div>';return;}grid.innerHTML=units.map(u=>{const c=sc[u.status]||'#22c55e';return`<div class="rc${s&&s.id===u.id?' on':''}" data-uid="${u.id}"><div class="rn">${u.name}</div><div class="ri">${u.type}·F${u.floor}·${u.areaBreakdown?.total||u.area}m²</div><div class="rp">${u.priceFormatted||'TBD'}</div><span class="rs" style="background:${c}18;color:${c}">${u.status}</span></div>`}).join('');grid.querySelectorAll('.rc').forEach(c=>{c.onclick=()=>{const u=TD.units.find(x=>x.id===c.dataset.uid);if(u)U.select(u)}});console.log('[Srch.render] DOM updated');}
+function render(units){const grid=document.getElementById('rg');const sc=TD.statusColors||{};const s=U.sel();if(!units.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:14px;color:var(--t3);font-size:11px">🔍 No units found</div>';return;}grid.innerHTML=units.map(u=>{const c=sc[u.status]||'#22c55e';return`<div class="rc${s&&s.id===u.id?' on':''}" data-uid="${u.id}"><div class="rn">${u.name}</div><div class="ri">${u.type}·F${u.floor}·${u.areaBreakdown?.total||u.area}m²</div><div class="rp">${u.priceFormatted||'TBD'}</div><span class="rs" style="background:${c}18;color:${c}">${u.status}</span></div>`}).join('');grid.querySelectorAll('.rc').forEach(c=>{c.onclick=()=>{const u=TD.units.find(x=>x.id===c.dataset.uid);if(u)U.select(u)}});}
 function hl(id){document.querySelectorAll('.rc').forEach(c=>c.classList.toggle('on',c.dataset.uid===id));}
 function reset(){document.getElementById('q').value='';document.getElementById('fT').value='';document.getElementById('fS').value='';document.getElementById('fF').value='';render(TD.units);hlIds.clear();updateHighlights();}
 function updateHighlights(){
@@ -1481,7 +1633,7 @@ function updateHighlights(){
     else if(m.material.transparent&&m.userData.unit){m.material.opacity=isHl?0.32:0.05;}
   });
 }
-return{init,filter,hl,reset,dbFilter:()=>{clearTimeout(deb);deb=setTimeout(filter,150)},sync:()=>{console.log('[Srch.sync] Rendering', TD.units.length, 'units, sample:', TD.units.slice(0,3).map(u=>u.id+':'+u.status).join(', '));render(TD.units);hlIds=new Set(TD.units.map(u=>u.id));updateHighlights();console.log('[Srch.sync] Render complete');}};
+return{init,filter,hl,reset,dbFilter:()=>{clearTimeout(deb);deb=setTimeout(filter,150)},sync:()=>{render(TD.units);hlIds=new Set(TD.units.map(u=>u.id));updateHighlights();}};
 })();
 window.Srch = Srch;  // Expose to global scope for AvailabilitySystem
 
@@ -1536,7 +1688,7 @@ function init3D(){
   fpR.setSize(W,H);fpR.setPixelRatio(Math.min(devicePixelRatio,2));
   fpS=new THREE.Scene();fpS.background=new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--card2').trim()||'#f9fafb');
   fpC=new THREE.PerspectiveCamera(45,W/H,.1,500);fpC.position.set(25,35,50);
-  fpCtrl=new OrbitControls(fpC,cv);fpCtrl.enableDamping=true;fpCtrl.dampingFactor=.08;
+  fpCtrl=new OrbitControls(fpC,cv);fpCtrl.enableDamping=true;fpCtrl.dampingFactor=.08;fpCtrl.enablePan=true;
   fpS.add(new THREE.AmbientLight(0xffffff,.7));const sun=new THREE.DirectionalLight(0xffffff,1.2);sun.position.set(6,16,6);sun.castShadow=true;fpS.add(sun);
 
   // Filter units by floor and optionally by unit type
@@ -1613,13 +1765,66 @@ function wireAll(){
   document.getElementById('t-fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}};
   document.getElementById('lb-x').onclick=Gal.close;document.getElementById('lb-p').onclick=()=>Gal.nav(-1);document.getElementById('lb-nx').onclick=()=>Gal.nav(1);document.getElementById('lb').onclick=e=>{if(e.target.id==='lb')Gal.close()};
   document.getElementById('lb-zin').onclick=Gal.lbZoomIn;document.getElementById('lb-zout').onclick=Gal.lbZoomOut;document.getElementById('lb-dl').onclick=Gal.download;
+  // Update fullscreen icons based on state
+  function updateFsIcons(){
+    const isFs=!!document.fullscreenElement;
+    // exit fullscreen (⛶) vs enter fullscreen (⛶)
+    const icon=isFs?'⛶':'⛶';
+    ['lb-fs','fp-fs','pano-fs','t-fs'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el){
+        el.textContent=icon;
+        el.title=isFs?'Exit Fullscreen':'Fullscreen';
+      }
+    });
+  }
+  document.addEventListener('fullscreenchange',updateFsIcons);
+  
+  // Resize 3D floor plan on fullscreen change
+  document.addEventListener('fullscreenchange',()=>{
+    const fpEl=document.getElementById('fp');
+    const isFs=!!document.fullscreenElement;
+    
+    if(isFs&&(document.fullscreenElement===fpEl||fpEl.contains(document.fullscreenElement))){
+      // Entered fullscreen - resize after transition
+      requestAnimationFrame(()=>{
+        setTimeout(()=>{
+          const cont=document.getElementById('fp-view');
+          if(!cont||!fpR)return;
+          const W=cont.clientWidth,H=cont.clientHeight;
+          if(W>0&&H>0){
+            fpR.setSize(W,H);
+            if(fpC){fpC.aspect=W/H;fpC.updateProjectionMatrix();}
+          }
+        },150);
+      });
+    } else if(!isFs&&fpR){
+      // Exited fullscreen - resize back
+      requestAnimationFrame(()=>{
+        setTimeout(()=>{
+          const cont=document.getElementById('fp-view');
+          if(!cont)return;
+          const W=cont.clientWidth,H=cont.clientHeight;
+          if(W>0&&H>0){
+            fpR.setSize(W,H);
+            if(fpC){fpC.aspect=W/H;fpC.updateProjectionMatrix();}
+          }
+        },100);
+      });
+    }
+  });
+  
+  document.getElementById('lb-fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.getElementById('lb').requestFullscreen()}catch(e){}};
+  document.getElementById('fp-fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.getElementById('fp').requestFullscreen()}catch(e){}};
+  document.getElementById('pano-fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.getElementById('pano').requestFullscreen()}catch(e){}};
   
   // Project details modal
   document.getElementById('open-pd').onclick=()=>document.getElementById('pd').classList.add('open');
   document.getElementById('pd-cl').onclick=()=>document.getElementById('pd').classList.remove('open');document.getElementById('pd').onclick=e=>{if(e.target.id==='pd')document.getElementById('pd').classList.remove('open')};
   document.getElementById('open-contact').onclick=()=>Contact.open();
   document.getElementById('fp-cl').onclick=FP.close;document.getElementById('fp').onclick=e=>{if(e.target.id==='fp')FP.close()};
-  document.getElementById('pano-x').onclick=Pano.close;document.getElementById('pano-zin').onclick=Pano.zoomIn;document.getElementById('pano-zout').onclick=Pano.zoomOut;document.getElementById('pano-rst').onclick=Pano.reset;
+  document.getElementById('fp-fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.getElementById('fp').requestFullscreen()}catch(e){}};
+  document.getElementById('pano-x').onclick=Pano.close;document.getElementById('pano-fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.getElementById('pano').requestFullscreen()}catch(e){}};document.getElementById('pano-zin').onclick=Pano.zoomIn;document.getElementById('pano-zout').onclick=Pano.zoomOut;document.getElementById('pano-rst').onclick=Pano.reset;
   document.getElementById('fp2d-x').onclick=()=>document.getElementById('fp2d').classList.remove('open');document.getElementById('fp2d').onclick=e=>{if(e.target.id==='fp2d')e.currentTarget.classList.remove('open')};
   document.getElementById('fp2d-zin').onclick=()=>{const img=document.getElementById('fp2d-img');const s=parseFloat(img.style.transform?.match(/scale\(([^)]+)\)/)?.[1]||1);img.style.transform=`scale(${Math.min(s*1.3,5)})`};
   document.getElementById('fp2d-zout').onclick=()=>{const img=document.getElementById('fp2d-img');const s=parseFloat(img.style.transform?.match(/scale\(([^)]+)\)/)?.[1]||1);img.style.transform=`scale(${Math.max(s/1.3,.3)})`};
@@ -1670,10 +1875,11 @@ function populateProject(){
   if(TD.media?.heroVideo)heroMedia.push({url:TD.media.heroVideo,type:'video'});
   if(heroMedia.length){
     let hIdx=0;
-    heroEl.innerHTML=heroMedia.map((m,i)=>m.type==='video'?`<video src="${m.url}" muted autoplay loop playsinline class="${i===0?'active':''}"></video>`:`<img src="${m.url}" class="${i===0?'active':''}">`).join('')+(heroMedia.length>1?`<button class="hero-nav p" id="hero-p">◀</button><button class="hero-nav n" id="hero-n">▶</button><div class="hero-dots">${heroMedia.map((_,i)=>`<button class="hdot${i===0?' on':''}" data-i="${i}"></button>`).join('')}</div>`:'');
+    heroEl.innerHTML=heroMedia.map((m,i)=>m.type==='video'?`<video src="${m.url}" muted autoplay loop playsinline class="${i===0?'active':''}"></video>`:`<img src="${m.url}" class="${i===0?'active':''}">`).join('')+(heroMedia.length>1?`<button class="hero-nav p" id="hero-p">◀</button><button class="hero-nav n" id="hero-n">▶</button><div class="hero-dots">${heroMedia.map((_,i)=>`<button class="hdot${i===0?' on':''}" data-i="${i}"></button>`).join('')}</div>`:'')+`<button class="hero-fs" id="hero-fs" title="Fullscreen">⛶</button>`;
     if(heroMedia.length>1){const upH=()=>{heroEl.querySelectorAll('img,video').forEach((el,i)=>el.classList.toggle('active',i===hIdx));heroEl.querySelectorAll('.hdot').forEach((d,i)=>d.classList.toggle('on',i===hIdx));};heroEl.querySelector('#hero-p')?.addEventListener('click',()=>{hIdx=(hIdx-1+heroMedia.length)%heroMedia.length;upH()});heroEl.querySelector('#hero-n')?.addEventListener('click',()=>{hIdx=(hIdx+1)%heroMedia.length;upH()});heroEl.querySelectorAll('.hdot').forEach(d=>d.addEventListener('click',()=>{hIdx=+d.dataset.i;upH()}));
     // Auto-advance
     setInterval(()=>{hIdx=(hIdx+1)%heroMedia.length;upH()},5000);}
+    heroEl.querySelector('#hero-fs')?.addEventListener('click',()=>{try{document.fullscreenElement?document.exitFullscreen():heroEl.requestFullscreen()}catch(e){}});
   }
   document.getElementById('d-desc').textContent=TD.projectDescription||'';
 
@@ -1741,7 +1947,7 @@ function showUnit(unit){
   const media=collectMedia(unit);const ti=TD.unitTypes?.[unit.unitType];
 
   // Carousel
-  let car;if(media.length){const f=media[0];const tag=f.type==='video'?`<video src="${f.url}" muted autoplay loop playsinline></video>`:`<img src="${f.url}">`;car=`<div class="u-carousel" id="u-car">${tag}${media.length>1?`<button class="cb p" id="cp">◀</button><button class="cb n" id="cn">▶</button><div class="cdots">${media.map((_,i)=>`<button class="cdot${i===0?' on':''}" data-i="${i}"></button>`).join('')}</div>`:''}
+  let car;if(media.length){const f=media[0];const tag=f.type==='video'?`<video src="${f.url}" muted autoplay loop playsinline></video>`:`<img src="${f.url}">`;car=`<div class="u-carousel" id="u-car">${tag}${media.length>1?`<button class="cb p" id="cp">◀</button><button class="cb n" id="cn">▶</button><div class="cdots">${media.map((_,i)=>`<button class="cdot${i===0?' on':''}" data-i="${i}"></button>`).join('')}</div>`:''}<button class="u-car-fs" id="u-car-fs" title="Fullscreen">⛶</button>
   <div class="mc">${media.length>1?`1/${media.length}`:(f.type==='video'?'🎬':'📷')}</div></div>`;}else car='<div class="u-carousel" style="display:flex;align-items:center;justify-content:center;font-size:32px;color:rgba(255,255,255,.3)">🏠</div>';
 
   // Previews
@@ -1793,6 +1999,9 @@ function showUnit(unit){
   d.querySelector('#pv-pano')?.addEventListener('click',()=>Pano.open(unit.panorama,unit.name,unit.panoNavHotspots));
   d.querySelector('#uc-3d')?.addEventListener('click',()=>FP.open(unit.floor,unit.type));
   d.querySelector('#uc-gal')?.addEventListener('click',()=>Gal.openCustom(media,0));
+  
+  // Wire unit carousel fullscreen
+  setTimeout(()=>{d.querySelector('#u-car-fs')?.addEventListener('click',()=>{try{document.fullscreenElement?document.exitFullscreen():document.getElementById('u-car').requestFullscreen()}catch(e){}});},50);
 }
 
 function collectMedia(u){const m=[];const isV=url=>url&&/\.(mp4|webm|mov|ogg)(\?|$)/i.test(url);
@@ -1811,7 +2020,7 @@ function showHS(h){
   let car='';
   if(media.length){
     const f=media[0];const tag=f.type==='video'?`<video src="${f.url}" muted autoplay loop playsinline class="active"></video>`:`<img src="${f.url}" class="active">`;
-    car=`<div class="u-carousel" id="hs-car">${tag}${media.length>1?`<button class="cb p" id="hs-cp">◀</button><button class="cb n" id="hs-cn">▶</button><div class="cdots">${media.map((_,i)=>`<button class="cdot${i===0?' on':''}" data-i="${i}"></button>`).join('')}</div>`:''}
+    car=`<div class="u-carousel" id="hs-car">${tag}${media.length>1?`<button class="cb p" id="hs-cp">◀</button><button class="cb n" id="hs-cn">▶</button><div class="cdots">${media.map((_,i)=>`<button class="cdot${i===0?' on':''}" data-i="${i}"></button>`).join('')}</div>`:''}<button class="u-car-fs" id="hs-car-fs" title="Fullscreen">⛶</button>
     <div class="mc">${media.length>1?`1/${media.length}`:(f.type==='video'?'🎬':'')}</div></div>`;
   }
 
@@ -1840,6 +2049,9 @@ function showHS(h){
   }
 
   d.querySelector('#hs-gal')?.addEventListener('click',()=>Gal.openCustom(media,0));
+  
+  // Wire hotspot carousel fullscreen
+  setTimeout(()=>{d.querySelector('#hs-car-fs')?.addEventListener('click',()=>{try{document.fullscreenElement?document.exitFullscreen():document.getElementById('hs-car').requestFullscreen()}catch(e){}});},50);
 }
 
 function resetDet(){document.getElementById('d-def').style.display='';document.getElementById('d-dyn').innerHTML='';}
@@ -1858,6 +2070,11 @@ function getTouchDist(t1,t2){const dx=t1.clientX-t2.clientX,dy=t1.clientY-t2.cli
 function getTouchCenter(t1,t2){return{x:(t1.clientX+t2.clientX)/2,y:(t1.clientY+t2.clientY)/2};}
 
 function handleTouchStart(e){
+  // DON'T block touch on canvas - let OrbitControls handle it
+  if(e.target.id==='c'||e.target.tagName==='CANVAS'){
+    return;
+  }
+
   // Ignore if interacting with UI elements
   if(e.target.closest('#detail,#search,#pd,#fp,#lb,#pano,#fp2d,.u-card,.hs-card,.pd-m,.fp-m,#hdr,#tools,#gal')){
     gestureBlocked=true;
@@ -1875,20 +2092,24 @@ function handleTouchStart(e){
     panActive=false;
     pinchActive=false;
   }else if(e.touches.length===2){
-    // Two touches - pinch to zoom
+    // Two touches - let OrbitControls handle pinch-to-zoom and two-finger pan
+    // Don't disable OrbitControls - it natively supports both gestures
     pinchStartDist=getTouchDist(e.touches[0],e.touches[1]);
     touchLastDist=pinchStartDist;
     pinchActive=true;
     panActive=false;
-    // Disable orbit controls during pinch
-    E.controls().enabled=false;
   }
 }
 
 function handleTouchMove(e){
+  // DON'T block touch on canvas - let OrbitControls handle it
+  if(e.target.id==='c'||e.target.tagName==='CANVAS'){
+    return;
+  }
+
   // Block if gesture started on UI element
   if(gestureBlocked)return;
-  
+
   // Prevent default to avoid scrolling
   e.preventDefault();
 
@@ -1908,27 +2129,9 @@ function handleTouchMove(e){
       panStartX=e.touches[0].clientX;
       panStartY=e.touches[0].clientY;
     }
-  }else if(e.touches.length===2&&pinchActive){
-    const newDist=getTouchDist(e.touches[0],e.touches[1]);
-    const delta=touchLastDist-newDist;
-
-    // Pinch to zoom
-    if(Math.abs(delta)>2){
-      const zoomSensitivity=0.002;
-      const currentPos=E.camera().position.clone();
-      const target=E.controls().target.clone();
-      const dir=new THREE.Vector3().subVectors(currentPos,target).normalize();
-
-      // Zoom in/out based on pinch direction
-      const newDist2=target.distanceTo(currentPos)+delta*zoomSensitivity*target.distanceTo(currentPos);
-      if(newDist2>10&&newDist2<200){
-        const newPos=target.clone().add(dir.multiplyScalar(newDist2));
-        E.camera().position.copy(newPos);
-        E.camera().lookAt(target);
-      }
-      touchLastDist=newDist;
-    }
   }
+  // Two-finger gestures (pinch-to-zoom and two-finger pan) are handled natively by OrbitControls
+  // Don't intercept them here to avoid conflicts
 }
 
 function handleTouchEnd(e){
@@ -1939,7 +2142,6 @@ function handleTouchEnd(e){
   // Handle pinch end
   if(pinchActive){
     pinchActive=false;
-    E.controls().enabled=true;
     return;
   }
 
@@ -2007,19 +2209,9 @@ function handleKey(e){
 }
 
 function init(){
-  const canvas=document.getElementById('c');
-  canvas.addEventListener('touchstart',handleTouchStart,{passive:false});
-  canvas.addEventListener('touchmove',handleTouchMove,{passive:false});
-  canvas.addEventListener('touchend',handleTouchEnd,{passive:false});
-  canvas.addEventListener('touchcancel',handleTouchEnd,{passive:false});
-
-  // Keyboard support
+  // DON'T add custom gesture listeners to canvas - OrbitControls handles all touch
+  // Only handle keyboard
   document.addEventListener('keydown',handleKey);
-
-  // Prevent default touch behaviors on canvas
-  document.addEventListener('touchmove',(e)=>{
-    if(e.target.closest('#c')){e.preventDefault();}
-  },{passive:false});
 }
 
 return{init};
@@ -2108,6 +2300,13 @@ const ProgressTracker = (() => {
         offlineEl.style.display = 'flex';
         void offlineEl.offsetWidth;
         offlineEl.classList.add('show');
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+          offlineEl.classList.remove('show');
+          setTimeout(() => {
+            offlineEl.style.display = 'none';
+          }, 400);
+        }, 5000);
       }
       // Show enter button
       if (enterBtn) {
@@ -2130,6 +2329,136 @@ const ProgressTracker = (() => {
   };
 })();
 
+/**
+ * Global Toast Notification System
+ * Usage: showToast('Message', 'success'|'error'|'info'|'warning')
+ */
+function showToast(message, type = 'info', duration = 3000) {
+  // Remove any existing toasts
+  document.querySelectorAll('.global-toast').forEach(t => t.remove());
+  
+  const toast = document.createElement('div');
+  toast.className = `global-toast global-toast-${type}`;
+  
+  const icons = {
+    success: '✓',
+    error: '✕',
+    info: 'ℹ',
+    warning: '⚠'
+  };
+  
+  toast.innerHTML = `
+    <span class="global-toast-icon">${icons[type] || icons.info}</span>
+    <span class="global-toast-msg">${message}</span>
+  `;
+  
+  document.body.appendChild(toast);
+  
+  // Trigger animation
+  requestAnimationFrame(() => {
+    toast.classList.add('global-toast-show');
+  });
+  
+  // Auto-remove
+  setTimeout(() => {
+    toast.classList.remove('global-toast-show');
+    setTimeout(() => toast.remove(), 400);
+  }, duration);
+}
+
+// ═══ Global Toast CSS ═══
+const toastStyle = document.createElement('style');
+toastStyle.textContent = `
+.global-toast{
+  position:fixed;
+  bottom:90px;
+  left:50%;
+  transform:translateX(-50%) translateY(20px);
+  z-index:10002;
+  background:var(--card, #fff);
+  border-radius:var(--rxl, 12px);
+  box-shadow:0 8px 28px rgba(0,0,0,.15);
+  padding:12px 18px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  max-width:calc(100vw - 24px);
+  min-width:200px;
+  border:1px solid var(--b1, #e5e7eb);
+  border-left:4px solid var(--toast-color, #3b82f6);
+  opacity:0;
+  transition:all .4s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;
+  backdrop-filter:blur(8px);
+}
+.global-toast-show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+.global-toast-success{
+  --toast-color: var(--ok, #22c55e);
+  background: rgba(34,197,94,.08);
+}
+.global-toast-error{
+  --toast-color: var(--err, #ef4444);
+  background: rgba(239,68,68,.08);
+}
+.global-toast-info{
+  --toast-color: var(--info, #3b82f6);
+  background: rgba(59,130,246,.08);
+}
+.global-toast-warning{
+  --toast-color: var(--warn, #f59e0b);
+  background: rgba(245,158,11,.08);
+}
+.global-toast-icon{
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:var(--toast-color, #3b82f6);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+  font-weight:700;
+  flex-shrink:0;
+}
+.global-toast-msg{
+  font-size:12px;
+  font-weight:600;
+  color:var(--t1, #111827);
+  line-height:1.4;
+}
+@media(max-width:768px){
+  .global-toast{
+    bottom:100px;
+    padding:10px 14px;
+    min-width:180px;
+  }
+  .global-toast-msg{
+    font-size:11px;
+  }
+}
+@media(max-width:480px){
+  .global-toast{
+    bottom:110px;
+    padding:9px 12px;
+    min-width:160px;
+    gap:8px;
+  }
+  .global-toast-icon{
+    width:20px;
+    height:20px;
+    font-size:11px;
+  }
+  .global-toast-msg{
+    font-size:10.5px;
+  }
+}
+`;
+document.head.appendChild(toastStyle);
+
 async function loadAvailabilityData(){
   return new Promise((resolve)=>{
     // Wait for AvailabilitySystem to be ready
@@ -2151,7 +2480,6 @@ async function loadAvailabilityData(){
         // Accept data if we have any (connected or cached)
         if(data && Object.keys(data).length > 0){
           const isConnected = state.get('isConnected');
-          console.log('[boot] Loaded availability data:', Object.keys(data).length, 'units', isConnected ? '(connected)' : '(cached)');
           resolved = true;
           resolve();
         }
@@ -2161,7 +2489,6 @@ async function loadAvailabilityData(){
     // Subscribe to availability changes
     const unsubscribe = sys.subscribe('availability', (data) => {
       if(!resolved && data && Object.keys(data).length > 0){
-        console.log('[boot] Received availability data:', Object.keys(data).length, 'units');
         resolved = true;
         unsubscribe();
         resolve();
@@ -2171,7 +2498,6 @@ async function loadAvailabilityData(){
     // Also subscribe to connection state to resolve when connected
     const connUnsubscribe = sys.subscribe('isConnected', (connected) => {
       if(!resolved && connected){
-        console.log('[boot] Firebase connected, checking for data...');
         checkFirebase();
       }
     });
@@ -2186,7 +2512,6 @@ async function loadAvailabilityData(){
         const state = sys.state;
         const data = state?.get('availability');
         if(data){
-          console.log('[boot] No availability data found, proceeding with empty dataset');
           resolved = true;
           unsubscribe?.();
           connUnsubscribe?.();
@@ -2265,56 +2590,40 @@ async function boot(){
     // Sync TD.units with availability data AFTER UI is initialized
     // This ensures Srch.render() shows correct status from the start
     // Use AvailabilitySystemCore to access the full system object (not the UI wrapper)
-    console.log('[boot] === SYNC CHECK ===');
-    console.log('[boot] sys type:', sys?.constructor?.name || typeof sys);
-    console.log('[boot] sys.tourSync:', !!sys?.tourSync);
-    console.log('[boot] sys.tourSync.markReady:', typeof sys?.tourSync?.markReady);
-    console.log('[boot] sys.state:', !!sys?.state);
-    console.log('[boot] sys.firebase:', !!sys?.firebase);
-    console.log('[boot] =================');
-    
     if (sys && sys.tourSync && typeof sys.tourSync.markReady === 'function') {
-      console.log('[boot] ✅ Marking tour data ready and triggering initial sync');
       sys.tourSync.markReady();
     } else {
       // Fallback: manually sync from Firebase or state
-      console.log('[boot] ⚠️ AvailabilitySystem.tourSync not available, using fallback sync');
-      console.log('[boot] sys:', sys ? 'exists' : 'null', 'tourSync:', sys?.tourSync ? 'exists' : 'missing');
-      
+      console.warn('[boot] ⚠️ AvailabilitySystem.tourSync not available, using fallback sync');
+
       // Try to get availability from state first (already loaded)
       let availability = {};
       if (sys && sys.state) {
         availability = sys.state.get('availability') || {};
-        console.log('[boot] Got availability from state:', Object.keys(availability).length, 'units');
       }
-      
+
       // CRITICAL: If state is empty, DON'T run fallback - wait for auto-sync instead
       // The auto-sync will trigger when tourSync becomes ready
       if (Object.keys(availability).length === 0) {
-        console.log('[boot] ⚠️ State is empty, skipping fallback - waiting for auto-sync from Firebase');
-        console.log('[boot] Firebase available:', !!(sys?.firebase?.db));
+        console.warn('[boot] ⚠️ State is empty, waiting for auto-sync from Firebase');
         // Just set defaults and let Firebase auto-sync handle it
         window.TD.units.forEach(u => { if (!u.status) u.status = 'Available'; });
         if (typeof Srch?.sync === 'function') {
-          console.log('[boot] Initial render with defaults');
           Srch.sync();
         }
         // Don't return - let the auto-sync from _setupAutoSync handle it when data arrives
       } else {
         // State has data, apply sync
-        console.log('[boot] State has data, applying sync...');
         applySync(availability);
       }
     }
-    
+
     function applySync(availability) {
-      console.log('[boot] Applying sync with', Object.keys(availability).length, 'units');
       // Sync with tour data
       window.TD.units.forEach(unit => {
         const availData = availability[unit.id] || availability[unit.unitNumber];
         if (availData?.status) {
           const normalizedStatus = availData.status.charAt(0).toUpperCase() + availData.status.slice(1).toLowerCase();
-          console.log('[boot] Setting unit', unit.id, '(' + unit.unitNumber + ')', 'status to', normalizedStatus);
           unit.status = normalizedStatus;
         } else if (!unit.status) {
           unit.status = 'Available';
@@ -2322,13 +2631,10 @@ async function boot(){
       });
       // Re-render search
       if (typeof Srch?.sync === 'function') {
-        console.log('[boot] Running fallback sync - calling Srch.sync()');
         Srch.sync();
-      } else {
-        console.warn('[boot] Srch.sync not available');
       }
     }
-  }, 150); // Increased delay to ensure everything is initialized
+  }, 150);
 
   document.getElementById('intro-enter').onclick=()=>document.getElementById('intro').classList.add('gone');
   document.getElementById('c').addEventListener('click',U.onClick);
@@ -2395,6 +2701,10 @@ async function boot(){
 // ═══ PWA: Service Worker, Offline, Install ═══
 (function(){
 
+  // Declare at the top so it's available in OFFLINE_READY handler
+  let deferredPrompt=null;
+  const installBtn=document.getElementById('install-btn');
+
   if('serviceWorker' in navigator){
     // Only clean old caches on first visit or when SW version changes
     // This preserves cached assets for fast repeat visits
@@ -2421,36 +2731,22 @@ async function boot(){
     let basePath = location.pathname.replace(/\/[^/]*$/, '') || '/';
     if (!basePath.endsWith('/')) basePath += '/';
     navigator.serviceWorker.register('sw.js', { scope: basePath }).then((reg)=>{
-      console.log('[PWA] Registered, scope:', reg.scope);
-      console.log('[PWA] Active:', !!reg.active, 'Installing:', !!reg.installing, 'Waiting:', !!reg.waiting);
-
       // Force activate if waiting
       if (reg.waiting) {
-        console.log('[PWA] Sending SKIP_WAITING to waiting SW');
         reg.waiting.postMessage('SKIP_WAITING');
-      }
-      if (reg.active) {
-        console.log('[PWA] SW already active, controller:', !!navigator.serviceWorker.controller);
       }
 
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
-        console.log('[PWA] New SW installing');
         newWorker.addEventListener('statechange', () => {
-          console.log('[PWA] SW state:', newWorker.state);
           if (newWorker.state === 'installed') {
-            console.log('[PWA] Sending SKIP_WAITING');
             newWorker.postMessage('SKIP_WAITING');
-          }
-          if (newWorker.state === 'activated') {
-            console.log('[PWA] SW activated!');
           }
         });
       });
 
       // Listen for controller change
       navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('[PWA] Controller changed!');
         // Delay caching until after page is fully loaded
         setTimeout(() => {
           if (document.readyState === 'complete') {
@@ -2471,10 +2767,8 @@ async function boot(){
           // Additional delay to ensure model loading has started
           setTimeout(() => {
             navigator.serviceWorker.controller.postMessage('CACHE_EVERYTHING');
-            console.log('[PWA] Triggered background asset caching');
           }, 3000);
         } else {
-          console.log('[PWA] Waiting for SW controller...');
           setTimeout(triggerCaching, 1000);
         }
       }
@@ -2486,7 +2780,6 @@ async function boot(){
 
       // Fallback: if caching doesn't complete within 90s, mark SW phase done anyway
       setTimeout(() => {
-        console.warn('[PWA] Caching timeout - marking SW phase done');
         markSWDone('✓ Ready (some assets cached)');
       }, 90000);
     }).catch((err)=>{
@@ -2506,6 +2799,11 @@ async function boot(){
 
       if (e.data.type === 'OFFLINE_READY') {
         markSWDone('✓ Ready for offline use');
+        // Show install prompt modal when everything is ready for offline
+        setTimeout(() => {
+          if (window.matchMedia('(display-mode: standalone)').matches) return;
+          showInstallModal();
+        }, 1500);
       }
     });
   }
@@ -2515,35 +2813,111 @@ async function boot(){
     markSWDone('⚠ Ready (SW not supported)');
   }
 
+  // ═══ Install Modal ═══
+  function showInstallModal() {
+    const modal = document.getElementById('install-modal');
+    if (!modal) return;
+    // Detect platform and show relevant instructions
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const iosEl = document.getElementById('im-ios');
+    const androidEl = document.getElementById('im-android');
+    const desktopEl = document.getElementById('im-desktop');
+    if (iosEl) iosEl.style.display = isIOS ? 'flex' : 'none';
+    if (androidEl) androidEl.style.display = isAndroid ? 'flex' : 'none';
+    if (desktopEl) desktopEl.style.display = (!isIOS && !isAndroid) ? 'flex' : 'none';
+    modal.style.display = 'flex';
+  }
+
+  function hideInstallModal() {
+    const modal = document.getElementById('install-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  // Close button
+  const imClose = document.getElementById('im-close');
+  if (imClose) imClose.onclick = hideInstallModal;
+
+  // Install button in modal
+  const imInstallBtn = document.getElementById('im-install-btn');
+  if (imInstallBtn) {
+    imInstallBtn.onclick = () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((r) => {
+          deferredPrompt = null;
+          sessionStorage.removeItem('pwa-prompt');
+          hideInstallModal();
+          if (r.outcome === 'accepted') {
+            showToast('✅ App installed successfully!', 'success', 4000);
+          } else {
+            showToast('Install dismissed. You can try again anytime.', 'info', 3000);
+          }
+        });
+      } else {
+        // No native prompt - hide modal and show header install button with instructions
+        hideInstallModal();
+        if (installBtn) {
+          installBtn.style.display = 'inline-flex';
+          installBtn.click();
+        }
+      }
+    };
+  }
+
+  // Close modal on backdrop click
+  const imModal = document.getElementById('install-modal');
+  if (imModal) {
+    imModal.addEventListener('click', (e) => {
+      if (e.target === imModal) hideInstallModal();
+    });
+  }
+
   function updateStatus(){
     const el=document.getElementById('connection-status');
+    const wasOnline=el?.classList.contains('online');
+    const isNowOnline=navigator.onLine;
+    
     if(el){
-      const on=navigator.onLine;
-      el.className='connection-status '+(on?'online':'offline');
-      el.querySelector('.cs-txt').textContent=on?'Online':'Offline';
+      el.className='connection-status '+(isNowOnline?'online':'offline');
+      el.querySelector('.cs-txt').textContent=isNowOnline?'Online':'Offline';
     }
-    if(navigator.onLine&&typeof FirebaseService!=='undefined'){
+    
+    // Show toast when connection status changes (not on initial load)
+    if(wasOnline!==undefined&&wasOnline!==isNowOnline){
+      if(isNowOnline){
+        showToast('Connection restored - syncing changes…','success');
+        // Process offline queue
+        if(typeof FirebaseService!=='undefined'){
+          FirebaseService.processOfflineQueue?.();
+        }
+        // Process availability offline queue
+        if(window.AvailabilitySystem?.processOfflineQueue){
+          setTimeout(()=>window.AvailabilitySystem.processOfflineQueue(),1000);
+        }
+      } else {
+        showToast('You are now offline - changes will sync when connected','info');
+      }
+    } else if(isNowOnline&&typeof FirebaseService!=='undefined'){
+      // Initial load - just process queue
       FirebaseService.processOfflineQueue?.();
     }
   }
   window.addEventListener('online',updateStatus);
   window.addEventListener('offline',updateStatus);
   updateStatus();
-  let deferredPrompt=null;
-  const installBtn=document.getElementById('install-btn');
 
   // Only show install button if not already installed
   // Chrome may not fire beforeinstallprompt on localhost/mobile
   function updateInstallButton() {
     if (!installBtn) return;
-    
+
     // Hide if already installed (running as PWA)
     if (window.matchMedia('(display-mode: standalone)').matches) {
       installBtn.style.display = 'none';
-      console.log('[PWA] Running as installed PWA - hiding install button');
       return;
     }
-    
+
     // Show button for potential installation
     installBtn.style.display = 'inline-flex';
   }
@@ -2555,18 +2929,14 @@ async function boot(){
     e.preventDefault();
     deferredPrompt=e;
     sessionStorage.setItem('pwa-prompt','1');
-    if(installBtn){
-      installBtn.style.display='inline-flex';
-      installBtn.title='Install app';
-      console.log('[PWA] Install prompt captured');
-    }
+    updateInstallButton();
   });
 
   window.addEventListener('appinstalled',()=>{
     if(installBtn)installBtn.style.display='none';
     deferredPrompt=null;
     sessionStorage.removeItem('pwa-prompt');
-    console.log('[PWA] App installed successfully');
+
   });
 
   if(installBtn){
@@ -2575,7 +2945,7 @@ async function boot(){
         // Use the native install prompt
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((r)=>{
-          console.log('[PWA] Install choice:', r.outcome);
+
           deferredPrompt=null;
           sessionStorage.removeItem('pwa-prompt');
           if(r.outcome==='dismissed'&&installBtn){
@@ -2627,21 +2997,8 @@ async function boot(){
 
   // Check if already installed
   if (window.matchMedia('(display-mode: standalone)').matches) {
-    console.log('[PWA] Running as installed PWA');
     if(installBtn) installBtn.style.display='none';
   }
-
-  // Log install eligibility
-  setTimeout(() => {
-    console.log('[PWA] === Install Check ===');
-    console.log('[PWA] HTTPS:', location.protocol === 'https:');
-    console.log('[PWA] Localhost:', location.hostname === 'localhost' || location.hostname === '127.0.0.1');
-    console.log('[PWA] Service Worker:', 'serviceWorker' in navigator);
-    console.log('[PWA] Manifest:', !!document.querySelector('link[rel="manifest"]'));
-    console.log('[PWA] Standalone:', window.matchMedia('(display-mode: standalone)').matches);
-    console.log('[PWA] Deferred prompt:', !!deferredPrompt);
-    console.log('[PWA] =====================');
-  }, 2000);
 })();
 
 boot();

@@ -1339,6 +1339,13 @@
      * Toggle admin panel
      */
     toggleAdminPanel() {
+      // Show warning if offline
+      if (!navigator.onLine) {
+        if (typeof showToast === 'function') {
+          showToast('⚠️ You are offline - changes will sync when connection is restored', 'warning', 4000);
+        }
+      }
+      
       const panel = this.elements.adminPanel;
       if (panel) panel.classList.toggle('open');
     }
