@@ -133,6 +133,11 @@ const AvailabilityManager = {
             break;
           case 'online':
             this.showOnlineIndicator();
+            // Reload availability data when coming back online
+            // This ensures we get the latest data from Firebase
+            if (this.isAuthenticated) {
+              this.loadAvailabilityData();
+            }
             break;
           case 'offline':
             this.showOfflineIndicator();

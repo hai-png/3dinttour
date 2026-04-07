@@ -581,7 +581,32 @@
     _onOnline() {
       this.state.set('isOnline', true);
       this._emit('online');
+      
+      // Process offline queue first
       this.processQueue();
+      
+      // Refresh availability data from Firebase after reconnecting
+      // This ensures we have the latest data from other devices/users
+      if (this.db && this.state.get('isConnected')) {
+        Utils.log('FirebaseAdapter', '🔄 Refreshing availability data from Firebase...');
+        this.db.ref('availability').once('value')
+          .then((snapshot) => {
+            const data = snapshot.val() || {};
+            if (data && Object.keys(data).length > 0) {
+              this.state.mergeAvailability(data);
+              this.state.set('lastSyncTime', Date.now());
+              // Update cache
+              try {
+                localStorage.setItem('availability_cache', JSON.stringify(data));
+              } catch (e) {}
+              this._emit('sync:update', data);
+              Utils.log('FirebaseAdapter', '✅ Refreshed', Object.keys(data).length, 'units from Firebase');
+            }
+          })
+          .catch((err) => {
+            Utils.error('FirebaseAdapter', 'Failed to refresh data:', err);
+          });
+      }
     }
 
     /**
