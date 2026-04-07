@@ -361,6 +361,12 @@
           const data = snapshot.val() || {};
           this.state.mergeAvailability(data);
           this.state.set('lastSyncTime', Date.now());
+          // Persist to cache immediately
+          try {
+            if (data && Object.keys(data).length > 0) {
+              localStorage.setItem('availability_cache', JSON.stringify(data));
+            }
+          } catch (e) {}
           this._emit('sync:initial', data);
           Utils.log('FirebaseAdapter', 'Initial sync:', Object.keys(data).length, 'units');
         })
@@ -373,6 +379,12 @@
         const data = snapshot.val() || {};
         this.state.mergeAvailability(data);
         this.state.set('lastSyncTime', Date.now());
+        // Persist to cache
+        try {
+          if (data && Object.keys(data).length > 0) {
+            localStorage.setItem('availability_cache', JSON.stringify(data));
+          }
+        } catch (e) {}
         this._emit('sync:update', data);
       });
 
@@ -1467,6 +1479,9 @@
 
       Utils.log('AvailabilitySystem', 'Initializing...');
 
+      // Load cached availability data FIRST (before Firebase) so offline mode has data
+      this._loadCachedData();
+
       // Initialize Firebase
       const firebaseReady = await this.firebase.init();
       if (firebaseReady) {
@@ -1491,6 +1506,42 @@
     }
 
     /**
+     * Load cached availability data from localStorage
+     * This ensures offline mode has the last known data
+     * @private
+     */
+    _loadCachedData() {
+      try {
+        const cached = localStorage.getItem('availability_cache');
+        if (cached) {
+          const data = JSON.parse(cached);
+          if (data && Object.keys(data).length > 0) {
+            Utils.log('AvailabilitySystem', 'Loaded', Object.keys(data).length, 'units from cache');
+            this.state.mergeAvailability(data);
+          }
+        }
+      } catch (e) {
+        Utils.log('AvailabilitySystem', 'Failed to load cached data:', e.message);
+      }
+    }
+
+    /**
+     * Save availability data to localStorage cache
+     * Called whenever data changes to keep offline cache fresh
+     * @private
+     */
+    _saveCachedData() {
+      try {
+        const data = this.state.get('availability');
+        if (data && Object.keys(data).length > 0) {
+          localStorage.setItem('availability_cache', JSON.stringify(data));
+        }
+      } catch (e) {
+        Utils.log('AvailabilitySystem', 'Failed to save cache:', e.message);
+      }
+    }
+
+    /**
      * Setup auto-sync with tour data when availability changes
      * @private
      */
@@ -1498,6 +1549,9 @@
       // Subscribe to availability changes from Firebase (including changes from other devices)
       // IMPORTANT: Only sync AFTER tourSync.isReady is true to avoid race conditions
       this.subscribe('availability', (data) => {
+        // Always save to localStorage cache when data changes
+        this._saveCachedData();
+
         // Skip initial load - only sync when tourSync is ready (after boot() calls markReady)
         if (data && Object.keys(data).length > 0 && this.tourSync.isReady) {
           Utils.log('AvailabilitySystem', '🔄 Availability changed from Firebase, syncing with tour data...');
