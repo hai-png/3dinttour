@@ -37,20 +37,13 @@
 │         │                                                                │
 │         ▼                                                                │
 │  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  availability-manager.js - UI Controller                         │   │
-│  │  • Admin Panel UI                                               │   │
-│  │  • Login/Logout Handlers                                        │   │
-│  │  • Unit Status Updates                                          │   │
-│  │  • Toast Notifications                                          │   │
-│  └─────────────────────────────────────────────────────────────────┘   │
-│         │                                                                │
-│         ▼                                                                │
-│  ┌─────────────────────────────────────────────────────────────────┐   │
-│  │  firebase-service.js - Data Layer                                │   │
-│  │  • Firebase Authentication                                      │   │
-│  │  • Realtime Database Sync                                       │   │
-│  │  • Offline Queue Management                                     │   │
-│  │  • Network Status Monitoring                                     │   │
+│  │  availability-system.js v2.0 - Unified System (Facade Pattern)   │   │
+│  │  • StateManager - Reactive state with pub/sub                    │   │
+│  │  • FirebaseAdapter - Realtime DB + Auth                          │   │
+│  │  • AuthAdapter - Demo fallback auth                              │   │
+│  │  • TourDataSync - Sync with tour data                            │   │
+│  │  • UIManager - Admin panel, login, toasts                        │   │
+│  │  • OfflineQueueManager - Offline operation queue                 │   │
 │  └─────────────────────────────────────────────────────────────────┘   │
 └────────────────────────────┬────────────────────────────────────────────┘
                              │

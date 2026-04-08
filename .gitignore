@@ -77,12 +77,25 @@ over.png
 unnecessary*.png
 whatshouldbe.png
 
-# GLB models
+# GLB models — ignored everywhere except brand output folders
 *.glb
-!model/building.glb
-!3d-floor-plan/1-bed-01.glb
-!3d-floor-plan/2-bed-01.glb
-!3d-floor-plan/3d-bed-01.glb
+!gift/model/*.glb
+!gift/3d-floor-plan/*.glb
+!metropolitan/model/*.glb
+!metropolitan/3d-floor-plan/*.glb
+!demahope/model/*.glb
+!demahope/3d-floor-plan/*.glb
+!ayat/model/*.glb
+!ayat/3d-floor-plan/*.glb
+!hosea/model/*.glb
+!hosea/3d-floor-plan/*.glb
+!_shared/model/*.glb
+!_shared/3d-floor-plan/*.glb
+
+# Brand output directories (build artifacts — rebuild from _shared/ + _brands/)
+# Keep hosea and temer ignored (empty/placeholders)
+hosea/
+temer/
 
 # Screenshots and temporary images
 brave_screenshot_localhost*.png
@@ -106,3 +119,6 @@ IMPLEMENTATION-*.md
 MIGRATION.md
 SETUP-*.md
 UPDATES.md
+
+# Brand build artifacts (regenerated at build time)
+sw-manifest.json

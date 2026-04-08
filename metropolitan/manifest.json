@@ -1,0 +1,16 @@
+{
+  "name": "Metropolitan Property Tours",
+  "short_name": "Metropolitan",
+  "description": "Explore extraordinary living with Metropolitan Real Estate",
+  "start_url": "./?utm_source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f1520",
+  "theme_color": "#0f1520",
+  "orientation": "any",
+  "categories": ["business", "lifestyle"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

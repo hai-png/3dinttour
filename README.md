@@ -1,243 +1,142 @@
-# 3D Virtual Tour - PWA
+# 3D Virtual Tour Platform — Multi-Brand PWA
 
-A progressive web application for exploring 3D apartment tours with offline support, built with Three.js and Firebase.
+A white-label progressive web application for hosting interactive 3D property tours, supporting multiple real estate developer brands from a single codebase.
 
-## Features
+## Architecture
 
-- 🏠 **3D Virtual Tours** - Interactive 3D models of apartments and buildings
-- 📱 **PWA Support** - Install on home screen, works offline
-- 🌐 **Offline-First** - Full functionality without internet after first visit
-- 🔥 **Firebase Integration** - Real-time availability management
-- 📊 **Availability System** - Track unit availability status
-- 🎨 **Customizable Branding** - Easy brand configuration
+```
+/
+├── index.html              ← Brand portal (lists all brands)
+├── brands.json             ← Brand registry
+│
+├── _shared/                ← App source code (never served directly)
+│   ├── index.html          ← 3D tour app (brand-agnostic)
+│   ├── sw.js               ← Service worker
+│   ├── availability-system.js
+│   ├── contact-integration.js
+│   └── draco/              ← Draco decoder
+│
+├── _brands/                ← Brand source files
+│   ├── hosea/              ← Brand 1: config + media
+│   └── temer/              ← Brand 2: config + media
+│
+├── hosea/                  ← Built brand 1 (standalone PWA)
+└── temer/                  ← Built brand 2 (standalone PWA)
+```
+
+Each brand folder is a **complete standalone PWA** with its own service worker scope, deployable independently to any static host.
 
 ## Quick Start
-
-### Prerequisites
-
-- Node.js 16+ and npm
-- Firebase project (for availability features)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd 3dinttour
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start local server**
-   ```bash
-   npm run serve
-   ```
-   
-   Or use any static file server:
-   ```bash
-   npx http-server -p 8080 -c-1
-   ```
-
-4. **Open in browser**
-   ```
-   http://localhost:8080
-   ```
-
-## Project Structure
-
-```
-3dinttour/
-├── index.html                 # Main application
-├── manifest.json              # PWA manifest
-├── sw.js                      # Service worker (offline support)
-├── offline.html               # Offline fallback page
-├── tour-data.json             # Tour configuration
-├── brand-config.json          # Branding settings
-├── model/
-│   └── building.glb           # 3D building model
-├── project/                   # Project media (images, videos)
-├── draco/                     # Draco decoder for GLB
-├── panorama/                  # 360° panorama images
-├── unit-image-video/          # Unit-specific media
-└── *.js                       # Availability, contact, Firebase modules
-```
-
-## PWA Features
-
-### Offline Support
-
-The app caches all assets on first visit:
-- 3D models (via IndexedDB for large files)
-- Images and videos
-- JavaScript and CSS files
-- Three.js CDN libraries
-
-### Installation
-
-**Desktop (Chrome/Edge):**
-- Click the install icon (⊕) in the address bar
-- Or: Menu (⋮) → "Install 3D Tour"
-
-**Mobile (Android Chrome):**
-- Menu (⋮) → "Install app" or "Add to Home screen"
-
-**Mobile (iOS Safari):**
-- Tap Share button → "Add to Home Screen"
-
-### Offline Testing
-
-1. Load the app while online
-2. Wait for caching to complete (check console for `[SW] Cached` messages)
-3. Go offline (DevTools → Network → Offline)
-4. Refresh the page - everything should still work!
-
-## Configuration
-
-### Brand Configuration
-
-Edit `brand-config.json` to customize:
-- Company name and logo
-- Theme colors
-- Contact information
-- Social media links
-
-### Tour Data
-
-Edit `tour-data.json` to configure:
-- Unit types and availability
-- Floor plans
-- Gallery images
-- Hotspot locations
-
-## Deployment
-
-### Firebase Hosting
-
-```bash
-npm run deploy
-```
-
-### GitHub Pages
-
-Use the provided deployment script:
-```bash
-./scripts/deploy-github-pages.sh
-```
-
-### Manual Deployment
-
-Upload all files to your HTTPS-enabled hosting provider.
-
-**Required files:**
-- `index.html`
-- `manifest.json`
-- `sw.js`
-- `offline.html`
-- `tour-data.json`
-- All media directories (`model/`, `project/`, `draco/`, etc.)
-
-## Service Worker Cache Strategy
-
-The app uses different caching strategies based on resource type:
-
-| Resource Type | Strategy | Storage |
-|--------------|----------|---------|
-| 3D Models (.glb) | IndexedDB + Cache API | Both |
-| HTML Pages | Network-first, cache fallback | Cache API |
-| Images/Videos | Cache-first | Cache API |
-| JS/CSS Files | Cache-first | Cache API |
-| CDN Libraries | Cache-first | Cache API |
-
-### Cache Version
-
-Current version: `tour-v7`
-
-To force cache refresh, update the version in `sw.js`:
-```javascript
-const CACHE_VERSION = 'v8'; // Change this
-```
-
-## Availability System
-
-The app includes a Firebase-based availability management system for tracking unit status.
-
-### Features
-- Real-time availability updates
-- Offline queue for changes
-- Admin authentication
-- Visual status indicators
-
-### Setup
-
-1. Create a Firebase project
-2. Enable Realtime Database
-3. Update Firebase configuration in `firebase-service.js`
-4. Deploy security rules from `firebase-rules.json`
-
-## Development
 
 ### Local Development
 
 ```bash
-# Start development server
-npm run serve
+# Build all brands
+./scripts/build-all-brands.sh
 
-# Clear cache and reload
-# In browser console:
-caches.keys().then(n => n.forEach(c => caches.delete(c)));
-navigator.serviceWorker.getRegistrations().then(r => r.forEach(s => s.unregister()));
-location.reload();
+# Start server
+python3 -m http.server 8080
 ```
 
-### Testing PWA
+| URL | Description |
+|---|---|
+| `http://localhost:8080/` | Brand portal |
+| `http://localhost:8080/hosea/` | Hosea Real Estate PWA |
+| `http://localhost:8080/temer/` | Temer Real Estate PWA |
 
-1. Open DevTools → Application tab
-2. Check Manifest and Service Worker sections
-3. Use Lighthouse for PWA audit
-4. Test offline functionality
+### Adding a New Brand
 
-## Troubleshooting
+```bash
+# 1. Scaffold a new brand source
+./scripts/scaffold-brand.sh newbrand
 
-### Model Not Loading
-- Ensure `model/building.glb` exists (26MB)
-- Check browser console for errors
-- Clear cache and reload
+# 2. Edit the config files in _brands/newbrand/
+# 3. Add media assets (logo, 3D model, photos, etc.)
+# 4. Register in brands.json
+# 5. Build
+./scripts/build-brand.sh newbrand
+```
 
-### Offline Not Working
-- Make sure you waited for full caching on first visit
-- Check console for `[SW]` messages
-- Verify service worker is active (DevTools → Application → Service Workers)
+## Scripts
 
-### Install Prompt Not Showing
-- Requires HTTPS (or localhost for development)
-- iOS Safari doesn't support `beforeinstallprompt` event
-- Use manual install instructions provided in the app
+| Script | Purpose |
+|---|---|
+| `./scripts/build-brand.sh <name>` | Build one brand from source |
+| `./scripts/build-all-brands.sh` | Build all brands |
+| `./scripts/scaffold-brand.sh <name>` | Create new brand source with templates |
 
-## Browser Support
+## Configuration
 
-- ✅ Chrome 67+
-- ✅ Firefox 64+
-- ✅ Safari 11.1+
-- ✅ Edge 79+
-- ✅ Mobile browsers (iOS Safari, Android Chrome)
+### Brand Identity (`_brands/<name>/brand-config.json`)
+
+Company name, logo, color palette, contact info, social links, and PWA metadata.
+
+### 3D Tour Content (`_brands/<name>/tour-data.json`)
+
+Project details, unit types, individual units with pricing/availability, hotspots, amenities, gallery.
+
+### Brand Registry (`brands.json`)
+
+Lists all available brands for the root portal page. Each entry includes name, tagline, path, logo, and associated projects.
+
+## Deployment
+
+### Standalone (single brand per domain)
+
+```bash
+./scripts/build-brand.sh hosea
+# Upload hosea/ contents to domain root
+```
+
+### Subdirectories (multiple brands, one domain)
+
+```bash
+./scripts/build-all-brands.sh
+# Upload entire project root — each brand accessible at /brand-name/
+```
+
+### GitHub Pages
+
+```bash
+./scripts/build-all-brands.sh
+git add hosea/ temer/ brands.json index.html
+git commit -m "Deploy brands"
+git push origin gh-pages
+```
+
+### Firebase Hosting
+
+Configure rewrites in `firebase.json`:
+```json
+{
+  "hosting": {
+    "public": ".",
+    "rewrites": [
+      { "source": "/hosea/**", "destination": "/hosea/index.html" },
+      { "source": "/temer/**", "destination": "/temer/index.html" }
+    ]
+  }
+}
+```
+
+## Updating Shared Code
+
+When you modify `_shared/index.html` or other shared files, rebuild all brands:
+
+```bash
+./scripts/build-all-brands.sh
+```
+
+## Documentation
+
+- **[MULTI-BRAND.md](MULTI-BRAND.md)** — Complete multi-brand hosting guide
+- **[BUILD.md](BUILD.md)** — Build and deployment details
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** — Application architecture
 
 ## Technologies
 
-- **Three.js** - 3D rendering
-- **GLTFLoader** - GLB model loading
-- **DRACOLoader** - Compressed model decoding
-- **Firebase** - Real-time database & hosting
-- **Service Workers** - Offline support
-- **IndexedDB** - Large file storage
-- **Cache API** - Asset caching
+Three.js · GLTFLoader · Draco · Firebase · Service Workers · IndexedDB · Cache API
 
 ## License
 
-ISC - Hosea Real Estate
-
-## Support
-
-For issues or questions, please contact the development team.
+ISC

@@ -1,0 +1,71 @@
+{
+  "title": "3D Property Tours",
+  "subtitle": "Interactive virtual tours by leading Ethiopian real estate developers",
+  "brands": [
+    {
+      "id": "hosea",
+      "name": "Hosea Real Estate",
+      "tagline": "Providing high-quality apartments before promised time",
+      "path": "./hosea/",
+      "logo": "./hosea/project/Hosea-LOGO-12.png",
+      "primaryColor": "#1a5276",
+      "projects": ["Yerer Apartment"]
+    },
+    {
+      "id": "demahope",
+      "name": "Dema Hope Real Estate",
+      "tagline": "Elevate Your Lifestyle — The Reliable Leaders of Ethiopian Real Estate",
+      "path": "./demahope/",
+      "logo": "./demahope/project/demahope-logo.png",
+      "primaryColor": "#1a472a",
+      "projects": ["Dema Hope Prime", "Bole Downtown", "Bole Adey Abeba", "Shola Mountain View", "Bole Central", "Bole Skyline"],
+      "website": "https://demahoperealestate.com/",
+      "contact": {
+        "phone": "+251 951 515 174",
+        "address": "4th Floor, Dema Hope Prime, Signal Area, Addis Ababa"
+      }
+    },
+    {
+      "id": "metropolitan",
+      "name": "Metropolitan Real Estate PLC",
+      "tagline": "Crafted to Perfection — Where Attention to Detail Meets Exceptional Living",
+      "path": "./metropolitan/",
+      "logo": "./metropolitan/project/metropolitan-logo.png",
+      "primaryColor": "#2c3e50",
+      "projects": ["Metropolitan Residence", "Metropolitan Tower", "Central Tower", "WestView", "Bole Midtown (Sold Out)", "Sarbet Gabriel (Sold Out)"],
+      "website": "https://metropolitanaddis.com/",
+      "contact": {
+        "phone": "+251 973 40 40 40",
+        "address": "Bole Rwanda, Infront of Mamokacha, Addis Ababa"
+      }
+    },
+    {
+      "id": "gift",
+      "name": "GIFT Real Estate P.L.C.",
+      "tagline": "We Build Community! — Pioneering Ethiopian Real Estate Since 2005",
+      "path": "./gift/",
+      "logo": "./gift/project/gift-logo.png",
+      "primaryColor": "#c0392b",
+      "projects": ["La Gare", "Ayat Feres Bet", "Bole Atlas", "Teklehaimanot Site"],
+      "website": "https://giftrealestate.com.et/",
+      "contact": {
+        "phone": "+251 930 076 726",
+        "address": "Africa Avenue, Near Getu Commercial, 5th & 6th Floor, Addis Ababa"
+      }
+    },
+    {
+      "id": "ayat",
+      "name": "Ayat Real Estate Share Company",
+      "tagline": "Pioneer Real Estate Developer in Addis Ababa",
+      "path": "./ayat/",
+      "logo": "./ayat/project/ayat-logo.png",
+      "primaryColor": "#8e44ad",
+      "projects": ["Ayat CMC", "Ayat CCE", "Ayat Hillbottom", "Ayat Grand Mall"],
+      "website": "https://ayatrealestate.com/",
+      "contact": {
+        "phone": "+251 912 216 089",
+        "address": "Yeka, Guinea Conarky Street, Addis Ababa"
+      }
+    }
+  ]
+}
