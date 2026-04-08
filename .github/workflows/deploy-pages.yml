@@ -24,14 +24,28 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          lfs: false
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Prepare deployment artifact
+        run: |
+          mkdir -p deploy
+          # Copy root files needed for the portal page
+          cp index.html brands.json favicon.ico package.json README.md deploy/
+          # Copy brand output directories (built PWAs — self-contained)
+          for brand in gift metropolitan demahope ayat hosea; do
+            if [ -d "$brand" ]; then
+              cp -r "$brand" deploy/
+            fi
+          done
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: ./deploy
 
       - name: Deploy to GitHub Pages
         id: deployment
