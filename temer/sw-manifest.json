@@ -1,0 +1,377 @@
+{
+  "version": 1,
+  "totalFiles": 71,
+  "files": [
+    {
+      "url": "./3d-floor-plan/1-bed-01.glb",
+      "priority": 1
+    },
+    {
+      "url": "./3d-floor-plan/2-bed-01.glb",
+      "priority": 1
+    },
+    {
+      "url": "./3d-floor-plan/3d-bed-01.glb",
+      "priority": 1
+    },
+    {
+      "url": "./model/building.glb",
+      "priority": 1
+    },
+    {
+      "url": "./project/amenities/swimming-pool-amenity.webp",
+      "priority": 2
+    },
+    {
+      "url": "./project/floor-plans/seken-Floorplan.jpg",
+      "priority": 2
+    },
+    {
+      "url": "./project/gallery/120.webp",
+      "priority": 2
+    },
+    {
+      "url": "./project/gallery/125.webp",
+      "priority": 2
+    },
+    {
+      "url": "./project/gallery/213.webp",
+      "priority": 2
+    },
+    {
+      "url": "./project/gallery/218.webp",
+      "priority": 2
+    },
+    {
+      "url": "./project/gallery/Scene-27_1-enhanced.webp",
+      "priority": 2
+    },
+    {
+      "url": "./project/gallery/image17.webp",
+      "priority": 2
+    },
+    {
+      "url": "./project/gallery/image21.webp",
+      "priority": 2
+    },
+    {
+      "url": "./project/gallery/mainsowreel.mp4",
+      "priority": 2
+    },
+    {
+      "url": "./project/gallery/photo_6003679379009422639_y.webp",
+      "priority": 2
+    },
+    {
+      "url": "./project/gallery/scene-34.webp",
+      "priority": 2
+    },
+    {
+      "url": "./project/gallery/scene-36.webp",
+      "priority": 2
+    },
+    {
+      "url": "./project/hero-image-video/mainsowreel.mp4",
+      "priority": 2
+    },
+    {
+      "url": "./project/hotspots/ev_charging/ev_charging.mp4",
+      "priority": 2
+    },
+    {
+      "url": "./project/hotspots/green_terrace/green_terrace.mp4",
+      "priority": 2
+    },
+    {
+      "url": "./project/hotspots/green_terrace/swimming-pool-amenity.webp",
+      "priority": 2
+    },
+    {
+      "url": "./hdr/cobblestone_street_night_1k.hdr",
+      "priority": 3
+    },
+    {
+      "url": "./hdr/laufenurg_church_1k.hdr",
+      "priority": 3
+    },
+    {
+      "url": "./hdr/tree_lined_driveway_1k.hdr",
+      "priority": 3
+    },
+    {
+      "url": "./project/hero.png",
+      "priority": 3
+    },
+    {
+      "url": "./project/temerlogo.png",
+      "priority": 3
+    },
+    {
+      "url": "./unit-image-video/1-bed-01/1.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/1-bed-01/4.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/1-bed-01/jambo---marketing-0.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/1-bed-01/mainsowreel.mp4",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/2-bed-01/-salon.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/2-bed-01/ff-family-room-dining-&-open-kitchen-2.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/2-bed-01/mainsowreel.mp4",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/2-bed-01/scene-70.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-01/212.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-01/gf-open-kitchen-1.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-01/mainsowreel.mp4",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-01/scene-67.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-02/-marketing-02.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-02/216.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-02/jambo---marketing-2.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-02/mainsowreel.mp4",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-03/mainsowreel.mp4",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-03/scene-73.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-03/scene-77.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-04/218.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-04/D5_Image_20240321_163403.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-04/gf-dining-room-2.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-04/mainsowreel.mp4",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-05/213.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-05/214.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-05/mainsowreel.mp4",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-06/17.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-06/211.webp",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-06/mainsowreel.mp4",
+      "priority": 4
+    },
+    {
+      "url": "./unit-image-video/3-bed-06/scene-68.webp",
+      "priority": 4
+    },
+    {
+      "url": "./panorama/1-bed-01.webp",
+      "priority": 5
+    },
+    {
+      "url": "./panorama/2-bed-01.webp",
+      "priority": 5
+    },
+    {
+      "url": "./panorama/3-bed-01.webp",
+      "priority": 5
+    },
+    {
+      "url": "./panorama/3-bed-02.webp",
+      "priority": 5
+    },
+    {
+      "url": "./panorama/3-bed-03.webp",
+      "priority": 5
+    },
+    {
+      "url": "./panorama/3-bed-04.webp",
+      "priority": 5
+    },
+    {
+      "url": "./panorama/3-bed-05.webp",
+      "priority": 5
+    },
+    {
+      "url": "./panorama/3-bed-06.webp",
+      "priority": 5
+    },
+    {
+      "url": "./2d-floor-plan/type2.webp",
+      "priority": 6
+    },
+    {
+      "url": "./brand-config.json",
+      "priority": 99
+    },
+    {
+      "url": "./favicon.ico",
+      "priority": 99
+    },
+    {
+      "url": "./icon-192.png",
+      "priority": 99
+    },
+    {
+      "url": "./icon-512.png",
+      "priority": 99
+    },
+    {
+      "url": "./manifest.json",
+      "priority": 99
+    },
+    {
+      "url": "./tour-data.json",
+      "priority": 99
+    }
+  ],
+  "priorityGroups": {
+    "1": [
+      "./3d-floor-plan/1-bed-01.glb",
+      "./3d-floor-plan/2-bed-01.glb",
+      "./3d-floor-plan/3d-bed-01.glb",
+      "./model/building.glb"
+    ],
+    "2": [
+      "./project/amenities/swimming-pool-amenity.webp",
+      "./project/floor-plans/seken-Floorplan.jpg",
+      "./project/gallery/120.webp",
+      "./project/gallery/125.webp",
+      "./project/gallery/213.webp",
+      "./project/gallery/218.webp",
+      "./project/gallery/Scene-27_1-enhanced.webp",
+      "./project/gallery/image17.webp",
+      "./project/gallery/image21.webp",
+      "./project/gallery/mainsowreel.mp4",
+      "./project/gallery/photo_6003679379009422639_y.webp",
+      "./project/gallery/scene-34.webp",
+      "./project/gallery/scene-36.webp",
+      "./project/hero-image-video/mainsowreel.mp4",
+      "./project/hotspots/ev_charging/ev_charging.mp4",
+      "./project/hotspots/green_terrace/green_terrace.mp4",
+      "./project/hotspots/green_terrace/swimming-pool-amenity.webp"
+    ],
+    "3": [
+      "./hdr/cobblestone_street_night_1k.hdr",
+      "./hdr/laufenurg_church_1k.hdr",
+      "./hdr/tree_lined_driveway_1k.hdr",
+      "./project/hero.png",
+      "./project/temerlogo.png"
+    ],
+    "4": [
+      "./unit-image-video/1-bed-01/1.webp",
+      "./unit-image-video/1-bed-01/4.webp",
+      "./unit-image-video/1-bed-01/jambo---marketing-0.webp",
+      "./unit-image-video/1-bed-01/mainsowreel.mp4",
+      "./unit-image-video/2-bed-01/-salon.webp",
+      "./unit-image-video/2-bed-01/ff-family-room-dining-&-open-kitchen-2.webp",
+      "./unit-image-video/2-bed-01/mainsowreel.mp4",
+      "./unit-image-video/2-bed-01/scene-70.webp",
+      "./unit-image-video/3-bed-01/212.webp",
+      "./unit-image-video/3-bed-01/gf-open-kitchen-1.webp",
+      "./unit-image-video/3-bed-01/mainsowreel.mp4",
+      "./unit-image-video/3-bed-01/scene-67.webp",
+      "./unit-image-video/3-bed-02/-marketing-02.webp",
+      "./unit-image-video/3-bed-02/216.webp",
+      "./unit-image-video/3-bed-02/jambo---marketing-2.webp",
+      "./unit-image-video/3-bed-02/mainsowreel.mp4",
+      "./unit-image-video/3-bed-03/mainsowreel.mp4",
+      "./unit-image-video/3-bed-03/scene-73.webp",
+      "./unit-image-video/3-bed-03/scene-77.webp",
+      "./unit-image-video/3-bed-04/218.webp",
+      "./unit-image-video/3-bed-04/D5_Image_20240321_163403.webp",
+      "./unit-image-video/3-bed-04/gf-dining-room-2.webp",
+      "./unit-image-video/3-bed-04/mainsowreel.mp4",
+      "./unit-image-video/3-bed-05/213.webp",
+      "./unit-image-video/3-bed-05/214.webp",
+      "./unit-image-video/3-bed-05/mainsowreel.mp4",
+      "./unit-image-video/3-bed-06/17.webp",
+      "./unit-image-video/3-bed-06/211.webp",
+      "./unit-image-video/3-bed-06/mainsowreel.mp4",
+      "./unit-image-video/3-bed-06/scene-68.webp"
+    ],
+    "5": [
+      "./panorama/1-bed-01.webp",
+      "./panorama/2-bed-01.webp",
+      "./panorama/3-bed-01.webp",
+      "./panorama/3-bed-02.webp",
+      "./panorama/3-bed-03.webp",
+      "./panorama/3-bed-04.webp",
+      "./panorama/3-bed-05.webp",
+      "./panorama/3-bed-06.webp"
+    ],
+    "6": [
+      "./2d-floor-plan/type2.webp"
+    ],
+    "99": [
+      "./brand-config.json",
+      "./favicon.ico",
+      "./icon-192.png",
+      "./icon-512.png",
+      "./manifest.json",
+      "./tour-data.json"
+    ]
+  }
+}

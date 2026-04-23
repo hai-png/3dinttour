@@ -7,7 +7,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 BUILD_DIR="$PROJECT_DIR/build"
-GITHUB_REPO="git@github.com:hai-png/3dtour.git"
+GITHUB_REPO="git@github.com:hai-png/3dinttour.git"
 BRANCH="gh-pages"
 
 echo "=========================================="
@@ -36,6 +36,7 @@ mkdir -p "$BUILD_DIR"
 # Copy essential files for GitHub Pages
 echo "  Copying files to build directory..."
 cp "$PROJECT_DIR/index.html" "$BUILD_DIR/"
+cp "$PROJECT_DIR/brands.json" "$BUILD_DIR/" 2>/dev/null || true
 cp "$PROJECT_DIR/icon.svg" "$BUILD_DIR/" 2>/dev/null || true
 cp "$PROJECT_DIR/icon-192.png" "$BUILD_DIR/" 2>/dev/null || true
 cp "$PROJECT_DIR/icon-512.png" "$BUILD_DIR/" 2>/dev/null || true
@@ -52,6 +53,15 @@ cp -r "$PROJECT_DIR/2d-floor-plan" "$BUILD_DIR/" 2>/dev/null || true
 cp -r "$PROJECT_DIR/3d-floor-plan" "$BUILD_DIR/" 2>/dev/null || true
 cp -r "$PROJECT_DIR/unit-image-video" "$BUILD_DIR/" 2>/dev/null || true
 cp -r "$PROJECT_DIR/project" "$BUILD_DIR/" 2>/dev/null || true
+
+# Copy brand folders
+echo "  Copying brand folders..."
+for brand in "ayat" "demahope" "gift" "hosea" "metropolitan" "temer"; do
+    if [ -d "$PROJECT_DIR/$brand" ]; then
+        cp -r "$PROJECT_DIR/$brand" "$BUILD_DIR/"
+        echo "    - $brand"
+    fi
+done
 
 # Create manifest.json if it doesn't exist
 if [ ! -f "$BUILD_DIR/manifest.json" ]; then
@@ -148,7 +158,7 @@ echo "=========================================="
 echo "  ✅ Deployment Complete!"
 echo "=========================================="
 echo "  Your site will be available at:"
-echo "  https://hai-png.github.io/3dtour/"
+echo "  https://hai-png.github.io/3dinttour/"
 echo ""
 echo "  Note: It may take 1-2 minutes for"
 echo "  changes to propagate on GitHub Pages."
