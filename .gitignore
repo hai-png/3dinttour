@@ -93,7 +93,12 @@ whatshouldbe.png
 !_shared/3d-floor-plan/*.glb
 
 # Brand output directories (build artifacts — rebuild from _shared/ + _brands/)
-temer/
+/temer/
+/ayat/
+/gift/
+/hosea/
+/metropolitan/
+/demahope/
 
 # Screenshots and temporary images
 brave_screenshot_localhost*.png
