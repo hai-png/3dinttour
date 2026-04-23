@@ -34,7 +34,9 @@ jobs:
         run: |
           mkdir -p deploy
           # Copy root files needed for the portal page
-          cp index.html brands.json favicon.ico package.json README.md deploy/
+          cp index.html brands.json favicon.ico package.json README.md deploy/ 2>/dev/null || true
+          # Also explicitly copy index.html and brands.json which are critical
+          cp index.html brands.json deploy/
           # Copy brand output directories (built PWAs — self-contained)
           for brand in gift metropolitan demahope ayat hosea temer; do
             if [ -d "$brand" ]; then
