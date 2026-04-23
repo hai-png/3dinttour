@@ -11174,5 +11174,72 @@
       "floorPlan3D": "3d-floor-plan/2-bed-01.glb"
     }
   ],
-  "gallery": []
+  "gallery": [
+    {
+      "url": "project/gallery/120.webp",
+      "type": "image",
+      "label": "120",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/125.webp",
+      "type": "image",
+      "label": "125",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/213.webp",
+      "type": "image",
+      "label": "213",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/218.webp",
+      "type": "image",
+      "label": "218",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/Scene-27_1-enhanced.webp",
+      "type": "image",
+      "label": "Scene 27 1 enhanced",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/image17.webp",
+      "type": "image",
+      "label": "image17",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/image21.webp",
+      "type": "image",
+      "label": "image21",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/mainsowreel.mp4",
+      "type": "video",
+      "label": "mainsowreel",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/photo_6003679379009422639_y.webp",
+      "type": "image",
+      "label": "photo 6003679379009422639 y",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/scene-34.webp",
+      "type": "image",
+      "label": "scene 34",
+      "category": "gallery"
+    },
+    {
+      "url": "project/gallery/scene-36.webp",
+      "type": "image",
+      "label": "scene 36",
+      "category": "gallery"
+    }
+  ]
 }

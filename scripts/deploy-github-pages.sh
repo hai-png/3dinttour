@@ -7,7 +7,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 BUILD_DIR="$PROJECT_DIR/build"
-GITHUB_REPO="github.com:hai-png/3dtour.git"
+GITHUB_REPO="git@github.com:hai-png/3dtour.git"
 BRANCH="gh-pages"
 
 echo "=========================================="
