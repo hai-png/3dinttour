@@ -1,7 +1,17 @@
 #!/bin/bash
 # Update brand configurations with scraped data
+#
+# NOTE: This script only covers 3 brands (Dema Hope, Metropolitan, GIFT Real Estate).
+# All other brands should be configured via brand-config.json directly in their
+# respective _brands/<brand-id>/ directories.
 
-set -e
+set -euo pipefail
+
+TMPFILE=""
+cleanup() {
+  rm -f "$TMPFILE"
+}
+trap cleanup EXIT
 
 echo "=========================================="
 echo "Updating Brand Configurations"
@@ -10,7 +20,8 @@ echo "=========================================="
 # Update Dema Hope
 echo ""
 echo "Updating Dema Hope Real Estate..."
-cat > /tmp/demahope-config.json << 'EOF'
+TMPFILE=$(mktemp)
+cat > "$TMPFILE" << 'EOF'
 {
   "version": "1.1.0",
   "brand": {
@@ -216,13 +227,14 @@ cat > /tmp/demahope-config.json << 'EOF'
 }
 EOF
 
-cp /tmp/demahope-config.json _brands/demahope/brand-config.json
+cp "$TMPFILE" _brands/demahope/brand-config.json || { echo "✗ Failed to copy Dema Hope config"; exit 1; }
 echo "✓ Dema Hope updated"
 
 # Update Metropolitan
 echo ""
 echo "Updating Metropolitan Real Estate..."
-cat > /tmp/metropolitan-config.json << 'EOF'
+TMPFILE=$(mktemp)
+cat > "$TMPFILE" << 'EOF'
 {
   "version": "1.1.0",
   "brand": {
@@ -413,13 +425,14 @@ cat > /tmp/metropolitan-config.json << 'EOF'
 }
 EOF
 
-cp /tmp/metropolitan-config.json _brands/metropolitan/brand-config.json
+cp "$TMPFILE" _brands/metropolitan/brand-config.json || { echo "✗ Failed to copy Metropolitan config"; exit 1; }
 echo "✓ Metropolitan updated"
 
 # Update GIFT Real Estate
 echo ""
 echo "Updating GIFT Real Estate..."
-cat > /tmp/gift-config.json << 'EOF'
+TMPFILE=$(mktemp)
+cat > "$TMPFILE" << 'EOF'
 {
   "version": "1.1.0",
   "brand": {
@@ -637,7 +650,7 @@ cat > /tmp/gift-config.json << 'EOF'
 }
 EOF
 
-cp /tmp/gift-config.json _brands/gift/brand-config.json
+cp "$TMPFILE" _brands/gift/brand-config.json || { echo "✗ Failed to copy GIFT config"; exit 1; }
 echo "✓ GIFT Real Estate updated"
 
 echo ""

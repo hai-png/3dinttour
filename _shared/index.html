@@ -13,6 +13,7 @@
 <meta name="theme-color" content="#0a1628">
 <meta name="application-name" content="3D Property Tour">
 <meta name="description" content="Explore properties with interactive 3D tours. View availability, floor plans, and amenities.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com; frame-src https://www.youtube.com https://player.vimeo.com https://maps.google.com; font-src 'self';">
 <link rel="manifest" href="manifest.json?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon.ico">
@@ -55,6 +56,14 @@
     }
   };
   window.BRAND = JSON.parse(JSON.stringify(defaults));
+
+  // HTML escaping utility - prevents XSS in innerHTML interpolations
+  function esc(s){if(s===null||s===undefined)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');}
+  window.esc = esc;
+
+  // URL validation utility - prevents javascript: URL injection
+  function isSafeUrl(u){if(!u||typeof u!=='string')return false;var t=u.trim().toLowerCase();return t.startsWith('./')||t.startsWith('/')||t.startsWith('https://')||t.startsWith('http://');}
+  window.isSafeUrl = isSafeUrl;
 
   fetch('brand-config.json').then(r => r.json()).then(data => {
     // Deep merge config into defaults
@@ -962,37 +971,6 @@ button{font-family:inherit;border:none;cursor:pointer}
 
 <div id="hs-box"></div>
 
-<!-- ═══ TEMPORARY SKY/Cloud Controls (COMMENTED OUT) ═══ -->
-<!--
-<div id="sky-ctrl" style="position:fixed;top:10px;right:10px;z-index:9999;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);padding:12px;border-radius:8px;color:#fff;font-size:11px;font-family:sans-serif;display:block;max-height:calc(100vh - 20px);overflow-y:auto;width:280px;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-    <b style="font-size:12px">🌤️ Sky & Cloud Controls</b>
-    <button id="sky-ctrl-min" style="background:rgba(255,255,255,.2);border:none;border-radius:4px;color:#fff;width:20px;height:20px;cursor:pointer">−</button>
-  </div>
-  <div id="sky-ctrl-body">
-    <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.2);">
-      <b style="color:var(--pri);font-size:11px">☀️ Sky Parameters</b>
-    </div>
-    <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Turbidity</span><span id="sky-turbidity-v">10.0</span></label><input id="sky-turbidity" type="range" min="0" max="20" step="0.1" value="10" style="width:100%"></div>
-    <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Rayleigh</span><span id="sky-rayleigh-v">2.5</span></label><input id="sky-rayleigh" type="range" min="0" max="4" step="0.1" value="2.5" style="width:100%"></div>
-    <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Mie Coeff</span><span id="sky-mie-v">0.005</span></label><input id="sky-mie" type="range" min="0" max="0.02" step="0.0005" value="0.005" style="width:100%"></div>
-    <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Mie Direction G</span><span id="sky-mieg-v">0.8</span></label><input id="sky-mieg" type="range" min="0" max="1" step="0.01" value="0.8" style="width:100%"></div>
-    <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Sun Elevation</span><span id="sky-elev-v">50°</span></label><input id="sky-elev" type="range" min="0" max="90" step="1" value="50" style="width:100%"></div>
-    <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Sun Azimuth</span><span id="sky-azim-v">45°</span></label><input id="sky-azim" type="range" min="0" max="360" step="1" value="45" style="width:100%"></div>
-    <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Exposure</span><span id="sky-exp-v">1.0</span></label><input id="sky-exp" type="range" min="0.1" max="3" step="0.1" value="1" style="width:100%"></div>
-    <div style="margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.2);">
-      <b style="color:var(--pri);font-size:11px">☁️ Cloud Parameters</b>
-    </div>
-    <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Cloud Density</span><span id="cld-density-v">0.55</span></label><input id="cld-density" type="range" min="0.1" max="1" step="0.05" value="0.55" style="width:100%"></div>
-    <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Cloud Coverage</span><span id="cld-coverage-v">0.65</span></label><input id="cld-coverage" type="range" min="0.1" max="1" step="0.05" value="0.65" style="width:100%"></div>
-    <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Cloud Speed</span><span id="cld-speed-v">1.0x</span></label><input id="cld-speed" type="range" min="0" max="3" step="0.1" value="1" style="width:100%"></div>
-    <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Cloud Height</span><span id="cld-height-v">120</span></label><input id="cld-height" type="range" min="50" max="300" step="10" value="120" style="width:100%"></div>
-    <div style="margin-bottom:8px;"><label style="display:flex;justify-content:space-between"><span>Fog Density</span><span id="fog-density-v">0.002</span></label><input id="fog-density" type="range" min="0" max="0.01" step="0.0005" value="0.002" style="width:100%"></div>
-    <div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(255,255,255,.2);font-size:10px;color:rgba(255,255,255,.5);">💡 Tip: Adjust turbidity & rayleigh for different times of day</div>
-  </div>
-</div>
--->
-
 <!-- Availability System v2.0 - Replaces auth-manager.js, firebase-service.js, availability-manager.js -->
 <script src="availability-system.js?v=2.0.3"></script>
 <script src="contact-integration.js?v=1.0.1"></script>
@@ -1567,14 +1545,9 @@ function load(gltf){
 }
 
 function fallback(){
-  // Fallback disabled - using building.glb model only
-  // const floors=TD.projectDetails?.totalFloors||17;const fH=3.2;const g=new THREE.Group();
-  // for(let i=0;i<floors;i++){const s=new THREE.Mesh(new THREE.BoxGeometry(28,.08,16),new THREE.MeshStandardMaterial({color:0x556688,roughness:.45,metalness:.3}));s.position.set(0,i*fH,-3);s.castShadow=true;g.add(s);}
-  // const sh=new THREE.Mesh(new THREE.BoxGeometry(28,floors*fH,16),new THREE.MeshStandardMaterial({color:0x2a3a5a,roughness:.25,metalness:.65,transparent:true,opacity:.3}));sh.position.set(0,floors*fH/2,-3);sh.castShadow=true;g.add(sh);
-  // const tp=new THREE.Mesh(new THREE.BoxGeometry(28,.15,16),new THREE.MeshStandardMaterial({color:0x7cb342,roughness:.4,metalness:.5}));tp.position.set(0,floors*fH,-3);g.add(tp);
-  // E.scene().add(g);
-  // // Collision box
-  // const col=new THREE.Mesh(new THREE.BoxGeometry(30,floors*fH+2,18),new THREE.MeshBasicMaterial({visible:false}));col.position.set(0,floors*fH/2,-3);E.scene().add(col);E.addCollider(col);
+  document.getElementById('loading')?.remove();
+  const el=document.getElementById('c');
+  if(el) el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;text-align:center;padding:20px;font-family:sans-serif"><div><h2>3D Model Unavailable</h2><p>The 3D building model could not be loaded. Please try refreshing the page.</p></div></div>';
 }
 
 return{load,fallback,map,hsMap:()=>hsMap,bbox:()=>buildingBBox};
@@ -1671,7 +1644,7 @@ function build(){
 
   allHS.forEach(h=>{
     const el=document.createElement('div');el.className='hs-m';
-    el.innerHTML=`<div class="hs-dome" style="background:${h.color||'#3b82f6'}">${h.icon||'📍'}</div><div class="hs-lbl">${h.label}</div>`;
+    el.innerHTML=`<div class="hs-dome" style="background:${esc(h.color||'#3b82f6')}">${esc(h.icon||'📍')}</div><div class="hs-lbl">${esc(h.label)}</div>`;
     el.onclick=()=>selectHS(h);box.appendChild(el);
     items.push({el,pos:new THREE.Vector3(...h.position),data:h});
   });
@@ -1755,7 +1728,7 @@ function init(){
   render(TD.units);
 }
 function filter(){const q=document.getElementById('q').value.toLowerCase();const ft=document.getElementById('fT').value,fs=document.getElementById('fS').value,ff=document.getElementById('fF').value;const filtered=TD.units.filter(u=>{if(q&&!u.name.toLowerCase().includes(q)&&!u.type.toLowerCase().includes(q)&&!(u.description||'').toLowerCase().includes(q)&&!u.unitNumber?.includes(q))return false;if(ft&&u.type!==ft)return false;if(fs&&u.status!==fs)return false;if(ff&&u.floor!==+ff)return false;return true;});render(filtered);hlIds=new Set(filtered.map(u=>u.id));updateHighlights();}
-function render(units){const grid=document.getElementById('rg');const sc=TD.statusColors||{};const s=U.sel();if(!units.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:14px;color:var(--t3);font-size:11px">🔍 No units found</div>';return;}grid.innerHTML=units.map(u=>{const c=sc[u.status]||'#22c55e';return`<div class="rc${s&&s.id===u.id?' on':''}" data-uid="${u.id}"><div class="rn">${u.name}</div><div class="ri">${u.type}·F${u.floor}·${u.areaBreakdown?.total||u.area}m²</div><div class="rp">${u.priceFormatted||'TBD'}</div><span class="rs" style="background:${c}18;color:${c}">${u.status}</span></div>`}).join('');grid.querySelectorAll('.rc').forEach(c=>{c.onclick=()=>{const u=TD.units.find(x=>x.id===c.dataset.uid);if(u)U.select(u)}});}
+function render(units){const grid=document.getElementById('rg');const sc=TD.statusColors||{};const s=U.sel();if(!units.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:14px;color:var(--t3);font-size:11px">🔍 No units found</div>';return;}grid.innerHTML=units.map(u=>{const c=sc[u.status]||'#22c55e';return`<div class="rc${s&&s.id===u.id?' on':''}" data-uid="${esc(u.id)}"><div class="rn">${esc(u.name)}</div><div class="ri">${esc(u.type)}·F${esc(u.floor)}·${esc(u.areaBreakdown?.total||u.area)}m²</div><div class="rp">${esc(u.priceFormatted||'TBD')}</div><span class="rs" style="background:${c}18;color:${c}">${esc(u.status)}</span></div>`}).join('');grid.querySelectorAll('.rc').forEach(c=>{c.onclick=()=>{const u=TD.units.find(x=>x.id===c.dataset.uid);if(u)U.select(u)}});}
 function hl(id){document.querySelectorAll('.rc').forEach(c=>c.classList.toggle('on',c.dataset.uid===id));}
 function reset(){document.getElementById('q').value='';document.getElementById('fT').value='';document.getElementById('fS').value='';document.getElementById('fF').value='';render(TD.units);hlIds.clear();updateHighlights();}
 function updateHighlights(){
@@ -1776,7 +1749,7 @@ window.Srch = Srch;  // Expose to global scope for AvailabilitySystem
 const Gal=(()=>{
 let items=[],idx=0,mEl=null,orig=null,lbZoom=1;
 const isV=u=>u&&/\.(mp4|webm|mov|ogg)(\?|$)/i.test(u);
-function init(){items=(TD.gallery||[]).map(g=>({url:g.url||g,type:g.type||(isV(g.url||g)?'video':'image'),label:g.label||''}));const box=document.getElementById('gal-th');box.innerHTML='';items.slice(0,3).forEach(it=>{const d=document.createElement('div');d.className='gth';if(it.url&&it.type==='image')d.innerHTML=`<img src="${it.url}" loading="lazy">`;else{d.style.cssText='background:#1a2a4a;display:flex;align-items:center;justify-content:center;font-size:14px';d.textContent=it.type==='video'?'🎬':'📷';}box.appendChild(d)});if(items.length>3){const m=document.createElement('div');m.className='gmore';m.textContent=`+${items.length-3}`;box.appendChild(m);}document.getElementById('gal-cnt').textContent=`${items.length} items`;document.getElementById('gal').onclick=()=>open(0);}
+function init(){items=(TD.gallery||[]).map(g=>({url:g.url||g,type:g.type||(isV(g.url||g)?'video':'image'),label:g.label||''}));const box=document.getElementById('gal-th');box.innerHTML='';items.slice(0,3).forEach(it=>{const d=document.createElement('div');d.className='gth';if(it.url&&it.type==='image'){d.innerHTML=`<img src="${isSafeUrl(it.url)?it.url:''}" loading="lazy">`;}else{d.style.cssText='background:#1a2a4a;display:flex;align-items:center;justify-content:center;font-size:14px';d.textContent=it.type==='video'?'🎬':'📷';}box.appendChild(d)});if(items.length>3){const m=document.createElement('div');m.className='gmore';m.textContent=`+${items.length-3}`;box.appendChild(m);}document.getElementById('gal-cnt').textContent=`${items.length} items`;document.getElementById('gal').onclick=()=>open(0);}
 function open(i){idx=i;lbZoom=1;document.getElementById('lb').classList.add('open');refresh();}
 function close(){document.getElementById('lb').classList.remove('open');if(mEl){if(mEl.tagName==='VIDEO')mEl.pause();mEl.remove();mEl=null;}if(orig){items=orig;orig=null;}}
 function refresh(){if(!items.length)return;const it=items[idx];if(mEl){mEl.remove();mEl=null;}lbZoom=1;const lb=document.getElementById('lb');if(it.type==='video'&&it.url){mEl=document.createElement('video');mEl.className='lb-media';mEl.src=it.url;mEl.controls=true;mEl.autoplay=true;}else{mEl=document.createElement('img');mEl.className='lb-media';mEl.src=it.url||'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect fill="%23222" width="400" height="300"/><text x="200" y="150" fill="%23555" text-anchor="middle" font-size="14">No Image</text></svg>';}lb.insertBefore(mEl,document.getElementById('lb-dots'));document.getElementById('lb-cnt').textContent=`${idx+1}/${items.length}`;document.getElementById('lb-type').textContent=it.type==='video'?'🎬 Video':'📷 Photo';const dots=document.getElementById('lb-dots');dots.innerHTML='';for(let i=0;i<Math.min(items.length,20);i++){const d=document.createElement('button');d.className='lb-dot'+(i===idx?' on':'');d.onclick=()=>{idx=i;refresh()};dots.appendChild(d);}}
@@ -1785,7 +1758,7 @@ function openCustom(mi,si){orig=items;items=mi;idx=si||0;document.getElementById
 function lbZoomIn(){lbZoom=Math.min(lbZoom*1.3,5);applyLbTransform();}
 function lbZoomOut(){lbZoom=Math.max(lbZoom/1.3,.5);applyLbTransform();}
 function applyLbTransform(){if(mEl)mEl.style.transform=`scale(${lbZoom})`;}
-function download(){if(mEl?.src){const a=document.createElement('a');a.href=mEl.src;a.download='image';a.click();}}
+function download(){if(!mEl?.src)return;fetch(mEl.src,{mode:'cors'}).then(r=>r.blob()).then(b=>{const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='image-'+Date.now()+'.jpg';a.click();URL.revokeObjectURL(u);}).catch(()=>{window.open(mEl.src,'_blank');});}
 return{init,open,close,nav,openCustom,lbZoomIn,lbZoomOut,download};
 })();
 
@@ -1797,7 +1770,7 @@ function open(url,title,navHotspots){if(!pR)init2();active=1;const el=document.g
   new THREE.TextureLoader().load(url,tex=>{tex.colorSpace=THREE.SRGBColorSpace;const geo=new THREE.SphereGeometry(50,60,40);geo.scale(-1,1,1);pS.children.forEach(c=>{pS.remove(c);c.geometry?.dispose();c.material?.dispose()});pS.add(new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:tex})))});
   // Nav hotspots
   const hsBox=document.getElementById('pano-hs-box');hsBox.innerHTML='';
-  if(navHotspots?.length){navHotspots.forEach(nh=>{const el2=document.createElement('div');el2.className='pano-hs';el2.innerHTML=`<div class="pano-hs-dot">${nh.icon||'→'}</div><div class="pano-hs-label">${nh.label}</div>`;el2.style.left=nh.screenX+'%';el2.style.top=nh.screenY+'%';el2.onclick=()=>{if(nh.panorama)open(nh.panorama,nh.label,nh.navHotspots);};hsBox.appendChild(el2);});}
+  if(navHotspots?.length){navHotspots.forEach(nh=>{const el2=document.createElement('div');el2.className='pano-hs';el2.innerHTML=`<div class="pano-hs-dot">${esc(nh.icon||'→')}</div><div class="pano-hs-label">${esc(nh.label)}</div>`;el2.style.left=nh.screenX+'%';el2.style.top=nh.screenY+'%';el2.onclick=()=>{if(nh.panorama)open(nh.panorama,nh.label,nh.navHotspots);};hsBox.appendChild(el2);});}
   (function r(){if(!active)return;requestAnimationFrame(r);pCtrl.update();pR.render(pS,pC)})();
   const onR=()=>{if(!active)return;pR.setSize(el.clientWidth,el.clientHeight);pC.aspect=el.clientWidth/el.clientHeight;pC.updateProjectionMatrix()};addEventListener('resize',onR);el._onR=onR;}
 function close(){active=0;document.getElementById('pano').classList.remove('open');const el=document.getElementById('pano');if(el._onR)removeEventListener('resize',el._onR);}
@@ -1950,8 +1923,6 @@ function wireAll(){
   });
   
   document.getElementById('lb-fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.getElementById('lb').requestFullscreen()}catch(e){}};
-  document.getElementById('fp-fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.getElementById('fp').requestFullscreen()}catch(e){}};
-  document.getElementById('pano-fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.getElementById('pano').requestFullscreen()}catch(e){}};
   
   // Project details modal
   document.getElementById('open-pd').onclick=()=>document.getElementById('pd').classList.add('open');
@@ -1987,10 +1958,10 @@ function populateIntro(){
   const intro=document.getElementById('intro');
   const bgEl=document.getElementById('intro-bg');
   const logoEl=document.getElementById('intro-logo');
-  if(TD.media?.heroImage){bgEl.style.backgroundImage=`url(${TD.media.heroImage})`;bgEl.classList.add('loaded');}
-  if(TD.media?.developerLogo){logoEl.innerHTML=`<img src="${TD.media.developerLogo}" alt="Logo">`;}
+  if(TD.media?.heroImage){bgEl.style.backgroundImage=`url(${isSafeUrl(TD.media.heroImage)?TD.media.heroImage:''})`;bgEl.classList.add('loaded');}
+  if(TD.media?.developerLogo){logoEl.innerHTML=`<img src="${isSafeUrl(TD.media.developerLogo)?TD.media.developerLogo:''}" alt="Logo">`;}
   document.getElementById('intro-name').textContent=TD.projectName||'Tour';
-  document.getElementById('intro-loc').innerHTML=`📍 ${TD.projectDetails?.location||''}`;
+  document.getElementById('intro-loc').innerHTML=`📍 ${esc(TD.projectDetails?.location||'')}`;
 
   // Brand-driven intro tag and enter button
   const brand = window.BRAND || {};
@@ -2003,15 +1974,15 @@ function populateIntro(){
 
   const stats=document.getElementById('intro-stats');const pd=TD.projectDetails||{};
   stats.innerHTML=[
-    pd.totalUnits?`<div class="intro-stat"><b>${pd.totalUnits}</b><small>${ui.unitDetail?.unitsLabel||'Units'}</small></div>`:'',
-    pd.totalFloors?`<div class="intro-stat"><b>${pd.totalFloors}</b><small>${ui.projectDetail?.floorsLabel||'Floors'}</small></div>`:'',
-    pd.unitsPerFloor?`<div class="intro-stat"><b>${pd.unitsPerFloor}</b><small>${ui.unitDetail?.perFloorLabel||'Per Floor'}</small></div>`:'',
+    pd.totalUnits?`<div class="intro-stat"><b>${esc(pd.totalUnits)}</b><small>${ui.unitDetail?.unitsLabel||'Units'}</small></div>`:'',
+    pd.totalFloors?`<div class="intro-stat"><b>${esc(pd.totalFloors)}</b><small>${ui.projectDetail?.floorsLabel||'Floors'}</small></div>`:'',
+    pd.unitsPerFloor?`<div class="intro-stat"><b>${esc(pd.unitsPerFloor)}</b><small>${ui.unitDetail?.perFloorLabel||'Per Floor'}</small></div>`:'',
   ].join('');
 }
 
 function populateProject(){
   document.getElementById('h-name').textContent=TD.projectName||'Tour';
-  if(TD.media?.developerLogo){document.getElementById('h-logo').innerHTML=`<img src="${TD.media.developerLogo}">`;document.getElementById('pd-logo').innerHTML=`<img src="${TD.media.developerLogo}" style="width:100%;height:100%;object-fit:cover">`;}
+  if(TD.media?.developerLogo){document.getElementById('h-logo').innerHTML=`<img src="${isSafeUrl(TD.media.developerLogo)?TD.media.developerLogo:''}">`;document.getElementById('pd-logo').innerHTML=`<img src="${isSafeUrl(TD.media.developerLogo)?TD.media.developerLogo:''}" style="width:100%;height:100%;object-fit:cover">`;}
   document.getElementById('pd-ti').textContent=TD.projectName;
 
   // Hero carousel
@@ -2027,21 +1998,22 @@ function populateProject(){
     let hIdx=0;
     heroEl.innerHTML=heroMedia.map((m,i)=>{
       const cls=`hero-slide${i===0?' active':''}`;
-      if(m.type==='youtube')return `<div class="${cls}" style="width:100%;height:100%;position:absolute;inset:0;pointer-events:none"><iframe src="${m.url}" style="width:100%;height:100%;border:none;pointer-events:auto" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>`;
-      if(m.type==='vimeo')return `<div class="${cls}" style="width:100%;height:100%;position:absolute;inset:0;pointer-events:none"><iframe src="${m.url}" style="width:100%;height:100%;border:none;pointer-events:auto" allow="autoplay;fullscreen" allowfullscreen></iframe></div>`;
-      if(m.type==='video')return `<video src="${m.url}" muted autoplay loop playsinline class="${cls}"></video>`;
-      return `<img src="${m.url}" class="${cls}">`;
+      if(m.type==='youtube')return `<div class="${cls}" style="width:100%;height:100%;position:absolute;inset:0;pointer-events:none"><iframe sandbox="allow-scripts allow-same-origin allow-presentation" src="${isSafeUrl(m.url)?m.url:''}" style="width:100%;height:100%;border:none;pointer-events:auto" allow="autoplay;encrypted-media;picture-in-picture" allowfullscreen></iframe></div>`;
+      if(m.type==='vimeo')return `<div class="${cls}" style="width:100%;height:100%;position:absolute;inset:0;pointer-events:none"><iframe sandbox="allow-scripts allow-same-origin allow-presentation" src="${isSafeUrl(m.url)?m.url:''}" style="width:100%;height:100%;border:none;pointer-events:auto" allow="autoplay;fullscreen" allowfullscreen></iframe></div>`;
+      if(m.type==='video')return `<video src="${isSafeUrl(m.url)?m.url:''}" muted autoplay loop playsinline class="${cls}"></video>`;
+      return `<img src="${isSafeUrl(m.url)?m.url:''}" class="${cls}">`;
     }).join('')+(heroMedia.length>1?`<button class="hero-nav p" id="hero-p">◀</button><button class="hero-nav n" id="hero-n">▶</button><div class="hero-dots">${heroMedia.map((_,i)=>`<button class="hdot${i===0?' on':''}" data-i="${i}"></button>`).join('')}</div>`:'')+`<button class="hero-fs" id="hero-fs" title="Fullscreen">⛶</button>`;
     if(heroMedia.length>1){const upH=()=>{heroEl.querySelectorAll('.hero-slide').forEach((el,i)=>el.classList.toggle('active',i===hIdx));heroEl.querySelectorAll('.hdot').forEach((d,i)=>d.classList.toggle('on',i===hIdx));};heroEl.querySelector('#hero-p')?.addEventListener('click',()=>{hIdx=(hIdx-1+heroMedia.length)%heroMedia.length;upH()});heroEl.querySelector('#hero-n')?.addEventListener('click',()=>{hIdx=(hIdx+1)%heroMedia.length;upH()});heroEl.querySelectorAll('.hdot').forEach(d=>d.addEventListener('click',()=>{hIdx=+d.dataset.i;upH()}));
     // Auto-advance
-    setInterval(()=>{hIdx=(hIdx+1)%heroMedia.length;upH()},5000);}
+    if(window._heroInterval)clearInterval(window._heroInterval);
+    window._heroInterval=setInterval(()=>{hIdx=(hIdx+1)%heroMedia.length;upH()},5000);}
     heroEl.querySelector('#hero-fs')?.addEventListener('click',()=>{try{document.fullscreenElement?document.exitFullscreen():heroEl.requestFullscreen()}catch(e){}});
   }
   document.getElementById('d-desc').textContent=TD.projectDescription||'';
 
   // Project details modal — redesigned
   const pd=TD.projectDetails||{};const coords=TD.coordinates||{};
-  let html=`<p>${TD.projectDescription||''}</p>`;
+  let html=`<p>${esc(TD.projectDescription||'')}</p>`;
 
   // Key details as chips
   const chips=[
@@ -2054,16 +2026,16 @@ function populateProject(){
     pd.parkingType?{i:'🅿️',l:'Parking',v:pd.parkingType}:null,
     pd.basement?{i:'🔽',l:'Basement',v:'Yes'}:null,
   ].filter(Boolean);
-  if(chips.length)html+=`<div class="pd-chips">${chips.map(c=>`<div class="pd-chip"><span class="ci">${c.i}</span>${c.l}: <b>${c.v}</b></div>`).join('')}</div>`;
+  if(chips.length)html+=`<div class="pd-chips">${chips.map(c=>`<div class="pd-chip"><span class="ci">${c.i}</span>${c.l}: <b>${esc(c.v)}</b></div>`).join('')}</div>`;
 
   // Amenities as compact icon grid
   const allAmenities=new Map();
   (TD.amenities||[]).forEach(a=>{if(typeof a==='string'){allAmenities.set(a,{name:a,icon:'✓'});}else if(a?.name){allAmenities.set(a.name,a);}});
   (TD.features||[]).forEach(f=>{const n=typeof f==='string'?f:f.text;if(n&&!allAmenities.has(n)){allAmenities.set(n,{name:n,icon:typeof f==='string'?'✓':(f.icon||'✓')});}});
-  if(allAmenities.size){html+=`<div class="pd-sec"><div class="pd-sec-t">🏠 Amenities & Features</div><div class="pd-am-grid">${[...allAmenities.values()].map(a=>`<div class="pd-am"><span class="ai">${a.icon||'✓'}</span>${a.name}</div>`).join('')}</div></div>`;}
+  if(allAmenities.size){html+=`<div class="pd-sec"><div class="pd-sec-t">🏠 Amenities & Features</div><div class="pd-am-grid">${[...allAmenities.values()].map(a=>`<div class="pd-am"><span class="ai">${esc(a.icon||'✓')}</span>${esc(a.name)}</div>`).join('')}</div></div>`;}
 
   // Nearby — compact 2-column
-  if(TD.nearbyAttractions?.length){html+=`<div class="pd-sec"><div class="pd-sec-t">📍 Nearby</div><div class="pd-nearby-grid">${TD.nearbyAttractions.map(n=>`<div class="pd-nr"><div class="nr-n">${n.icon||'📍'} ${n.name}</div><div class="nr-d">${n.distance}</div></div>`).join('')}</div></div>`;}
+  if(TD.nearbyAttractions?.length){html+=`<div class="pd-sec"><div class="pd-sec-t">📍 Nearby</div><div class="pd-nearby-grid">${TD.nearbyAttractions.map(n=>`<div class="pd-nr"><div class="nr-n">${esc(n.icon||'📍')} ${esc(n.name)}</div><div class="nr-d">${esc(n.distance)}</div></div>`).join('')}</div></div>`;}
 
   // Contact Us - dynamically from brand config
   const bc = window.BRAND.contact || {};
@@ -2073,17 +2045,31 @@ function populateProject(){
   const wa = bc.whatsapp || {};
   
   let contactBtns = '';
-  if (ds.showPhones && primaryPhone) contactBtns += `<a class="pd-contact-btn" href="${primaryPhone.tel}">📱 Call</a>`;
-  if (ds.showEmails && primaryEmail) contactBtns += `<a class="pd-contact-btn" href="${primaryEmail.mailto}">📧 Email</a>`;
-  if (ds.showWhatsApp && wa.enabled) contactBtns += `<a class="pd-contact-btn" href="https://wa.me/${wa.number.replace(/[^0-9]/g,'')}" target="_blank">💬 WhatsApp</a>`;
-  contactBtns += `<a class="pd-contact-btn" href="#" onclick="navigator.share?.({title:'${TD.projectName}',url:location.href});return false;">📤 Share</a>`;
+  if (ds.showPhones && primaryPhone) contactBtns += `<a class="pd-contact-btn" href="${esc(primaryPhone.tel)}">📱 Call</a>`;
+  if (ds.showEmails && primaryEmail) contactBtns += `<a class="pd-contact-btn" href="${esc(primaryEmail.mailto)}">📧 Email</a>`;
+  if (ds.showWhatsApp && wa.enabled) contactBtns += `<a class="pd-contact-btn" href="https://wa.me/${esc(wa.number.replace(/[^0-9]/g,''))}" target="_blank">💬 WhatsApp</a>`;
+  contactBtns += `<a class="pd-contact-btn" href="#" data-action="share" data-title="${esc(TD.projectName)}">📤 Share</a>`;
   
   html+=`<div class="pd-contact"><div class="ct-title">📞 Contact Us</div><div class="pd-contact-grid">${contactBtns}</div></div>`;
 
   // Map
-  if(coords.lat&&coords.lng){html+=`<div class="pd-map"><iframe src="https://maps.google.com/maps?q=${coords.lat},${coords.lng}&z=15&output=embed" loading="lazy"></iframe></div><a class="pd-ml" href="https://maps.google.com/maps?q=${coords.lat},${coords.lng}" target="_blank">📍 Open in Maps</a>`;}
+  if(coords.lat&&coords.lng){html+=`<div class="pd-map"><iframe sandbox="allow-scripts allow-same-origin allow-popups" src="https://maps.google.com/maps?q=${coords.lat},${coords.lng}&z=15&output=embed" loading="lazy"></iframe></div><a class="pd-ml" href="https://maps.google.com/maps?q=${coords.lat},${coords.lng}" target="_blank">📍 Open in Maps</a>`;}
 
   document.getElementById('pd-b').innerHTML=html;
+
+  // Event delegation for data-action buttons (e.g., share)
+  document.getElementById('pd-b').addEventListener('click',function(e){
+    const btn=e.target.closest('[data-action]');
+    if(btn){
+      const action=btn.getAttribute('data-action');
+      if(action==='share'){
+        const title=btn.getAttribute('data-title')||'';
+        if(navigator.share){navigator.share?.({title:title,url:location.href});}
+        else{navigator.clipboard?.writeText(location.href).then(()=>showToast('Link copied!','success')).catch(()=>{});}
+      }
+      e.preventDefault();
+    }
+  });
 }
 
 function expandDet(){
@@ -2103,14 +2089,14 @@ function showUnit(unit){
   const media=collectMedia(unit);const ti=TD.unitTypes?.[unit.unitType];
 
   // Carousel
-  let car;if(media.length){const f=media[0];const tag=f.type==='video'?`<video src="${f.url}" muted autoplay loop playsinline></video>`:`<img src="${f.url}">`;car=`<div class="u-carousel" id="u-car">${tag}${media.length>1?`<button class="cb p" id="cp">◀</button><button class="cb n" id="cn">▶</button><div class="cdots">${media.map((_,i)=>`<button class="cdot${i===0?' on':''}" data-i="${i}"></button>`).join('')}</div>`:''}<button class="u-car-fs" id="u-car-fs" title="Fullscreen">⛶</button>
+  let car;if(media.length){const f=media[0];const tag=f.type==='video'?`<video src="${isSafeUrl(f.url)?f.url:''}" muted autoplay loop playsinline></video>`:`<img src="${isSafeUrl(f.url)?f.url:''}">`;car=`<div class="u-carousel" id="u-car">${tag}${media.length>1?`<button class="cb p" id="cp">◀</button><button class="cb n" id="cn">▶</button><div class="cdots">${media.map((_,i)=>`<button class="cdot${i===0?' on':''}" data-i="${i}"></button>`).join('')}</div>`:''}<button class="u-car-fs" id="u-car-fs" title="Fullscreen">⛶</button>
   <div class="mc">${media.length>1?`1/${media.length}`:(f.type==='video'?'🎬':'📷')}</div></div>`;}else car='<div class="u-carousel" style="display:flex;align-items:center;justify-content:center;font-size:32px;color:rgba(255,255,255,.3)">🏠</div>';
 
   // Previews
   let previews='';const hasFP=unit.floorPlan;const hasPano=unit.panorama;
   if(hasFP||hasPano){previews='<div class="u-previews">';
-    if(hasFP)previews+=`<div class="u-preview" id="pv-fp"><img src="${unit.floorPlan}"><div class="pv-label"><span class="pv-icon">📐</span>Floor Plan</div></div>`;
-    if(hasPano)previews+=`<div class="u-preview pano" id="pv-pano"><img src="${unit.panorama}" style="width:100%;height:100%;object-fit:cover;"><div class="pv-label"><span class="pv-icon">🔄</span>Panorama</div></div>`;
+    if(hasFP)previews+=`<div class="u-preview" id="pv-fp"><img src="${isSafeUrl(unit.floorPlan)?unit.floorPlan:''}"><div class="pv-label"><span class="pv-icon">📐</span>Floor Plan</div></div>`;
+    if(hasPano)previews+=`<div class="u-preview pano" id="pv-pano"><img src="${isSafeUrl(unit.panorama)?unit.panorama:''}" style="width:100%;height:100%;object-fit:cover;"><div class="pv-label"><span class="pv-icon">🔄</span>Panorama</div></div>`;
     previews+='</div>';
   }
 
@@ -2123,22 +2109,22 @@ function showUnit(unit){
   let areaSection='';
   if(ab||fas?.length){
     areaSection=`<button class="u-area-toggle" id="area-tog">📏 View Area Details <span>▼</span></button><div class="u-area-body" id="area-body">`;
-    if(ab)areaSection+=`<div class="u-ab-grid"><div class="u-ab"><small>Net</small><b>${ab.net}m²</b></div><div class="u-ab"><small>Common</small><b>${ab.common}m²</b></div><div class="u-ab"><small>Total</small><b>${ab.total}m²</b></div></div>`;
-    if(fas?.length)areaSection+=`<div class="fa-list">${fas.map(f=>`<div class="fa-row"><span class="fn">${f.name}</span><span class="fv">${f.area}m²</span></div>`).join('')}</div>`;
+    if(ab)areaSection+=`<div class="u-ab-grid"><div class="u-ab"><small>Net</small><b>${esc(ab.net)}m²</b></div><div class="u-ab"><small>Common</small><b>${esc(ab.common)}m²</b></div><div class="u-ab"><small>Total</small><b>${esc(ab.total)}m²</b></div></div>`;
+    if(fas?.length)areaSection+=`<div class="fa-list">${fas.map(f=>`<div class="fa-row"><span class="fn">${esc(f.name)}</span><span class="fv">${esc(f.area)}m²</span></div>`).join('')}</div>`;
     areaSection+='</div>';
   }
 
   d.innerHTML=`<div class="u-card">${car}
-    <div class="u-head"><span class="u-name">🏠 ${unit.name}</span><span class="badge ${bc}">${unit.status}</span></div>
-    ${ti?`<div class="u-sub">${ti.label||unit.unitType}<span class="sep"></span>🛏️ ${unit.bedrooms||ti.bedrooms}<span class="sep"></span>🚿 ${unit.bathrooms||ti.bathrooms}</div>`:''}
+    <div class="u-head"><span class="u-name">🏠 ${esc(unit.name)}</span><span class="badge ${bc}">${esc(unit.status)}</span></div>
+    ${ti?`<div class="u-sub">${esc(ti.label||unit.unitType)}<span class="sep"></span>🛏️ ${esc(unit.bedrooms||ti.bedrooms)}<span class="sep"></span>🚿 ${esc(unit.bathrooms||ti.bathrooms)}</div>`:''}
     <div class="u-stats">
-      <div class="u-st"><small>Type</small><b>${unit.type}</b></div>
-      <div class="u-st"><small>Floor</small><b>${unit.floor}</b></div>
-      <div class="u-st"><small>Area</small><b>${ab?.total||unit.area}m²</b></div>
-      <div class="u-st"><small>Price</small><b class="pr">${unit.priceFormatted||'TBD'}</b></div>
+      <div class="u-st"><small>Type</small><b>${esc(unit.type)}</b></div>
+      <div class="u-st"><small>Floor</small><b>${esc(unit.floor)}</b></div>
+      <div class="u-st"><small>Area</small><b>${esc(ab?.total||unit.area)}m²</b></div>
+      <div class="u-st"><small>Price</small><b class="pr">${esc(unit.priceFormatted||'TBD')}</b></div>
     </div>
-    <div class="u-desc">${unit.description||''}</div>
-    ${unit.features?.length?`<div class="u-feats">${unit.features.map(f=>`<span class="u-feat">${f}</span>`).join('')}</div>`:''}
+    <div class="u-desc">${esc(unit.description||'')}</div>
+    ${unit.features?.length?`<div class="u-feats">${unit.features.map(f=>`<span class="u-feat">${esc(f)}</span>`).join('')}</div>`:''}
     ${areaSection}${previews}
     <div class="u-actions">${acts}</div>
   </div>`;
@@ -2175,14 +2161,14 @@ function showHS(h){
   // Carousel for hotspot images/videos
   let car='';
   if(media.length){
-    const f=media[0];const tag=f.type==='video'?`<video src="${f.url}" muted autoplay loop playsinline class="active"></video>`:`<img src="${f.url}" class="active">`;
+    const f=media[0];const tag=f.type==='video'?`<video src="${isSafeUrl(f.url)?f.url:''}" muted autoplay loop playsinline class="active"></video>`:`<img src="${isSafeUrl(f.url)?f.url:''}" class="active">`;
     car=`<div class="u-carousel" id="hs-car">${tag}${media.length>1?`<button class="cb p" id="hs-cp">◀</button><button class="cb n" id="hs-cn">▶</button><div class="cdots">${media.map((_,i)=>`<button class="cdot${i===0?' on':''}" data-i="${i}"></button>`).join('')}</div>`:''}<button class="u-car-fs" id="hs-car-fs" title="Fullscreen">⛶</button>
     <div class="mc">${media.length>1?`1/${media.length}`:(f.type==='video'?'🎬':'')}</div></div>`;
   }
 
   d.innerHTML=`<div class="hs-card">${car}
-    <div class="hs-head"><div class="hs-ic" style="background:${h.color||'#3b82f6'}">${h.icon||'📍'}</div><span class="hs-ti">${h.label}</span></div>
-    <div class="u-desc">${h.description||''}</div>
+    <div class="hs-head"><div class="hs-ic" style="background:${esc(h.color||'#3b82f6')}">${esc(h.icon||'📍')}</div><span class="hs-ti">${esc(h.label)}</span></div>
+    <div class="u-desc">${esc(h.description||'')}</div>
     ${media.length>1?`<button class="u-btn u-btn-s" style="width:100%;margin-top:4px" id="hs-gal">📷 View All (${media.length})</button>`:''}
   </div>`;
 
@@ -2505,7 +2491,7 @@ function showToast(message, type = 'info', duration = 3000) {
   
   toast.innerHTML = `
     <span class="global-toast-icon">${icons[type] || icons.info}</span>
-    <span class="global-toast-msg">${message}</span>
+    <span class="global-toast-msg">${esc(message)}</span>
   `;
   
   document.body.appendChild(toast);
@@ -2795,59 +2781,6 @@ async function boot(){
   document.getElementById('intro-enter').onclick=()=>document.getElementById('intro').classList.add('gone');
   document.getElementById('c').addEventListener('click',U.onClick);
 
-  // ═══ SKY/Cloud Controls (COMMENTED OUT) ═══
-  /*
-  const SkyCtrl=(()=>{
-    const ctrl=document.getElementById('sky-ctrl');
-    const body=document.getElementById('sky-ctrl-body');
-    const minBtn=document.getElementById('sky-ctrl-min');
-    let min=false;
-    minBtn.onclick=()=>{min=!min;body.style.display=min?'none':'block';minBtn.textContent=min?'+':'−';};
-
-    // Helper to update sky
-    const updateSky=()=>{
-      if(E.updateSkyParams){
-        const turbidity=+document.getElementById('sky-turbidity').value;
-        const rayleigh=+document.getElementById('sky-rayleigh').value;
-        const mieCoeff=+document.getElementById('sky-mie').value;
-        const mieG=+document.getElementById('sky-mieg').value;
-        const elev=+document.getElementById('sky-elev').value;
-        const azim=+document.getElementById('sky-azim').value;
-        const exp=+document.getElementById('sky-exp').value;
-        E.updateSkyParams(turbidity,rayleigh,mieCoeff,mieG,elev,azim,exp);
-      }
-    };
-
-    // Helper to update clouds
-    const updateClouds=()=>{
-      if(E.updateCloudParams){
-        const density=+document.getElementById('cld-density').value;
-        const coverage=+document.getElementById('cld-coverage').value;
-        const speed=+document.getElementById('cld-speed').value;
-        const height=+document.getElementById('cld-height').value;
-        const fog=+document.getElementById('fog-density').value;
-        E.updateCloudParams(density,coverage,speed,height,fog);
-      }
-    };
-
-    // Wire up all inputs
-    ['sky-turbidity','sky-rayleigh','sky-mie','sky-mieg','sky-elev','sky-azim','sky-exp'].forEach(id=>{
-      const el=document.getElementById(id);
-      const vl=document.getElementById(id+'-v');
-      el.oninput=()=>{vl.textContent=id.includes('elev')||id.includes('azim')?el.value+(id.includes('elev')||id.includes('azim')?'°':''):el.value;updateSky();};
-    });
-
-    ['cld-density','cld-coverage','cld-speed','cld-height','fog-density'].forEach(id=>{
-      const el=document.getElementById(id);
-      const vl=document.getElementById(id+'-v');
-      el.oninput=()=>{vl.textContent=el.value+(id.includes('speed')?'x':'');updateClouds();};
-    });
-
-    // Initial update
-    updateSky();updateClouds();
-  })();
-  */
-
   // PWA service worker registration is handled at the bottom of the file
   // to show caching progress
 
@@ -2971,7 +2904,7 @@ async function boot(){
     const modal = document.getElementById('install-modal');
     if (!modal) return;
     // Detect platform and show relevant instructions
-    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isIOS = (/iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
     const isAndroid = /Android/i.test(navigator.userAgent);
     const iosEl = document.getElementById('im-ios');
     const androidEl = document.getElementById('im-android');
@@ -3166,7 +3099,7 @@ async function boot(){
         const isLocalhost = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
         const isHTTPS = location.protocol === 'https:';
         const isAndroid = /Android/i.test(navigator.userAgent);
-        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isIOS = (/iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
         let msg = '📲 How to Install This App\n\n';
 
@@ -3241,7 +3174,7 @@ boot();
           const users = auth.demoUsers || {};
           const emails = Object.keys(users);
           const el = document.getElementById('auth-demo-info');
-          if (el) el.innerHTML = emails.length ? 'Demo accounts:<br>' + emails.join(' / ') : 'No demo accounts configured';
+          if (el) el.innerHTML = emails.length ? 'Demo accounts:<br>' + emails.map(e=>esc(e)).join(' / ') : 'No demo accounts configured';
         })();
       </script>
     </div>
@@ -3284,19 +3217,5 @@ boot();
   </div>
 </div>
 
-<script>
-// Online/offline status
-function updateOnlineStatus(){
-  const el=document.getElementById('connection-status');
-  if(el){
-    const online=navigator.onLine;
-    el.className='connection-status '+(online?'online':'offline');
-    el.querySelector('.cs-txt').textContent=online?'Online':'Offline';
-  }
-}
-window.addEventListener('online',updateOnlineStatus);
-window.addEventListener('offline',updateOnlineStatus);
-updateOnlineStatus();
-</script>
 </body>
 </html>

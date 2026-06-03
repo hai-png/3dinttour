@@ -467,6 +467,10 @@
      * @returns {Promise<object>} Result with success/queued status
      */
     async update(unitKey, data) {
+      if (!this.state.get('currentUser')) {
+        return { success: false, queued: false, error: 'Not authenticated' };
+      }
+
       const update = {
         ...data,
         updatedAt: firebase.database.ServerValue?.TIMESTAMP || Date.now()
@@ -523,7 +527,23 @@
 
       for (const item of queue) {
         try {
-          await this.db.ref(`availability/${item.unitKey}`).update(item.data);
+          // Validate item before writing to Firebase
+          if (!item.unitKey || !/^[a-zA-Z0-9\-]+$/.test(item.unitKey)) {
+            Utils.error('FirebaseAdapter', 'Invalid unitKey in queue item, skipping:', item.unitKey);
+            continue;
+          }
+          if (!item.data || typeof item.data !== 'object' || Array.isArray(item.data)) {
+            Utils.error('FirebaseAdapter', 'Invalid data in queue item, skipping:', item.unitKey);
+            continue;
+          }
+          const allowedKeys = ['status', 'updatedAt', 'updatedBy', 'price', 'notes'];
+          const sanitizedData = {};
+          for (const key of Object.keys(item.data)) {
+            if (allowedKeys.includes(key)) {
+              sanitizedData[key] = item.data[key];
+            }
+          }
+          await this.db.ref(`availability/${item.unitKey}`).update(sanitizedData);
           this._emit('queue:synced', item);
           Utils.log('FirebaseAdapter', 'Synced:', item.unitKey);
         } catch (err) {
@@ -623,8 +643,10 @@
       this.state.set('isOnline', true);
       this._emit('online');
       
-      // Process offline queue first
-      this.processQueue();
+      // Process offline queue first (only if authenticated)
+      if (this.state.get('currentUser')) {
+        this.processQueue();
+      }
       
       // Refresh availability data from Firebase after reconnecting
       // This ensures we have the latest data from other devices/users
@@ -775,7 +797,8 @@
           id: info.id || email,
           email: email.toLowerCase(),
           name: info.name || 'User',
-          role: info.role || 'user'
+          role: info.role || 'user',
+          password: info.password || null
         };
       }
 
@@ -783,21 +806,37 @@
 
       const user = demoUsers[email.toLowerCase()];
       if (!user) {
-        const emails = Object.keys(demoUsersRaw);
         return {
           success: false,
-          error: 'Invalid credentials.' + (emails.length ? ' Try: ' + emails.join(', ') : '')
+          error: 'Invalid credentials'
         };
       }
 
-      const token = 'mock_token_' + Date.now();
+      // Check password: use configured password if available, otherwise default to 'demo123'
+      const expectedPassword = user.password || 'demo123';
+      if (password !== expectedPassword) {
+        return {
+          success: false,
+          error: 'Invalid credentials'
+        };
+      }
+
+      const token = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : (typeof crypto !== 'undefined' && crypto.getRandomValues)
+          ? ([...crypto.getRandomValues(new Uint8Array(16))].map(b => b.toString(16).padStart(2, '0')).join(''))
+          : 'mock_token_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
       const expiry = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
 
-      this._storeSession(user, token, expiry);
-      this._emit('login', user);
+      // Remove password from user object before storing
+      const safeUser = { ...user };
+      delete safeUser.password;
+
+      this._storeSession(safeUser, token, expiry);
+      this._emit('login', safeUser);
 
       Utils.log('AuthAdapter', 'Login successful');
-      return { success: true, user };
+      return { success: true, user: safeUser };
     }
 
     /**
@@ -1081,7 +1120,7 @@
       if (authForm) {
         authForm.addEventListener('submit', (e) => {
           e.preventDefault();
-          this.system.login(authEmail.value, authEmail.value);
+          this.system.login(authEmail.value, this.elements.authPassword.value);
         });
       }
 
@@ -1185,7 +1224,7 @@
           <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
             <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
               <span class="ui-avatar" style="width:24px;height:24px;font-size:12px;flex-shrink:0">${user.email?.[0]?.toUpperCase() || '👤'}</span>
-              <span class="am-auth-email" style="flex:1;min-width:0">${user.email || 'User'}</span>
+              <span class="am-auth-email" style="flex:1;min-width:0">${Utils.escapeHtml(user.email || 'User')}</span>
             </div>
             <button class="am-btn am-btn-secondary" onclick="AvailabilitySystem.handleLogout()" style="padding:4px 8px;font-size:9px;flex-shrink:0">🚪 Logout</button>
           </div>
@@ -1203,15 +1242,15 @@
           </form>
           <div style="font-size:8.5px;color:var(--t3);text-align:center;margin-top:4px" id="admin-panel-hint">
           </div>
-          <script>
-            (function(){
-              const auth = (typeof window !== 'undefined' && window.BRAND && window.BRAND.auth) || {};
-              const emails = Object.keys(auth.demoUsers || {});
-              const el = document.getElementById('admin-panel-hint');
-              if (el) el.textContent = emails.length ? emails[0] : '';
-            })();
-          </script>
         `;
+
+        // Set hint text via DOM manipulation (not inline script in innerHTML)
+        const hintEl = document.getElementById('admin-panel-hint');
+        if (hintEl) {
+          const auth = (typeof window !== 'undefined' && window.BRAND && window.BRAND.auth) || {};
+          const emails = Object.keys(auth.demoUsers || {});
+          hintEl.textContent = emails.length ? emails[0] : '';
+        }
       }
     }
 
@@ -1769,6 +1808,11 @@
      * Save all pending changes
      */
     async saveAllChanges() {
+      if (!this.state.get('currentUser')) {
+        Utils.error('AvailabilitySystem', 'Cannot save changes: not authenticated');
+        return;
+      }
+
       const pending = this.state.get('pendingChanges');
       const keys = Object.keys(pending);
 
@@ -2060,7 +2104,15 @@
     init: () => system.auth.init(),
     login: (email, password) => system.auth.login(email, password),
     logout: () => system.auth.logout(),
-    hasRole: (roles) => system.auth.hasRole?.(roles) || true,
+    hasRole: (roles) => {
+      const user = system.getCurrentUser();
+      if (!user) return false;
+      const userRole = user.role || 'user';
+      if (Array.isArray(roles)) {
+        return roles.includes(userRole);
+      }
+      return userRole === roles;
+    },
     getCurrentUser: () => system.getCurrentUser(),
     getToken: () => system.auth.getToken?.(),
     getAuthHeaders: () => system.auth.getAuthHeaders?.(),

@@ -18,6 +18,11 @@
  * - No server-side control over headers, so SW handles all caching logic
  */
 
+const DEBUG = false;
+function log(...args) { if (DEBUG) console.log('[SW]', ...args); }
+function warn(...args) { console.warn('[SW]', ...args); }
+function error(...args) { console.error('[SW]', ...args); }
+
 const CACHE_VERSION = 'v13';
 const CACHE_NAME = `tour-${CACHE_VERSION}`;
 const OFFLINE_PAGE = './offline.html';
@@ -47,7 +52,7 @@ const CORE_FILES = [
 
 // Install: pre-cache core app shell files
 self.addEventListener('install', (e) => {
-  console.log('[SW] Installing, cache version:', CACHE_VERSION);
+  log('Installing, cache version:', CACHE_VERSION);
   e.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -56,20 +61,20 @@ self.addEventListener('install', (e) => {
         return cache.addAll(CORE_FILES);
       })
       .then(() => {
-        console.log('[SW] Core files pre-cached successfully');
+        log('Core files pre-cached successfully');
         return self.skipWaiting();
       })
       .catch((err) => {
-        // Don't fail install completely - some files might be unavailable
-        console.warn('[SW] Install partial (some core files missing):', err.message);
-        return self.skipWaiting();
+        console.error('[SW] Install failed - core files missing:', err.message);
+        // Don't activate with partial cache - let the old SW continue serving
+        // The new SW will retry on next page load
       })
   );
 });
 
 // Activate: clean old caches, claim all clients
 self.addEventListener('activate', (e) => {
-  console.log('[SW] Activating, taking control of all clients');
+  log('Activating, taking control of all clients');
   e.waitUntil(
     caches.keys()
       .then((names) => {
@@ -78,7 +83,7 @@ self.addEventListener('activate', (e) => {
           names
             .filter((n) => n !== CACHE_NAME)
             .map((n) => {
-              console.log('[SW] Deleting old cache:', n);
+              log('Deleting old cache:', n);
               return caches.delete(n);
             })
         );
@@ -95,7 +100,13 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET' || !url.protocol.startsWith('http')) return;
 
   // Skip Firebase/Firestore and other third-party API requests
-  if (url.hostname.includes('firebase') || url.hostname.includes('firestore')) return;
+  const FIREBASE_HOSTS = [
+    'firebaseio.com', 'firebasestorage.googleapis.com',
+    'firebaseapp.com', 'firebase.google.com',
+    'securetoken.googleapis.com', 'www.googleapis.com',
+    'identitytoolkit.googleapis.com'
+  ];
+  if (FIREBASE_HOSTS.some(h => url.hostname === h || url.hostname.endsWith('.' + h))) return;
 
   // Strategy 1: .glb/.hdr model files (IndexedDB + Cache API)
   if (url.pathname.match(/\.(glb|hdr)$/i)) {
@@ -158,7 +169,7 @@ function handleNavigationRequest(request, url) {
         const clone = response.clone();
         caches.open(CACHE_NAME).then(cache => {
           cache.put(request, clone).catch(err =>
-            console.warn('[SW] HTML cache put failed:', err.message)
+            warn('HTML cache put failed:', err.message)
           );
         });
       }
@@ -185,7 +196,7 @@ function handleImageRequest(request, url) {
         const clone = response.clone();
         caches.open(CACHE_NAME).then(cache => {
           cache.put(request, clone).catch(err =>
-            console.warn('[SW] Image cache put failed:', err.message)
+            warn('Image cache put failed:', err.message)
           );
         });
       }
@@ -219,7 +230,7 @@ function handleVideoRequest(request, url) {
       const clone = response.clone();
       caches.open(CACHE_NAME).then(cache => {
         cache.put(request, clone).catch(err =>
-          console.warn('[SW] Video cache put failed:', err.message)
+          warn('Video cache put failed:', err.message)
         );
       });
       return response;
@@ -239,7 +250,7 @@ function handleFontRequest(request, url) {
         const clone = response.clone();
         caches.open(CACHE_NAME).then(cache => {
           cache.put(request, clone).catch(err =>
-            console.warn('[SW] Font cache put failed:', err.message)
+            warn('Font cache put failed:', err.message)
           );
         });
       }
@@ -260,7 +271,7 @@ function handleScriptRequest(request, url) {
         const clone = response.clone();
         caches.open(CACHE_NAME).then(cache => {
           cache.put(request, clone).catch(err =>
-            console.warn('[SW] Script cache put failed:', err.message)
+            warn('Script cache put failed:', err.message)
           );
         });
       }
@@ -279,7 +290,7 @@ function handleCdnRequest(request, url) {
         const clone = response.clone();
         caches.open(CACHE_NAME).then(cache => {
           cache.put(request, clone).catch(err =>
-            console.warn('[SW] CDN cache put failed:', err.message)
+            warn('CDN cache put failed:', err.message)
           );
         });
       }
@@ -300,7 +311,7 @@ function handleDefaultRequest(request, url) {
         const clone = response.clone();
         caches.open(CACHE_NAME).then(cache => {
           cache.put(request, clone).catch(err =>
-            console.warn('[SW] Cache put failed:', err.message)
+            warn('Cache put failed:', err.message)
           );
         });
       }
@@ -316,19 +327,19 @@ function handleModelRequest(request, url) {
   return caches.match(request)
     .then((cached) => {
       if (cached) {
-        console.log('[SW] Serving model from cache:', url.pathname);
+        log('Serving model from cache:', url.pathname);
         return cached;
       }
       // Try IndexedDB
       return getModelFromIndexedDB(url.href).then(blob => {
         if (blob) {
-          console.log('[SW] Serving model from IndexedDB:', url.pathname);
+          log('Serving model from IndexedDB:', url.pathname);
           return new Response(blob, { headers: { 'Content-Type': 'model/gltf-binary' }});
         }
         // Fetch from network
         return fetch(request).then(resp => {
           if (!resp.ok) {
-            console.error('[SW] Model fetch failed:', url.pathname, resp.status);
+            error('Model fetch failed:', url.pathname, resp.status);
             return resp;
           }
           // Clone before using response body
@@ -340,11 +351,11 @@ function handleModelRequest(request, url) {
 
           // Store in Cache API
           caches.open(CACHE_NAME).then(cache => cache.put(request, cacheClone))
-            .catch(err => console.warn('[SW] Cache put failed:', url.pathname, err.message));
+            .catch(err => warn('Cache put failed:', url.pathname, err.message));
 
           return resp;
         }).catch(err => {
-          console.error('[SW] Model fetch failed:', url.pathname, err.message);
+          error('Model fetch failed:', url.pathname, err.message);
           return new Response('', { status: 404, statusText: 'Model not available offline' });
         });
       });
@@ -374,18 +385,28 @@ function cacheModelBlob(url, blobPromise) {
   }).catch(() => {});
 }
 
+// Validate URLs before caching to prevent malformed or malicious entries
+function isValidCacheUrl(url) {
+  try {
+    const u = new URL(url, self.location.origin);
+    return u.protocol === 'https:' || u.protocol === 'http:';
+  } catch { return false; }
+}
+
 // Message handler: force cache everything
 self.addEventListener('message', (e) => {
   // Verify origin for security
   if (e.origin !== self.location.origin && e.origin !== '') {
-    console.warn('[SW] Ignoring message from unauthorized origin:', e.origin);
+    warn('Ignoring message from unauthorized origin:', e.origin);
     return;
   }
 
   if (e.data === 'CACHE_EVERYTHING') {
-    console.log('[SW] Caching all tour assets...');
+    log('Caching all tour assets...');
 
-    // CDN assets (universal, never changes between brands)
+    // SECURITY: These CDN URLs should have their integrity verified.
+    // If the CDN is compromised, cached assets could be tampered with.
+    // Consider using importmap with integrity attributes when supported.
     const cdnAssets = [
       'https://cdn.jsdelivr.net/npm/three@0.163.0/build/three.module.js',
       'https://cdn.jsdelivr.net/npm/three@0.163.0/examples/jsm/controls/OrbitControls.js',
@@ -404,14 +425,19 @@ self.addEventListener('message', (e) => {
         return r.json();
       })
       .then(manifest => {
-        const mediaUrls = manifest.files ? manifest.files.map(f => f.url) : [];
-        console.log(`[SW] Loaded sw-manifest.json: ${mediaUrls.length} files`);
+        const rawUrls = manifest.files ? manifest.files.map(f => f.url) : [];
+        // Validate URLs before caching to prevent malformed or malicious entries
+        const mediaUrls = rawUrls.filter(isValidCacheUrl);
+        if (mediaUrls.length !== rawUrls.length) {
+          warn(`Filtered ${rawUrls.length - mediaUrls.length} invalid URLs from manifest`);
+        }
+        log(`Loaded sw-manifest.json: ${mediaUrls.length} files`);
 
         const allAssets = [...mediaUrls, ...cdnAssets];
         startCaching(allAssets, cdnAssets.length);
       })
       .catch(err => {
-        console.warn('[SW] No sw-manifest.json found, using minimal fallback');
+        warn('No sw-manifest.json found, using minimal fallback');
         // Minimal fallback: just CDN + core media paths (no individual files)
         const fallback = [
           './model/building.glb',
@@ -424,7 +450,7 @@ self.addEventListener('message', (e) => {
 
   // Force skip waiting
   if (e.data === 'SKIP_WAITING') {
-    console.log('[SW] Skipping waiting, activating now');
+    log('Skipping waiting, activating now');
     self.skipWaiting();
   }
 });
@@ -450,7 +476,7 @@ function startCaching(allAssets, cdnCount) {
     // Cache files sequentially with yield points to avoid blocking other requests
     const cacheOne = (urls) => {
       if (urls.length === 0) {
-        console.log(`[SW] Cached ${cached}/${totalKnown} assets (${failed} failed, ${skipped} skipped)`);
+        log(`Cached ${cached}/${totalKnown} assets (${failed} failed, ${skipped} skipped)`);
         sendProgress(cached, `✓ ${cached} assets cached`);
         notifyOfflineReady();
         return;
@@ -464,7 +490,9 @@ function startCaching(allAssets, cdnCount) {
       const timeoutMs = isModelOrHdr ? 60000 : 30000;
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-      fetch(url, { signal: controller.signal }).then(resp => {
+      // Explicit redirect:'follow' (default) — we rely on fetch following redirects
+      // but the AbortController provides a timeout guard against hung connections
+      fetch(url, { mode: 'cors', redirect: 'follow', signal: controller.signal }).then(resp => {
         clearTimeout(timeoutId);
 
         if (resp.ok) {
@@ -474,7 +502,7 @@ function startCaching(allAssets, cdnCount) {
           const isLargeFile = fileSize > CONFIG.MAX_CACHE_SIZE;
 
           if (isLargeFile) {
-            console.log(`[SW] Skipping large file cache (${(fileSize / 1024 / 1024).toFixed(1)}MB):`, url.split('/').pop());
+            log(`Skipping large file cache (${(fileSize / 1024 / 1024).toFixed(1)}MB):`, url.split('/').pop());
             skipped++;
             sendProgress(cached, `Skipped (large): ${url.split('/').pop()}`);
             cacheOne(urls);
@@ -487,7 +515,7 @@ function startCaching(allAssets, cdnCount) {
             dbClone.blob().then(blob => {
               cacheModelBlob(url, Promise.resolve(blob));
             }).catch(err => {
-              console.warn('[SW] IndexedDB store failed:', url, err.message);
+              warn('IndexedDB store failed:', url, err.message);
             });
           }
 
@@ -499,9 +527,9 @@ function startCaching(allAssets, cdnCount) {
               const fileName = url.split('/').pop();
               const label = `Caching ${cached}/${totalKnown}: ${fileName}`;
               if (cached <= totalKnown - cdnCount) {
-                console.log(`[SW] ⚡ Cached (${cached}/${totalKnown}):`, fileName);
+                log(`⚡ Cached (${cached}/${totalKnown}):`, fileName);
               } else {
-                console.log(`[SW] CDN cached (${cached}/${totalKnown}):`, fileName);
+                log(`CDN cached (${cached}/${totalKnown}):`, fileName);
               }
               sendProgress(cached, label);
 
@@ -512,7 +540,7 @@ function startCaching(allAssets, cdnCount) {
                 cacheOne(urls);
               }
             }).catch(err => {
-              console.warn('[SW] Cache put failed for:', url, err.message);
+              warn('Cache put failed for:', url, err.message);
               failed++;
               sendProgress(cached, `Cache error: ${url.split('/').pop()}`);
               cacheOne(urls);
@@ -525,14 +553,14 @@ function startCaching(allAssets, cdnCount) {
             cacheOne(urls);
           }
         } else {
-          console.warn('[SW] Failed to fetch:', url, resp.status);
+          warn('Failed to fetch:', url, resp.status);
           failed++;
           sendProgress(cached, `Failed: ${url.split('/').pop()}`);
           cacheOne(urls);
         }
       }).catch(err => {
         clearTimeout(timeoutId);
-        console.warn('[SW] Fetch error:', url, err.message);
+        warn('Fetch error:', url, err.message);
         failed++;
         sendProgress(cached, `Error: ${url.split('/').pop()}`);
         cacheOne(urls);
@@ -542,7 +570,7 @@ function startCaching(allAssets, cdnCount) {
     // Start caching in priority order (manifest already sorted by priority)
     cacheOne(allAssets);
   }).catch((err) => {
-    console.warn('[SW] Cache failed:', err.message);
+    warn('Cache failed:', err.message);
     notifyOfflineReady(true);
   });
 }
@@ -583,13 +611,13 @@ function notifyOfflineReady(partial = false) {
   if (navigator.storage && navigator.storage.estimate) {
     navigator.storage.estimate().then(estimate => {
       const usagePercent = ((estimate.usage / estimate.quota) * 100).toFixed(2);
-      console.log(`[SW] Storage usage: ${usagePercent}% (${(estimate.usage / 1024 / 1024).toFixed(2)}MB / ${(estimate.quota / 1024 / 1024).toFixed(2)}MB)`);
+      log(`Storage usage: ${usagePercent}% (${(estimate.usage / 1024 / 1024).toFixed(2)}MB / ${(estimate.quota / 1024 / 1024).toFixed(2)}MB)`);
       
       if (usagePercent > 80) {
-        console.warn('[SW] ⚠️ Storage usage above 80%! Consider reducing cached assets.');
+        warn('⚠️ Storage usage above 80%! Consider reducing cached assets.');
       }
     }).catch(err => {
-      console.warn('[SW] Could not estimate storage:', err);
+      warn('Could not estimate storage:', err);
     });
   }
 

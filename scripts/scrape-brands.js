@@ -4,11 +4,10 @@
  * Usage: node scrape-brands.js
  */
 
-const https = require('https');
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
+const { fetchURL, downloadFile, extractLogoURL } = require('./lib/scraping-utils');
 
 const BRANDS = [
   {
@@ -41,41 +40,6 @@ const BRANDS = [
   }
 ];
 
-function fetchURL(url) {
-  return new Promise((resolve, reject) => {
-    const protocol = url.startsWith('https') ? https : http;
-    protocol.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) {
-        return fetchURL(res.headers.location).then(resolve, reject);
-      }
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve(data));
-    }).on('error', reject);
-  });
-}
-
-function downloadFile(url, dest) {
-  return new Promise((resolve, reject) => {
-    const protocol = url.startsWith('https') ? https : http;
-    const file = fs.createWriteStream(dest);
-    protocol.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) {
-        file.close();
-        return downloadFile(res.headers.location, dest).then(resolve, reject);
-      }
-      res.pipe(file);
-      file.on('finish', () => {
-        file.close();
-        resolve();
-      });
-    }).on('error', (err) => {
-      fs.unlink(dest, () => {});
-      reject(err);
-    });
-  });
-}
-
 function extractImages(html, baseUrl) {
   const imgRegex = /<img[^>]+src=["']([^"']+)["']/gi;
   const images = [];
@@ -102,59 +66,31 @@ function extractMetaImage(html) {
   return match ? match[1] : null;
 }
 
-function extractLogo(html, baseUrl) {
-  // Try to find logo in various patterns
-  const patterns = [
-    /<img[^>]+class=["'][^"']*logo[^"']*["'][^>]+src=["']([^"']+)["']/i,
-    /<img[^>]+src=["']([^"']*logo[^"']*)["']/i,
-    /<a[^>]+class=["'][^"']*logo[^"']*["'][^>]*>[\s\S]*?<img[^>]+src=["']([^"']+)["']/i,
-    /class=["'][^"']*logo[^"']*["'][^>]*src=["']([^"']+)["']/i
-  ];
-  
-  for (const pattern of patterns) {
-    const match = html.match(pattern);
-    if (match) {
-      let src = match[1];
-      if (src.startsWith('//')) {
-        return 'https:' + src;
-      } else if (src.startsWith('/')) {
-        const url = new URL(baseUrl);
-        return url.origin + src;
-      } else if (!src.startsWith('http')) {
-        const url = new URL(baseUrl);
-        return url.origin + '/' + src;
-      }
-      return src;
-    }
-  }
-  return null;
-}
-
 async function scrapeBrand(brand) {
   console.log(`\n${'='.repeat(60)}`);
   console.log(`Scraping: ${brand.name}`);
   console.log(`Website: ${brand.website}`);
   console.log('='.repeat(60));
-  
+
   try {
     const html = await fetchURL(brand.website);
-    
+
     // Extract images
     const images = extractImages(html, brand.website);
     const metaImage = extractMetaImage(html);
-    const logo = extractLogo(html, brand.website);
-    
+    const logo = extractLogoURL(html, brand.website);
+
     console.log(`\n✓ Fetched HTML (${html.length} bytes)`);
     console.log(`Found ${images.length} images`);
     if (metaImage) console.log(`Meta image: ${metaImage}`);
     if (logo) console.log(`Logo: ${logo}`);
-    
+
     // Create temp directory for this brand
     const tempDir = path.join('temp-scrapes', brand.id);
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
-    
+
     // Download logo if found
     if (logo) {
       const logoPath = path.join(tempDir, 'logo.png');
@@ -166,7 +102,7 @@ async function scrapeBrand(brand) {
         console.error(`✗ Failed to download logo: ${err.message}`);
       }
     }
-    
+
     // Download first few project images
     const projectImages = images.slice(0, 10);
     for (let i = 0; i < projectImages.length; i++) {
@@ -180,7 +116,7 @@ async function scrapeBrand(brand) {
         console.error(`✗ Failed to download image ${i + 1}: ${err.message}`);
       }
     }
-    
+
     return { html, images, logo, metaImage };
   } catch (err) {
     console.error(`✗ Failed to scrape ${brand.name}: ${err.message}`);
@@ -190,9 +126,9 @@ async function scrapeBrand(brand) {
 
 async function main() {
   console.log('Starting brand scraping...\n');
-  
+
   const results = {};
-  
+
   for (const brand of BRANDS) {
     const result = await scrapeBrand(brand);
     if (result) {
@@ -201,12 +137,12 @@ async function main() {
     // Be polite to servers
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
-  
+
   console.log(`\n${'='.repeat(60)}`);
   console.log('Scraping complete!');
   console.log(`Successfully scraped ${Object.keys(results).length} brands`);
   console.log('='.repeat(60));
-  
+
   // Summary
   for (const [id, data] of Object.entries(results)) {
     console.log(`\n${id}:`);

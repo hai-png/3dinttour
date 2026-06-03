@@ -12,6 +12,23 @@
  *   - Contact.share() - Share via Web Share API
  */
 
+/**
+ * Escape HTML entities to prevent XSS in innerHTML template literals.
+ */
+function esc(str) {
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');
+}
+
+/**
+ * Validate that a URL uses a safe protocol (http, https, or mailto).
+ */
+function isSafeUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim().toLowerCase();
+  return trimmed.startsWith('https://') || trimmed.startsWith('http://') || trimmed.startsWith('mailto:');
+}
+
 const ContactConfig = {
   get company() {
     const b = (window.BRAND && window.BRAND.brand) || {};
@@ -61,7 +78,7 @@ const Contact = {
     const contact = cfg.contact;
     const company = cfg.company;
     const location = (window.BRAND && window.BRAND.contact && window.BRAND.contact.address) || '';
-    const socials = Object.values(contact.social || {}).filter(s => s && s.enabled);
+    const socials = Object.values(contact.social || {}).filter(s => s && s.enabled && isSafeUrl(s.url));
     const ui = cfg.ui;
     const contactLabels = ui.contact || {};
     const formCfg = cfg.contactForm;
@@ -70,45 +87,45 @@ const Contact = {
     const brandLogo = (window.BRAND && window.BRAND.brand && window.BRAND.brand.logo) || '';
 
     return `
-      <div class="cm-overlay" onclick="Contact.close()"></div>
+      <div class="cm-overlay" data-action="close"></div>
       <div class="cm-content">
         <div class="cm-header">
-          <div class="cm-logo">${brandLogo ? `<img src="${brandLogo}" alt="${company.name}">` : '🏢'}</div>
+          <div class="cm-logo">${brandLogo ? `<img src="${esc(brandLogo)}" alt="${esc(company.name)}">` : '🏢'}</div>
           <div class="cm-title">
-            <h3>${company.name}</h3>
-            <p>${location}</p>
+            <h3>${esc(company.name)}</h3>
+            <p>${esc(location)}</p>
           </div>
-          <button class="cm-close" onclick="Contact.close()">✕</button>
+          <button class="cm-close" data-action="close">✕</button>
         </div>
 
         <div class="cm-body">
           <!-- Quick Actions -->
           <div class="cm-quick-actions">
             ${(contact.phones || []).filter(p => p.primary).map(p => `
-              <button class="cm-action-btn primary" onclick="Contact.call('${p.value}')">
-                📞 ${contactLabels.callNow || 'Call Now'}
+              <button class="cm-action-btn primary" data-action="call" data-phone="${esc(p.value)}">
+                📞 ${esc(contactLabels.callNow || 'Call Now')}
               </button>
             `).join('')}
-            <button class="cm-action-btn" onclick="Contact.whatsapp()">
-              💬 ${contactLabels.whatsappLabel || 'WhatsApp'}
+            <button class="cm-action-btn" data-action="whatsapp">
+              💬 ${esc(contactLabels.whatsappLabel || 'WhatsApp')}
             </button>
-            <button class="cm-action-btn" onclick="Contact.email()">
-              📧 ${contactLabels.emailLabel || 'Email'}
+            <button class="cm-action-btn" data-action="email">
+              📧 ${esc(contactLabels.emailLabel || 'Email')}
             </button>
-            <button class="cm-action-btn" onclick="Contact.share()">
-              📤 ${contactLabels.shareLabel || 'Share'}
+            <button class="cm-action-btn" data-action="share">
+              📤 ${esc(contactLabels.shareLabel || 'Share')}
             </button>
           </div>
 
           <!-- Phone Numbers -->
           ${cfg.contact.phones && cfg.contact.phones.length > 0 ? `
           <div class="cm-section">
-            <h4>📞 ${contactLabels.sectionPhones || 'Phone Numbers'}</h4>
+            <h4>📞 ${esc(contactLabels.sectionPhones || 'Phone Numbers')}</h4>
             <div class="cm-phones">
               ${cfg.contact.phones.map(p => `
-                <div class="cm-phone-item" onclick="Contact.call('${p.value}')">
-                  <div class="cm-phone-label">${p.label}${p.primary ? ' ⭐' : ''}</div>
-                  <div class="cm-phone-value">${p.display}</div>
+                <div class="cm-phone-item" data-action="call" data-phone="${esc(p.value)}">
+                  <div class="cm-phone-label">${esc(p.label)}${p.primary ? ' ⭐' : ''}</div>
+                  <div class="cm-phone-value">${esc(p.display)}</div>
                 </div>
               `).join('')}
             </div>
@@ -118,10 +135,10 @@ const Contact = {
           <!-- Email -->
           ${cfg.contact.emails && cfg.contact.emails.length > 0 ? `
           <div class="cm-section">
-            <h4>📧 ${contactLabels.sectionEmail || 'Email'}</h4>
-            <div class="cm-email-item" onclick="Contact.email()">
-              <div class="cm-email-label">${cfg.contact.emails[0].label}</div>
-              <div class="cm-email-value">${cfg.contact.emails[0].value}</div>
+            <h4>📧 ${esc(contactLabels.sectionEmail || 'Email')}</h4>
+            <div class="cm-email-item" data-action="email">
+              <div class="cm-email-label">${esc(cfg.contact.emails[0].label)}</div>
+              <div class="cm-email-value">${esc(cfg.contact.emails[0].value)}</div>
             </div>
           </div>
           ` : ''}
@@ -129,10 +146,10 @@ const Contact = {
           <!-- WhatsApp -->
           ${cfg.contact.whatsapp.enabled ? `
           <div class="cm-section">
-            <h4>💬 ${contactLabels.sectionWhatsApp || 'WhatsApp'}</h4>
-            <div class="cm-whatsapp-item" onclick="Contact.whatsapp()">
-              <div class="cm-wa-label">${contactLabels.chatWithUs || 'Chat with us'}</div>
-              <div class="cm-wa-value">${cfg.contact.whatsapp.display}</div>
+            <h4>💬 ${esc(contactLabels.sectionWhatsApp || 'WhatsApp')}</h4>
+            <div class="cm-whatsapp-item" data-action="whatsapp">
+              <div class="cm-wa-label">${esc(contactLabels.chatWithUs || 'Chat with us')}</div>
+              <div class="cm-wa-value">${esc(cfg.contact.whatsapp.display)}</div>
             </div>
           </div>
           ` : ''}
@@ -140,14 +157,14 @@ const Contact = {
           <!-- Social Media -->
           ${socials.length > 0 ? `
           <div class="cm-section">
-            <h4>🌐 ${contactLabels.sectionSocial || 'Follow Us'}</h4>
+            <h4>🌐 ${esc(contactLabels.sectionSocial || 'Follow Us')}</h4>
             <div class="cm-social">
               ${socials.map(s => {
                 const platform = Contact.getSocialKey(s);
                 return `
-                <a class="cm-social-link" href="${s.url}" target="_blank" rel="noopener" data-platform="${platform}">
+                <a class="cm-social-link" href="${esc(s.url)}" target="_blank" rel="noopener" data-platform="${esc(platform)}">
                   <span class="cm-social-icon">${Contact.getSocialIcon(platform)}</span>
-                  <span>${s.handle}</span>
+                  <span>${esc(s.handle)}</span>
                 </a>`;
               }).join('')}
             </div>
@@ -157,18 +174,19 @@ const Contact = {
           <!-- Contact Form -->
           ${formFields.length > 0 ? `
           <div class="cm-section">
-            <h4>📝 ${contactLabels.sectionForm || 'Send Message'}</h4>
-            <form class="cm-form" onsubmit="Contact.submitForm(event)">
+            <h4>📝 ${esc(contactLabels.sectionForm || 'Send Message')}</h4>
+            <form class="cm-form" data-action="submit-form">
               ${formFields.map(f => {
                 const tag = f.type === 'textarea' ? 'textarea' : 'input';
                 const attrs = f.type !== 'textarea'
-                  ? `type="${f.type}" name="${f.name}" placeholder="${f.placeholder || ''}" ${f.required ? 'required' : ''} class="cm-input"`
-                  : `name="${f.name}" placeholder="${f.placeholder || ''}" ${f.required ? 'required' : ''} class="cm-textarea" rows="4"`;
+                  ? `type="${esc(f.type)}" name="${esc(f.name)}" placeholder="${esc(f.placeholder || '')}" ${f.required ? 'required' : ''} class="cm-input"`
+                  : `name="${esc(f.name)}" placeholder="${esc(f.placeholder || '')}" ${f.required ? 'required' : ''} class="cm-textarea" rows="4"`;
                 return `<div class="cm-form-group"><${tag} ${attrs}></${tag}></div>`;
               }).join('')}
               <button type="submit" class="cm-submit-btn">
-                📤 ${submitLabel}
+                📤 ${esc(submitLabel)}
               </button>
+              <div class="cm-form-message" style="display:none;"></div>
             </form>
           </div>
           ` : ''}
@@ -202,12 +220,49 @@ const Contact = {
   },
   
   /**
-   * Bind event listeners
+   * Bind event listeners using event delegation
    */
   bindEvents() {
+    // Keyboard: Escape to close
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.modal?.classList.contains('open')) {
         this.close();
+      }
+    });
+
+    // Event delegation for all data-action clicks inside the modal
+    this.modal.addEventListener('click', (e) => {
+      const target = e.target.closest('[data-action]');
+      if (!target) return;
+
+      const action = target.getAttribute('data-action');
+      switch (action) {
+        case 'close':
+          this.close();
+          break;
+        case 'call': {
+          const phone = target.getAttribute('data-phone');
+          if (phone) this.call(phone);
+          break;
+        }
+        case 'whatsapp':
+          this.whatsapp();
+          break;
+        case 'email':
+          this.email();
+          break;
+        case 'share':
+          this.share();
+          break;
+      }
+    });
+
+    // Form submission via event delegation
+    this.modal.addEventListener('submit', (e) => {
+      const form = e.target.closest('[data-action="submit-form"]');
+      if (form) {
+        e.preventDefault();
+        this.submitForm(e);
       }
     });
   },
@@ -233,6 +288,12 @@ const Contact = {
    * Initiate phone call
    */
   call(number) {
+    // Basic validation: only allow tel: with reasonable phone characters
+    const cleaned = String(number).replace(/[\s\-\(\)\.]/g, '');
+    if (!/^[\+\d]{7,20}$/.test(cleaned)) {
+      console.warn('[Contact] Invalid phone number:', number);
+      return;
+    }
     window.location.href = `tel:${number}`;
   },
   
@@ -241,9 +302,14 @@ const Contact = {
    */
   email() {
     const cfg = ContactConfig.contact;
+    if (!cfg.emails || !cfg.emails.length || !cfg.emails[0].value) {
+      console.warn('[Contact] No email address configured');
+      return;
+    }
+    const emailAddr = cfg.emails[0].value;
     const subject = encodeURIComponent(`Inquiry about ${ContactConfig.company.name}`);
     const body = encodeURIComponent(`Hello ${ContactConfig.company.name},\n\nI am interested in learning more about your properties.\n\nThank you!`);
-    window.location.href = `${cfg.emails[0].mailto}?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${emailAddr}?subject=${subject}&body=${body}`;
   },
   
   /**
@@ -251,9 +317,18 @@ const Contact = {
    */
   whatsapp() {
     const cfg = ContactConfig.contact.whatsapp;
-    const number = cfg.number.replace(/\+/g, '');
-    const message = encodeURIComponent(cfg.message);
-    window.open(`https://wa.me/${number}?text=${message}`, '_blank');
+    if (!cfg || !cfg.number) {
+      console.warn('[Contact] WhatsApp number not configured');
+      return;
+    }
+    // Validate WhatsApp phone number: only digits after stripping +, spaces, hyphens
+    const cleaned = cfg.number.replace(/[\+\s\-]/g, '');
+    if (!/^\d{7,15}$/.test(cleaned)) {
+      console.warn('[Contact] Invalid WhatsApp number:', cfg.number);
+      return;
+    }
+    const message = encodeURIComponent(cfg.message || '');
+    window.open(`https://wa.me/${cleaned}?text=${message}`, '_blank');
   },
   
   /**
@@ -272,9 +347,57 @@ const Contact = {
     } else {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(window.location.href).then(() => {
-        const msg = getBrandMsg ? getBrandMsg('share.linkCopied', 'Link copied!') : 'Link copied!';
-        alert(msg);
+        this.showFormMessage(document.body, 'Link copied!', 'success');
       });
+    }
+  },
+
+  /**
+   * Show an inline message (toast-like) near a target element
+   */
+  showFormMessage(container, text, type) {
+    // For form messages, use the .cm-form-message div if inside the modal
+    const formMsg = this.modal?.querySelector('.cm-form-message');
+    if (formMsg) {
+      formMsg.textContent = text;
+      formMsg.style.display = 'block';
+      formMsg.style.padding = '8px 12px';
+      formMsg.style.borderRadius = '6px';
+      formMsg.style.fontSize = '12px';
+      formMsg.style.fontWeight = '500';
+      formMsg.style.marginTop = '4px';
+      if (type === 'error') {
+        formMsg.style.background = '#fef2f2';
+        formMsg.style.color = '#991b1b';
+        formMsg.style.border = '1px solid #fecaca';
+      } else if (type === 'success') {
+        formMsg.style.background = '#f0fdf4';
+        formMsg.style.color = '#166534';
+        formMsg.style.border = '1px solid #bbf7d0';
+      } else {
+        formMsg.style.background = '#eff6ff';
+        formMsg.style.color = '#1e40af';
+        formMsg.style.border = '1px solid #bfdbfe';
+      }
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        formMsg.style.display = 'none';
+      }, 5000);
+    } else {
+      // Fallback: create a temporary toast
+      const toast = document.createElement('div');
+      toast.textContent = text;
+      toast.style.cssText = `
+        position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+        padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 500;
+        z-index: 10000; color: #fff; background: ${type === 'error' ? '#dc2626' : type === 'success' ? '#16a34a' : '#2563eb'};
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: opacity 0.3s;
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
     }
   },
 
@@ -282,16 +405,30 @@ const Contact = {
    * Submit contact form
    */
   async submitForm(event) {
-    event.preventDefault();
     const form = event.target;
     const formData = new FormData(form);
+    const formCfg = ContactConfig.contactForm;
+    const endpoint = formCfg.endpoint;
 
-    const data = {
-      name: formData.get('name'),
-      email: formData.get('email'),
-      phone: formData.get('phone'),
-      message: formData.get('message')
-    };
+    // Collect and validate form data
+    const data = {};
+    const fields = formCfg.fields || [];
+    for (const f of fields) {
+      const val = (formData.get(f.name) || '').trim();
+      data[f.name] = val;
+
+      // Client-side validation for required fields
+      if (f.required && !val) {
+        this.showFormMessage(form, `Please fill in the "${f.label || f.name}" field.`, 'error');
+        return;
+      }
+
+      // Validate email format for email fields
+      if (f.type === 'email' && val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+        this.showFormMessage(form, 'Please enter a valid email address.', 'error');
+        return;
+      }
+    }
 
     // Show loading state
     const btn = form.querySelector('.cm-submit-btn');
@@ -300,17 +437,28 @@ const Contact = {
     btn.disabled = true;
 
     try {
-      // TODO: Replace with actual API endpoint
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!endpoint) {
+        // No endpoint configured — inform the user honestly
+        this.showFormMessage(form, 'The contact form is not yet available. Please reach out to us directly via phone or email.', 'info');
+        return;
+      }
 
-      const successMsg = getBrandMsg ? getBrandMsg('contact.messageSuccess', 'Message sent successfully!') : 'Message sent successfully!';
-      alert('✅ ' + successMsg);
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+
+      this.showFormMessage(form, 'Message sent successfully!', 'success');
       form.reset();
-      this.close();
+      setTimeout(() => this.close(), 2000);
     } catch (error) {
-      const errMsg = getBrandMsg ? getBrandMsg('contact.messageError', 'Error sending message. Please try again.') : 'Error sending message. Please try again.';
-      alert('❌ ' + errMsg);
+      console.error('[Contact] Form submission error:', error);
+      this.showFormMessage(form, 'Error sending message. Please try again or contact us directly.', 'error');
     } finally {
       btn.textContent = originalText;
       btn.disabled = false;
