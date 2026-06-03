@@ -16,22 +16,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Directory for instrumented libs
-lib-cov
-
-# Coverage directory
-coverage/
-*.lcov
-
-# .nyc output
-.nyc_output
-
 # Environment variables
 .env
 .env.local
@@ -46,7 +30,6 @@ coverage/
 
 # OS generated files
 .DS_Store
-.DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
@@ -60,22 +43,6 @@ desktop.ini
 *.swp
 *.swo
 *~
-.project
-.classpath
-.settings/
-
-# Testing
-junit.xml
-test-results/
-
-# Misc
-repomix-output.xml
-*.blend
-Untitled*
-gg.png
-over.png
-unnecessary*.png
-whatshouldbe.png
 
 # GLB models — ignored everywhere except brand output folders
 *.glb
@@ -89,10 +56,12 @@ whatshouldbe.png
 !ayat/3d-floor-plan/*.glb
 !hosea/model/*.glb
 !hosea/3d-floor-plan/*.glb
+!temer/model/*.glb
+!temer/3d-floor-plan/*.glb
 !_shared/model/*.glb
 !_shared/3d-floor-plan/*.glb
 
-# Brand output directories (build artifacts — rebuild from _shared/ + _brands/)
+# Brand output directories (build artifacts — rebuild with: ./scripts/build-all-brands.sh)
 /temer/
 /ayat/
 /gift/
@@ -100,28 +69,17 @@ whatshouldbe.png
 /metropolitan/
 /demahope/
 
-# Screenshots and temporary images
-brave_screenshot_localhost*.png
-brave_screenshot_localhot.png
-current*.png
-defaultcamera.png
-reset*.png
-start-server.html
-serve.js
-
-# Website downloads folder
-from website/
-
-# Documentation (keep READMEs, remove others)
-AVAILABILITY-*.md
-CHANGES-SUMMARY.md
-LOADING-*.md
-OFFLINE-*.md
-PWA-*.md
-IMPLEMENTATION-*.md
-MIGRATION.md
-SETUP-*.md
-UPDATES.md
-
 # Brand build artifacts (regenerated at build time)
 sw-manifest.json
+
+# Firebase service account key (never commit)
+serviceAccountKey.json
+
+# Scraped data output
+from website/
+
+# Legacy / scratch files
+repomix-output.xml
+*.blend
+start-server.html
+serve.js

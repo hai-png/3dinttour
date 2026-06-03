@@ -15,15 +15,16 @@
   const FirebaseConfig = {
     // Firebase project configuration
     // NOTE: Firebase API keys are not secrets - they are included in client-side code by design.
-    // Security is enforced through Firebase Security Rules (see firebase-rules.json).
+    // Security is enforced through Firebase Security Rules (see docs/firebase-rules.json).
     firebase: {
       apiKey: "AIzaSyCtjYMbznVZ1-x2Yqu5wQ_zz9PU92UYxRE",
       authDomain: "availability-fe35f.firebaseapp.com",
       databaseURL: "https://availability-fe35f-default-rtdb.firebaseio.com/",
       projectId: "availability-fe35f",
-      storageBucket: "availability-fe35f.appspot.com",
-      messagingSenderId: "123456789012",
-      appId: "1:123456789012:web:abc123def456"
+      storageBucket: "availability-fe35f.firebasestorage.app",
+      messagingSenderId: "1031392756810",
+      appId: "1:1031392756810:web:7c3dfdf4e40307589992b3",
+      measurementId: "G-5QSYX7XDM2"
     },
 
     // Firebase SDK version to load from CDN

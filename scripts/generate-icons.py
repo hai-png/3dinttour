@@ -32,7 +32,17 @@ def generate_from_logo(brand, out_dir):
     print(f"  ✓ favicon.ico (32x32)")
 
 base = os.path.dirname(os.path.abspath(__file__))
-for brand in ['demahope','metropolitan','gift','ayat']:
+root_dir = os.path.dirname(base)
+brands_dir = os.path.join(root_dir, '_brands')
+
+# Auto-discover all brands from _brands/ directory
+brands = sorted([
+    d for d in os.listdir(brands_dir)
+    if os.path.isdir(os.path.join(brands_dir, d)) and
+       os.path.isfile(os.path.join(brands_dir, d, 'brand-config.json'))
+])
+
+for brand in brands:
     print(f"=== {brand} ===")
-    generate_from_logo(brand, os.path.join(base, f'_brands/{brand}'))
+    generate_from_logo(brand, os.path.join(brands_dir, brand))
     print()

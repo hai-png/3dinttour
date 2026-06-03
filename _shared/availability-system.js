@@ -273,19 +273,13 @@
   class FirebaseAdapter {
     constructor(state) {
       this.state = state;
-      // Use centralized Firebase config if available, otherwise fallback to hardcoded config
+      // Use centralized Firebase config (loaded via firebase-config.js)
+      if (typeof FirebaseConfig === 'undefined') {
+        console.error('[FirebaseAdapter] FirebaseConfig not found. Make sure firebase-config.js is loaded before availability-system.js');
+      }
       this.config = typeof FirebaseConfig !== 'undefined' 
         ? FirebaseConfig.firebase 
-        : {
-            apiKey: "AIzaSyCtjYMbznVZ1-x2Yqu5wQ_zz9PU92UYxRE",
-            authDomain: "availability-fe35f.firebaseapp.com",
-            projectId: "availability-fe35f",
-            storageBucket: "availability-fe35f.firebasestorage.app",
-            messagingSenderId: "1031392756810",
-            appId: "1:1031392756810:web:7c3dfdf4e40307589992b3",
-            measurementId: "G-5QSYX7XDM2",
-            databaseURL: "https://availability-fe35f-default-rtdb.firebaseio.com/"
-          };
+        : null;
       this.app = null;
       this.db = null;
       this.auth = null;
