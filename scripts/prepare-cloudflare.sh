@@ -58,7 +58,38 @@ for brand in $BRANDS; do
   fi
 done
 
-# ─── Step 5: Copy Cloudflare Pages config files ───────────────────
+# ─── Step 5: Optimize GLB files for Cloudflare Pages (25 MiB limit) ─
+info "Optimizing GLB files (Cloudflare Pages has 25 MiB file size limit)..."
+GLB_FILES=$(find "$DIST_DIR" -name "*.glb" -type f 2>/dev/null || true)
+if [ -n "$GLB_FILES" ]; then
+  # Check if any GLB exceeds 24 MiB (leaving 1 MiB margin)
+  OVERSIZED=$(echo "$GLB_FILES" | while read -r f; do
+    size=$(stat -c%s "$f" 2>/dev/null || echo 0)
+    if [ "$size" -gt 25165824 ]; then  # 24 MiB in bytes
+      echo "$f"
+    fi
+  done)
+
+  if [ -n "$OVERSIZED" ]; then
+    info "  Found oversized GLB files, optimizing with Draco compression..."
+    npx -y @gltf-transform/cli@latest --version >/dev/null 2>&1  # ensure installed
+    echo "$OVERSIZED" | while read -r f; do
+      info "  Optimizing: $(basename "$f") ($(du -h "$f" | cut -f1))"
+      tmpf="${f%.glb}-tmp.glb"
+      npx @gltf-transform/cli@latest optimize "$f" "$tmpf" --compress draco 2>&1 | tail -1 || true
+      if [ -f "$tmpf" ]; then
+        mv "$tmpf" "$f"
+        ok "  → $(basename "$f") ($(du -h "$f" | cut -f1))"
+      fi
+    done
+  else
+    ok "All GLB files are within the 25 MiB limit"
+  fi
+else
+  ok "No GLB files found"
+fi
+
+# ─── Step 6: Copy Cloudflare Pages config files ───────────────────
 info "Adding Cloudflare Pages configuration..."
 
 # _headers — Controls HTTP response headers
