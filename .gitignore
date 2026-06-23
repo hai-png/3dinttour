@@ -77,8 +77,10 @@ over.png
 unnecessary*.png
 whatshouldbe.png
 
-# GLB models — ignored everywhere except brand output folders
+# GLB models — ignored everywhere except brand source & output folders
 *.glb
+!_brands/*/model/*.glb
+!_brands/*/3d-floor-plan/*.glb
 !gift/model/*.glb
 !gift/3d-floor-plan/*.glb
 !metropolitan/model/*.glb
@@ -89,6 +91,8 @@ whatshouldbe.png
 !ayat/3d-floor-plan/*.glb
 !hosea/model/*.glb
 !hosea/3d-floor-plan/*.glb
+!temer/model/*.glb
+!temer/3d-floor-plan/*.glb
 !_shared/model/*.glb
 !_shared/3d-floor-plan/*.glb
 
