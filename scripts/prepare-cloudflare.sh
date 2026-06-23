@@ -93,17 +93,30 @@ fi
 info "Adding Cloudflare Pages configuration..."
 
 # _headers — Controls HTTP response headers
+# IMPORTANT: Cloudflare Pages MERGES headers from ALL matching path rules.
+# This means /hosea/sw.js matches BOTH /*/sw.js AND /*.js AND /*.
+# We must NOT set conflicting Cache-Control values on different rules
+# that could match the same path, or the browser gets confused.
 cat > "$DIST_DIR/_headers" << 'HEADERS'
-# ── Service Workers ──────────────────────────────────────────────
-# Root-level SW
+# ── Service Workers (MUST be listed FIRST — most specific) ───────
+# These rules must come before any generic .js rules to avoid
+# Cache-Control merging. We do NOT use generic /*.js rules.
 /sw.js
   Content-Type: application/javascript
-  Cache-Control: no-cache
+  Cache-Control: no-cache, no-store, must-revalidate
 
-# Brand-level service workers (each brand has its own SW scope)
 /*/sw.js
   Content-Type: application/javascript
-  Cache-Control: no-cache
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# ── Brand JS/CSS files (NOT sw.js — no generic /*.js rule!) ─────
+# We list specific JS files by name to avoid merging with SW rules.
+/*/availability-system.js
+  Cache-Control: public, max-age=3600
+/*/contact-integration.js
+  Cache-Control: public, max-age=3600
+/*/firebase-config.js
+  Cache-Control: public, max-age=3600
 
 # ── 3D model files ──────────────────────────────────────────────
 /*.glb
@@ -176,15 +189,11 @@ cat > "$DIST_DIR/_headers" << 'HEADERS'
 /*/*.webm
   Cache-Control: public, max-age=31536000, immutable
 
-# ── JavaScript & CSS ────────────────────────────────────────────
-/*.js
-  Cache-Control: public, max-age=3600
-/*.css
-  Cache-Control: public, max-age=3600
-/*/*.js
-  Cache-Control: public, max-age=3600
-/*/*.css
-  Cache-Control: public, max-age=3600
+# ── WASM files ──────────────────────────────────────────────────
+/*.wasm
+  Cache-Control: public, max-age=31536000, immutable
+/*/*.wasm
+  Cache-Control: public, max-age=31536000, immutable
 
 # ── JSON data files ─────────────────────────────────────────────
 /*.json
@@ -195,6 +204,8 @@ cat > "$DIST_DIR/_headers" << 'HEADERS'
   Access-Control-Allow-Origin: *
 
 # ── HTML entry points — no cache (always serve latest) ──────────
+# NOTE: Cloudflare Pages auto-redirects /path/file.html to /path/file (308).
+# We add _redirects rules below to prevent this for service worker files.
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
 /
@@ -209,20 +220,32 @@ cat > "$DIST_DIR/_headers" << 'HEADERS'
   X-Content-Type-Options: nosniff
   X-Frame-Options: SAMEORIGIN
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=()
 HEADERS
 
 ok "_headers created"
 
-# _redirects — Minimal redirects (no SPA catch-all!)
-# IMPORTANT: We do NOT use catch-all redirects like /hosea/* /hosea/index.html 200
-# because they intercept requests for static assets (sw.js, *.glb, *.js, etc.)
-# and serve HTML instead, breaking service workers and 3D model loading.
-# Cloudflare Pages automatically serves index.html for directory requests.
-cat > "$DIST_DIR/_redirects" << 'REDIRECTS'
-# No catch-all redirects — static files are served directly by Cloudflare Pages.
-# Directory requests (e.g. /hosea/) automatically serve /hosea/index.html.
-REDIRECTS
+# _redirects — Prevent Cloudflare's automatic 308 "pretty URL" redirects
+# Cloudflare Pages auto-redirects /path/file.html → /path/file (308).
+# This breaks cache.addAll() in service workers because the SW tries to
+# cache './offline.html' but gets a 308 redirect instead of the content.
+# By adding explicit rules, we tell Cloudflare to serve .html files directly.
+BRANDS_LIST=$(python3 -c "
+import json
+with open('$ROOT_DIR/brands.json') as f:
+    data = json.load(f)
+for b in data.get('brands', []):
+    print(b['id'])
+")
+
+{
+  # Prevent pretty-URL redirects for .html files that SW needs to cache
+  for brand in $BRANDS_LIST; do
+    echo "/$brand/index.html /$brand/index.html 200"
+    echo "/$brand/offline.html /$brand/offline.html 200"
+  done
+  # Root index.html
+  echo "/index.html /index.html 200"
+} > "$DIST_DIR/_redirects"
 
 ok "_redirects created"
 

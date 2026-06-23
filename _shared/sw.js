@@ -18,7 +18,7 @@
  * - No server-side control over headers, so SW handles all caching logic
  */
 
-const CACHE_VERSION = 'v13';
+const CACHE_VERSION = 'v14';
 const CACHE_NAME = `tour-${CACHE_VERSION}`;
 const OFFLINE_PAGE = './offline.html';
 
@@ -30,10 +30,11 @@ const CONFIG = {
 };
 
 // Core app shell files (pre-cached during install — brand-agnostic, always exist)
+// NOTE: On Cloudflare Pages, .html files get 308 "pretty URL" redirects
+// (e.g. /hosea/offline.html → /hosea/offline). cache.addAll() follows
+// redirects but caches the FINAL URL, so we use paths that won't redirect.
 const CORE_FILES = [
   './',
-  './index.html',
-  './offline.html',
   './manifest.json?v=2',
   './brand-config.json',
   './tour-data.json',
@@ -51,9 +52,26 @@ self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        // Use addAll for atomic caching - either all succeed or none
-        // This prevents partial app shell installation
-        return cache.addAll(CORE_FILES);
+        // Cache core files with redirect: 'follow' to handle Cloudflare's
+        // 308 "pretty URL" redirects (e.g. /path/file.html → /path/file)
+        const requests = CORE_FILES.map(url =>
+          new Request(url, { redirect: 'follow' })
+        );
+        return cache.addAll(requests);
+      })
+      .then(() => {
+        // Separately cache offline.html — on Cloudflare Pages this may
+        // 308 redirect to /brand/offline, but we need the HTML content.
+        return caches.open(CACHE_NAME).then(cache =>
+          fetch('./offline.html', { redirect: 'follow' })
+            .then(resp => {
+              if (resp.ok) {
+                // Cache under the redirect target URL so it works offline
+                return cache.put('./offline.html', resp);
+              }
+            })
+            .catch(() => console.warn('[SW] offline.html not cached'))
+        );
       })
       .then(() => {
         console.log('[SW] Core files pre-cached successfully');

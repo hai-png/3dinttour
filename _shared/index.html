@@ -2884,8 +2884,23 @@ async function boot(){
   // Register service worker
   // Use default scope (current directory) - no need to manually set scope
   // Manually setting scope can cause InvalidStateError on some browsers
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then((reg)=>{
+  //
+  // Cloudflare Pages specific notes:
+  // - Cache-busting query param prevents stale cached SW responses
+  // - Retry logic handles AbortError from browser timing issues
+  // - Registration happens after 'load' event to avoid page-load contention
+  function registerServiceWorker(retries = 3) {
+    if (!('serviceWorker' in navigator)) {
+      console.warn('[PWA] Service Worker not supported');
+      markSWDone('⚠ Ready (SW not supported)');
+      return;
+    }
+
+    // Bump this when sw.js changes to force browsers to fetch new version
+    const SW_VERSION = 'v14';
+    const swUrl = './sw.js?v=' + SW_VERSION;
+
+    navigator.serviceWorker.register(swUrl).then((reg)=>{
       // Force activate if waiting
       if (reg.waiting) {
         reg.waiting.postMessage('SKIP_WAITING');
@@ -2937,9 +2952,14 @@ async function boot(){
       }, 90000);
     }).catch((err)=>{
       console.error('[PWA] Registration error:', err);
-      console.error('[PWA] Make sure sw.js is served correctly');
-      // If SW fails, still mark phase done so user isn't stuck
-      markSWDone('⚠ Ready (SW unavailable)');
+      if (err.name === 'AbortError' && retries > 0) {
+        // AbortError can happen due to browser timing issues — retry after delay
+        console.warn('[PWA] Retrying SW registration (' + retries + ' left)...');
+        setTimeout(() => registerServiceWorker(retries - 1), 2000);
+      } else {
+        console.error('[PWA] Make sure sw.js is served correctly');
+        markSWDone('⚠ Ready (SW unavailable)');
+      }
     });
 
     // Listen for messages from service worker
@@ -2960,11 +2980,12 @@ async function boot(){
       }
     });
   }
-  // If serviceWorker not supported, still mark SW phase done
-  if (!('serviceWorker' in navigator)) {
-    console.warn('[PWA] Service Worker not supported');
-    markSWDone('⚠ Ready (SW not supported)');
-  }
+
+  // Register SW after page load to avoid contention with heavy resource loading
+  // This prevents AbortError when the browser is busy loading 3D models
+  window.addEventListener('load', () => {
+    setTimeout(registerServiceWorker, 500);
+  });
 
   // ═══ Install Modal ═══
   function showInstallModal() {
