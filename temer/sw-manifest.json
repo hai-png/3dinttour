@@ -1,23 +1,7 @@
 {
   "version": 1,
-  "totalFiles": 71,
+  "totalFiles": 67,
   "files": [
-    {
-      "url": "./3d-floor-plan/1-bed-01.glb",
-      "priority": 1
-    },
-    {
-      "url": "./3d-floor-plan/2-bed-01.glb",
-      "priority": 1
-    },
-    {
-      "url": "./3d-floor-plan/3d-bed-01.glb",
-      "priority": 1
-    },
-    {
-      "url": "./model/building.glb",
-      "priority": 1
-    },
     {
       "url": "./project/amenities/swimming-pool-amenity.webp",
       "priority": 2
@@ -288,12 +272,6 @@
     }
   ],
   "priorityGroups": {
-    "1": [
-      "./3d-floor-plan/1-bed-01.glb",
-      "./3d-floor-plan/2-bed-01.glb",
-      "./3d-floor-plan/3d-bed-01.glb",
-      "./model/building.glb"
-    ],
     "2": [
       "./project/amenities/swimming-pool-amenity.webp",
       "./project/floor-plans/seken-Floorplan.jpg",
