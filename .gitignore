@@ -125,3 +125,4 @@ UPDATES.md
 
 # Brand build artifacts (regenerated at build time)
 sw-manifest.json
+dist/
