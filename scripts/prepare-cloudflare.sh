@@ -94,12 +94,18 @@ info "Adding Cloudflare Pages configuration..."
 
 # _headers — Controls HTTP response headers
 cat > "$DIST_DIR/_headers" << 'HEADERS'
-# Service Worker must be served with this MIME type
+# ── Service Workers ──────────────────────────────────────────────
+# Root-level SW
 /sw.js
   Content-Type: application/javascript
-  Service-Worker-Allowed: /
+  Cache-Control: no-cache
 
-# 3D model files — allow cross-origin loading
+# Brand-level service workers (each brand has its own SW scope)
+/*/sw.js
+  Content-Type: application/javascript
+  Cache-Control: no-cache
+
+# ── 3D model files ──────────────────────────────────────────────
 /*.glb
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=31536000, immutable
@@ -108,17 +114,33 @@ cat > "$DIST_DIR/_headers" << 'HEADERS'
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=31536000, immutable
 
-# Draco decoder files — cache aggressively
+/*/*.glb
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+
+/*/*.gltf
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+
+# ── Draco decoder files ─────────────────────────────────────────
 /draco/*
   Cache-Control: public, max-age=31536000, immutable
   Access-Control-Allow-Origin: *
 
-# HDR environment maps
+/*/draco/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+# ── HDR environment maps ────────────────────────────────────────
 /*.hdr
   Access-Control-Allow-Origin: *
   Cache-Control: public, max-age=31536000, immutable
 
-# Images — cache with content hash or long TTL
+/*/*.hdr
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+
+# ── Images ──────────────────────────────────────────────────────
 /*.png
   Cache-Control: public, max-age=86400
 /*.jpg
@@ -131,33 +153,58 @@ cat > "$DIST_DIR/_headers" << 'HEADERS'
   Cache-Control: public, max-age=86400
 /*.ico
   Cache-Control: public, max-age=604800
+/*/*.png
+  Cache-Control: public, max-age=86400
+/*/*.jpg
+  Cache-Control: public, max-age=86400
+/*/*.jpeg
+  Cache-Control: public, max-age=86400
+/*/*.webp
+  Cache-Control: public, max-age=86400
+/*/*.svg
+  Cache-Control: public, max-age=86400
+/*/*.ico
+  Cache-Control: public, max-age=604800
 
-# Video files
+# ── Video files ─────────────────────────────────────────────────
 /*.mp4
   Cache-Control: public, max-age=31536000, immutable
 /*.webm
   Cache-Control: public, max-age=31536000, immutable
+/*/*.mp4
+  Cache-Control: public, max-age=31536000, immutable
+/*/*.webm
+  Cache-Control: public, max-age=31536000, immutable
 
-# JSON data files — short cache for freshness
+# ── JavaScript & CSS ────────────────────────────────────────────
+/*.js
+  Cache-Control: public, max-age=3600
+/*.css
+  Cache-Control: public, max-age=3600
+/*/*.js
+  Cache-Control: public, max-age=3600
+/*/*.css
+  Cache-Control: public, max-age=3600
+
+# ── JSON data files ─────────────────────────────────────────────
 /*.json
   Cache-Control: public, max-age=300
   Access-Control-Allow-Origin: *
+/*/*.json
+  Cache-Control: public, max-age=300
+  Access-Control-Allow-Origin: *
 
-# HTML — no cache for entry points (always serve latest)
+# ── HTML entry points — no cache (always serve latest) ──────────
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
 /
   Cache-Control: public, max-age=0, must-revalidate
-
-# Brand subdirectory HTML
 /*/*.html
   Cache-Control: public, max-age=0, must-revalidate
-
-# Brand subdirectory root
 /*/
   Cache-Control: public, max-age=0, must-revalidate
 
-# Security headers for all pages
+# ── Security headers for all responses ──────────────────────────
 /*
   X-Content-Type-Options: nosniff
   X-Frame-Options: SAMEORIGIN
@@ -167,18 +214,14 @@ HEADERS
 
 ok "_headers created"
 
-# _redirects — SPA-style routing for brand directories
+# _redirects — Minimal redirects (no SPA catch-all!)
+# IMPORTANT: We do NOT use catch-all redirects like /hosea/* /hosea/index.html 200
+# because they intercept requests for static assets (sw.js, *.glb, *.js, etc.)
+# and serve HTML instead, breaking service workers and 3D model loading.
+# Cloudflare Pages automatically serves index.html for directory requests.
 cat > "$DIST_DIR/_redirects" << 'REDIRECTS'
-# Each brand is a standalone PWA with its own service worker scope.
-# Redirect all sub-paths of a brand back to its index.html so that
-# direct navigation and refresh work correctly.
-
-/hosea/* /hosea/index.html 200
-/demahope/* /demahope/index.html 200
-/metropolitan/* /metropolitan/index.html 200
-/gift/* /gift/index.html 200
-/ayat/* /ayat/index.html 200
-/temer/* /temer/index.html 200
+# No catch-all redirects — static files are served directly by Cloudflare Pages.
+# Directory requests (e.g. /hosea/) automatically serve /hosea/index.html.
 REDIRECTS
 
 ok "_redirects created"
