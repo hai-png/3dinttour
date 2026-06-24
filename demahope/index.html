@@ -1092,9 +1092,9 @@ const AL=(()=>{
   
   function imgs(urls){
     if(!urls?.length)return Promise.resolve([]);
-    return trk(`${urls.length} images`,Promise.allSettled(urls.map(u=>new Promise((r,j)=>{
-      const i=new Image();i.crossOrigin='anonymous';i.onload=()=>r(i);i.onerror=j;i.src=u;
-    }))));
+    return Promise.allSettled(urls.map(u=>new Promise((r,j)=>{
+      const i=new Image();i.crossOrigin='anonymous';i.onload=()=>{r(i);window.__imgLoaded=(window.__imgLoaded||0)+1;if(window.updateImageProgress)window.updateImageProgress(window.__imgLoaded,urls.length)};i.onerror=j;i.src=u;
+    })));
   }
   
   function done(){
@@ -2394,16 +2394,18 @@ const ProgressTracker = (() => {
   const offlineEl = document.getElementById('offline-ready');
 
   const PHASES = {
-    appInit:    { weight: 10, done: false },
-    firebase:   { weight: 20, done: false },
-    scene:      { weight: 35, done: false },
-    swCache:    { weight: 35, done: false },
+    appInit:    { weight: 5, done: false },
+    firebase:   { weight: 15, done: false },
+    model:      { weight: 25, done: false },
+    images:     { weight: 15, done: false },
+    scene:      { weight: 15, done: false },
+    swCache:    { weight: 25, done: false },
   };
 
-  // SW cache progress within its phase (0-100% of the 35% weight)
-  let swProgress = 0; // 0..1
+  let swProgress = 0;
   let swDone = false;
-
+  let imageProgress = 0;
+  let imageTotal = 0;
   let offlineReady = false;
 
   function calcPercent() {
@@ -2413,9 +2415,11 @@ const ProgressTracker = (() => {
         total += PHASES[key].weight;
       }
     }
-    // Add partial SW cache progress
     if (!swDone && swProgress > 0) {
       total += swProgress * PHASES.swCache.weight;
+    }
+    if (!PHASES.images.done && imageTotal > 0) {
+      total += (imageProgress / imageTotal) * PHASES.images.weight;
     }
     return Math.min(Math.round(total), 100);
   }
@@ -2437,6 +2441,14 @@ const ProgressTracker = (() => {
   function updateSWCacheProgress(cached, total, label) {
     swProgress = total > 0 ? cached / total : 0;
     updateUI(label || `Caching ${cached}/${total}`);
+  }
+
+  function updateImageProgress(loaded, total) {
+    imageProgress = loaded;
+    imageTotal = total;
+    if (!PHASES.images.done) {
+      updateUI(`Loading images ${loaded}/${total}`);
+    }
   }
 
   function markSWDone(label) {
@@ -2475,8 +2487,9 @@ const ProgressTracker = (() => {
   // Expose global API for boot() and SW
   window.setProgress = markPhase;
   window.updateSWProgress = updateSWCacheProgress;
+  window.updateImageProgress = updateImageProgress;
   window.markSWDone = markSWDone;
-  window.markAppLoaded = () => markPhase('scene', 'Loading assets…');
+  window.markAppLoaded = () => markPhase('scene', 'Building scene…');
 
   return {
     init() {
@@ -2690,36 +2703,38 @@ async function loadAvailabilityData(){
 
 async function boot(){
   E.init();
+  ProgressTracker.init();
 
-  // Phase 1: App Init (10%)
+  // Phase 1: App Init (5%)
+  setProgress('appInit', 'Loading tour data…');
   try{window.TD=await AL.json(CFG.dataPath)}catch(e){console.warn('No tour-data.json');window.TD={projectName:'Demo',units:[],hotspots:[],gallery:[]};}
   window.TD.units=window.TD.units||[];window.TD.hotspots=window.TD.hotspots||[];window.TD.gallery=window.TD.gallery||[];
   window.TD.units.forEach(u=>{u.id=u.id||u.unitNumber||u.name;u.description=u.description||u.desc||'';u.features=u.features||[];});
-  ProgressTracker.init();
-  setProgress('appInit', 'Loading tour data…');
 
-  // Phase 2: Firebase (20%)
+  // Phase 2: Firebase (15%)
   console.log('[boot] Waiting for availability data...');
-  await loadAvailabilityData();
   setProgress('firebase', 'Connecting Firebase…');
+  await loadAvailabilityData();
 
   // Initialize 3D scene and UI
   UI.populateIntro();
   E.configure(window.TD);
 
-  // Don't wait for service worker caching - load model immediately
-  // SW will cache in background without blocking
-
+  // Phase 3: 3D Model (25%)
+  setProgress('model', 'Loading 3D model…');
   if(window.TD.hdri){try{E.setEnv(await AL.hdri(window.TD.hdri))}catch(e){E.setFallbackBg()}}else E.setFallbackBg();
   if(window.TD.modelFile){try{Mdl.load(await AL.glb(window.TD.modelFile,'Building'))}catch(e){Mdl.fallback()}}else Mdl.fallback();
 
+  // Phase 4: Images (15%)
+  setProgress('images', 'Loading images…');
   const urls=new Set();window.TD.gallery.forEach(g=>{if(g.url)urls.add(g.url)});window.TD.units.slice(0,16).forEach(u=>{if(u.image)urls.add(u.image)});
   if(window.TD.media?.heroImage)urls.add(window.TD.media.heroImage);
+  window.__imgLoaded=0;
   if(urls.size)await AL.imgs([...urls].slice(0,15));
+  if(!urls.size)updateImageProgress(1,1);
 
-  // Phase 3: 3D Scene loaded (35%)
-  setProgress('scene', 'Loading assets…');
-
+  // Phase 5: Scene build (15%)
+  setProgress('scene', 'Building scene…');
   U.build();HS.build();Srch.init();Gal.init();UI.init();UI.populateProject();Gestures.init();
   AL.done();
 
@@ -2881,66 +2896,60 @@ async function boot(){
     });
   }
 
-  // Register service worker
-  // Use default scope (current directory) - no need to manually set scope
-  // Manually setting scope can cause InvalidStateError on some browsers
+  // Register service worker with retry
+  // Use default scope (current directory)
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then((reg)=>{
-      // Force activate if waiting
-      if (reg.waiting) {
-        reg.waiting.postMessage('SKIP_WAITING');
-      }
-
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // New service worker installed, show update prompt
-            showUpdatePrompt(reg);
-          } else if (newWorker.state === 'installed' && !navigator.serviceWorker.controller) {
-            // First install, no controller yet
-            newWorker.postMessage('SKIP_WAITING');
-          }
-        });
-      });
-
-      // Listen for controller change
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        // Reload to activate new service worker
-        window.location.reload();
-      });
-
-      // Wait for service worker to take control, then cache everything
-      // But only after page is fully loaded and 3D model is ready
-      let cachingTriggered = false;
-      function triggerCaching(){
-        if (cachingTriggered) return;
-        if (navigator.serviceWorker.controller) {
-          cachingTriggered = true;
-          // Additional delay to ensure model loading has started
-          setTimeout(() => {
-            navigator.serviceWorker.controller.postMessage('CACHE_EVERYTHING');
-          }, 3000);
-        } else {
-          setTimeout(triggerCaching, 1000);
+    let retries = 0;
+    const maxRetries = 3;
+    function registerSW() {
+      navigator.serviceWorker.register('./sw.js', {scope: './'}).then((reg)=>{
+        if (reg.waiting) {
+          reg.waiting.postMessage('SKIP_WAITING');
         }
-      }
 
-      // Start checking after page load + delay
-      window.addEventListener('load', () => {
-        setTimeout(triggerCaching, 2000);
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdatePrompt(reg);
+            } else if (newWorker.state === 'installed' && !navigator.serviceWorker.controller) {
+              newWorker.postMessage('SKIP_WAITING');
+            }
+          });
+        });
+
+        let cachingTriggered = false;
+        function triggerCaching(){
+          if (cachingTriggered) return;
+          if (navigator.serviceWorker.controller) {
+            cachingTriggered = true;
+            setTimeout(() => {
+              navigator.serviceWorker.controller.postMessage('CACHE_EVERYTHING');
+            }, 3000);
+          } else {
+            setTimeout(triggerCaching, 1000);
+          }
+        }
+
+        window.addEventListener('load', () => {
+          setTimeout(triggerCaching, 2000);
+        });
+
+        setTimeout(() => {
+          markSWDone('✓ Ready (some assets cached)');
+        }, 90000);
+      }).catch((err)=>{
+        retries++;
+        console.error('[PWA] Registration error (attempt '+retries+'/'+maxRetries+'):', err.message);
+        if (retries < maxRetries) {
+          setTimeout(registerSW, retries * 2000);
+        } else {
+          console.error('[PWA] SW registration failed after '+maxRetries+' attempts');
+          markSWDone('⚠ Ready (SW unavailable)');
+        }
       });
-
-      // Fallback: if caching doesn't complete within 90s, mark SW phase done anyway
-      setTimeout(() => {
-        markSWDone('✓ Ready (some assets cached)');
-      }, 90000);
-    }).catch((err)=>{
-      console.error('[PWA] Registration error:', err);
-      console.error('[PWA] Make sure sw.js is served correctly');
-      // If SW fails, still mark phase done so user isn't stuck
-      markSWDone('⚠ Ready (SW unavailable)');
-    });
+    }
+    registerSW();
 
     // Listen for messages from service worker
     navigator.serviceWorker.addEventListener('message', (e) => {
